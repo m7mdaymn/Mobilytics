@@ -1,0 +1,562 @@
+@import "tailwindcss";
+
+/* ══════════════════════════════════════════════════════════
+   MOBILYTICS DESIGN SYSTEM - CSS Custom Properties
+   Applied dynamically from /api/v1/Public/settings
+   ══════════════════════════════════════════════════════════ */
+
+:root {
+  --color-primary: #2563eb;
+  --color-primary-hover: #1d4ed8;
+  --color-primary-light: #dbeafe;
+  --color-secondary: #1e293b;
+  --color-secondary-hover: #334155;
+  --color-accent: #f59e0b;
+  --color-accent-hover: #d97706;
+
+  --color-bg: #ffffff;
+  --color-bg-alt: #f8fafc;
+  --color-bg-card: #ffffff;
+  --color-bg-sidebar: #0f172a;
+  --color-text: #1e293b;
+  --color-text-muted: #64748b;
+  --color-text-on-primary: #ffffff;
+  --color-border: #e2e8f0;
+
+  --color-success: #22c55e;
+  --color-warning: #f59e0b;
+  --color-danger: #ef4444;
+  --color-info: #3b82f6;
+
+  --sidebar-width: 260px;
+  --sidebar-collapsed: 64px;
+  --header-height: 64px;
+  --radius: 8px;
+  --radius-lg: 12px;
+
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+  --shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+  --shadow-lg: 0 10px 15px rgba(0,0,0,0.1), 0 4px 6px rgba(0,0,0,0.05);
+  --transition: 200ms ease;
+
+  /* Theme-variable layout tokens */
+  --card-padding: 0.75rem;
+  --card-gap: 1rem;
+  --card-img-ratio: 1 / 1;
+  --card-title-size: 0.875rem;
+  --card-price-size: 1.125rem;
+  --section-gap: 2.5rem;
+  --grid-cols-mobile: 2;
+  --grid-cols-desktop: 4;
+  --header-bg: #ffffff;
+  --header-border: var(--color-border);
+  --footer-bg: var(--color-secondary);
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  line-height: 1.6;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: var(--radius);
+}
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 3px; }
+
+/* ══════════════ Buttons ══════════════ */
+
+.btn-primary {
+  background-color: var(--color-primary);
+  color: var(--color-text-on-primary);
+  padding: 0.5rem 1.25rem;
+  border-radius: var(--radius);
+  font-weight: 600;
+  font-size: 0.875rem;
+  transition: background-color var(--transition);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  border: none;
+}
+.btn-primary:hover { background-color: var(--color-primary-hover); }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-secondary {
+  background-color: var(--color-secondary);
+  color: #fff;
+  padding: 0.5rem 1.25rem;
+  border-radius: var(--radius);
+  font-weight: 600;
+  font-size: 0.875rem;
+  transition: background-color var(--transition);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  border: none;
+}
+.btn-secondary:hover { background-color: var(--color-secondary-hover); }
+
+.btn-accent {
+  background-color: var(--color-accent);
+  color: #fff;
+  padding: 0.5rem 1.25rem;
+  border-radius: var(--radius);
+  font-weight: 600;
+  font-size: 0.875rem;
+  transition: background-color var(--transition);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  border: none;
+}
+.btn-accent:hover { background-color: var(--color-accent-hover); }
+
+.btn-outline {
+  background: transparent;
+  color: var(--color-primary);
+  border: 1.5px solid var(--color-primary);
+  padding: 0.5rem 1.25rem;
+  border-radius: var(--radius);
+  font-weight: 600;
+  font-size: 0.875rem;
+  transition: all var(--transition);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+.btn-outline:hover {
+  background-color: var(--color-primary);
+  color: var(--color-text-on-primary);
+}
+
+.btn-danger {
+  background-color: var(--color-danger);
+  color: #fff;
+  padding: 0.5rem 1.25rem;
+  border-radius: var(--radius);
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  border: none;
+}
+
+.btn-whatsapp {
+  background-color: #25d366;
+  color: #fff;
+  padding: 0.625rem 1.5rem;
+  border-radius: var(--radius);
+  font-weight: 700;
+  font-size: 0.9375rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  border: none;
+  transition: background-color var(--transition);
+}
+.btn-whatsapp:hover { background-color: #128c7e; }
+
+/* ══════════════ Card / Badge / Input ══════════════ */
+
+.card {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  transition: box-shadow var(--transition), transform var(--transition);
+}
+.card:hover {
+  box-shadow: var(--shadow);
+  transform: translateY(-2px);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.badge-success { background: #dcfce7; color: #166534; }
+.badge-warning { background: #fef3c7; color: #92400e; }
+.badge-danger { background: #fee2e2; color: #991b1b; }
+.badge-info { background: #dbeafe; color: #1e40af; }
+.badge-neutral { background: #f1f5f9; color: #475569; }
+
+.input-field {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius);
+  font-size: 0.875rem;
+  background: var(--color-bg);
+  color: var(--color-text);
+  transition: border-color var(--transition);
+}
+.input-field:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-light);
+}
+.input-error { border-color: var(--color-danger) !important; }
+.input-error:focus { box-shadow: 0 0 0 3px #fee2e2 !important; }
+
+@keyframes slideInRight {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+@keyframes slideOutRight {
+  from { transform: translateX(0); opacity: 1; }
+  to { transform: translateX(100%); opacity: 0; }
+}
+
+/* ══════════════════════════════════════════════════════════
+   PREMIUM STOREFRONT THEMES
+   Each theme changes layout, spacing, card design, header/footer.
+   CSS variables for colors are still overridden by backend settings.
+   ══════════════════════════════════════════════════════════ */
+
+/* ────── Theme 1: Minimal Luxury ──────
+   Clean white space, sharp typography, subtle borders.
+   Large image cards, minimal text, editorial feel.
+*/
+.theme-1 {
+  --radius: 2px;
+  --radius-lg: 4px;
+  --card-padding: 1.25rem;
+  --card-gap: 1.5rem;
+  --card-img-ratio: 4 / 5;
+  --card-title-size: 0.8125rem;
+  --card-price-size: 1rem;
+  --section-gap: 4rem;
+  --header-height: 72px;
+}
+.theme-1 .storefront-header {
+  background: #fff;
+  border-bottom: none;
+  box-shadow: none;
+  padding: 0 2rem;
+}
+.theme-1 .storefront-header .store-name {
+  font-weight: 300;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  font-size: 1.25rem;
+}
+.theme-1 .storefront-nav a {
+  font-weight: 400;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+}
+.theme-1 .card {
+  border: none;
+  box-shadow: none;
+  border-radius: 0;
+  background: transparent;
+}
+.theme-1 .card:hover {
+  box-shadow: none;
+  transform: none;
+}
+.theme-1 .card .card-image {
+  aspect-ratio: var(--card-img-ratio);
+}
+.theme-1 .card .card-image img {
+  transition: opacity 300ms ease;
+}
+.theme-1 .card:hover .card-image img {
+  opacity: 0.92;
+}
+.theme-1 .card .card-body {
+  padding: 0.75rem 0;
+}
+.theme-1 .card .card-title {
+  font-weight: 400;
+  font-size: var(--card-title-size);
+  letter-spacing: 0.02em;
+}
+.theme-1 .card .card-price {
+  font-weight: 500;
+  font-size: var(--card-price-size);
+}
+.theme-1 .card .card-actions {
+  opacity: 0;
+  transition: opacity 250ms ease;
+}
+.theme-1 .card:hover .card-actions {
+  opacity: 1;
+}
+.theme-1 .section-title {
+  font-weight: 300;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-size: 0.875rem;
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 0.75rem;
+}
+.theme-1 .hero-banner {
+  aspect-ratio: 21/9;
+}
+.theme-1 .storefront-footer {
+  background: #fafafa;
+  color: var(--color-text);
+  border-top: 1px solid var(--color-border);
+}
+.theme-1 .storefront-footer a {
+  color: var(--color-text-muted);
+}
+.theme-1 .storefront-footer a:hover {
+  color: var(--color-primary);
+}
+.theme-1 .btn-whatsapp {
+  border-radius: 0;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+}
+.theme-1 .badge {
+  border-radius: 2px;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+}
+
+/* ────── Theme 2: Tech Store Pro ──────
+   Dense, organized layout. Strong specs display,
+   filter panel, badges, category chips.
+*/
+.theme-2 {
+  --radius: 8px;
+  --radius-lg: 12px;
+  --card-padding: 0.75rem;
+  --card-gap: 0.75rem;
+  --card-img-ratio: 1 / 1;
+  --card-title-size: 0.8125rem;
+  --card-price-size: 1.125rem;
+  --section-gap: 2rem;
+  --header-height: 64px;
+}
+.theme-2 .storefront-header {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+  border-bottom: none;
+  color: #fff;
+}
+.theme-2 .storefront-header .store-name {
+  color: #fff;
+  font-weight: 700;
+}
+.theme-2 .storefront-nav a {
+  color: rgba(255,255,255,0.85);
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+.theme-2 .storefront-nav a:hover {
+  color: #fff;
+}
+.theme-2 .storefront-header .mobile-menu-btn {
+  color: #fff;
+}
+.theme-2 .card {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+.theme-2 .card:hover {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 1px var(--color-primary), var(--shadow);
+}
+.theme-2 .card .card-body {
+  padding: var(--card-padding);
+}
+.theme-2 .card .card-brand {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--color-primary);
+}
+.theme-2 .card .card-title {
+  font-weight: 600;
+  font-size: var(--card-title-size);
+  line-height: 1.3;
+}
+.theme-2 .card .card-price {
+  font-weight: 800;
+  font-size: var(--card-price-size);
+  color: var(--color-primary);
+}
+.theme-2 .section-title {
+  font-weight: 700;
+  font-size: 1.125rem;
+}
+.theme-2 .hero-banner {
+  aspect-ratio: 2.5 / 1;
+  border-radius: var(--radius-lg);
+}
+.theme-2 .storefront-footer {
+  background: var(--color-secondary);
+  color: #fff;
+}
+.theme-2 .chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.375rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  transition: all var(--transition);
+}
+.theme-2 .chip:hover {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+/* ────── Theme 3: Deals & Bold ──────
+   Promotion-first, discount highlights, strong CTAs,
+   price-first cards, sticky WhatsApp.
+*/
+.theme-3 {
+  --radius: 12px;
+  --radius-lg: 16px;
+  --card-padding: 0.625rem;
+  --card-gap: 0.5rem;
+  --card-img-ratio: 1 / 1;
+  --card-title-size: 0.8125rem;
+  --card-price-size: 1.25rem;
+  --section-gap: 1.5rem;
+  --header-height: 56px;
+}
+.theme-3 .storefront-header {
+  background: var(--color-accent);
+  border-bottom: none;
+  color: #fff;
+}
+.theme-3 .storefront-header .store-name {
+  color: #fff;
+  font-weight: 900;
+  font-size: 1.25rem;
+}
+.theme-3 .storefront-nav a {
+  color: rgba(255,255,255,0.9);
+  font-weight: 700;
+  font-size: 0.8125rem;
+}
+.theme-3 .storefront-nav a:hover {
+  color: #fff;
+}
+.theme-3 .storefront-header .mobile-menu-btn {
+  color: #fff;
+}
+.theme-3 .card {
+  border: 2px solid transparent;
+  border-radius: var(--radius-lg);
+  position: relative;
+}
+.theme-3 .card:hover {
+  border-color: var(--color-accent);
+}
+.theme-3 .card .card-body {
+  padding: var(--card-padding);
+}
+.theme-3 .card .card-price {
+  font-weight: 900;
+  font-size: var(--card-price-size);
+  color: var(--color-danger);
+}
+.theme-3 .card .card-old-price {
+  font-size: 0.875rem;
+  text-decoration: line-through;
+  color: var(--color-text-muted);
+}
+.theme-3 .card .card-title {
+  font-weight: 600;
+  font-size: var(--card-title-size);
+}
+.theme-3 .card .discount-tag {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: var(--color-danger);
+  color: #fff;
+  font-weight: 800;
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius);
+  z-index: 2;
+}
+.theme-3 .section-title {
+  font-weight: 800;
+  font-size: 1.25rem;
+  color: var(--color-text);
+}
+.theme-3 .hero-banner {
+  aspect-ratio: 16/9;
+  border-radius: var(--radius-lg);
+}
+.theme-3 .storefront-footer {
+  background: var(--color-secondary);
+  color: #fff;
+}
+.theme-3 .deals-row {
+  background: linear-gradient(135deg, var(--color-accent), var(--color-danger));
+  border-radius: var(--radius-lg);
+  padding: 1rem;
+}
+.theme-3 .deals-row .section-title {
+  color: #fff;
+}
+.theme-3 .btn-whatsapp {
+  border-radius: 9999px;
+  font-weight: 800;
+  font-size: 1rem;
+  padding: 0.75rem 2rem;
+}
+.theme-3 .whatsapp-sticky {
+  position: fixed;
+  bottom: 1.25rem;
+  right: 1.25rem;
+  z-index: 50;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #25d366;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  transition: transform 150ms ease;
+}
+.theme-3 .whatsapp-sticky:hover {
+  transform: scale(1.1);
+}
+.theme-3 .badge {
+  border-radius: var(--radius);
+  font-weight: 700;
+}
