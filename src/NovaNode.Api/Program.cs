@@ -79,19 +79,11 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-// CORS — allow tenant subdomains + localhost dev origins
+// CORS — allow any origin
 builder.Services.AddCors(o => o.AddDefaultPolicy(b =>
-    b.WithOrigins(
-            "https://*.mobilytics.com",
-            "https://mobilytics.com",
-            "http://localhost:3000",
-            "http://localhost:5173",
-            "http://localhost:4200"
-        )
-        .SetIsOriginAllowedToAllowWildcardSubdomains()
-        .AllowAnyHeader()
-        .AllowAnyMethod()
-        .AllowCredentials()));
+    b.AllowAnyOrigin()
+     .AllowAnyHeader()
+     .AllowAnyMethod()));
 
 var app = builder.Build();
 
