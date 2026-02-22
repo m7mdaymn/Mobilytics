@@ -11,6 +11,7 @@ interface Tenant {
   description?: string;
 }
 
+
 @Component({
   selector: 'app-landing',
   standalone: true,
