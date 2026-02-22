@@ -17,6 +17,7 @@
       "src": "^/(assets|styles.*)",
       "dest": "/$1"
     },
+    
     {
       "src": "^/(.*)$",
       "dest": "/index.html",
