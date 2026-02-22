@@ -1,12 +1,17 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 import { platformAuthGuard } from './core/guards/platform-auth.guard';
+import { tenantResolverGuard } from './core/guards/tenant-resolver.guard';
 
 export const routes: Routes = [
-  // Public storefront
+  // Landing page (no tenant required)
+  { path: 'landing', loadComponent: () => import('./public/pages/landing/landing.component').then(m => m.LandingComponent) },
+
+  // Public storefront (requires valid tenant)
   {
     path: '',
     loadComponent: () => import('./public/layouts/storefront-shell.component').then(m => m.StorefrontShellComponent),
+    canActivate: [tenantResolverGuard],
     children: [
       { path: '', loadComponent: () => import('./public/pages/home/home.component').then(m => m.HomeComponent) },
       { path: 'catalog', loadComponent: () => import('./public/pages/catalog/catalog.component').then(m => m.CatalogComponent) },
@@ -20,7 +25,6 @@ export const routes: Routes = [
     ],
   },
   { path: 'inactive', loadComponent: () => import('./public/pages/inactive/inactive.component').then(m => m.InactiveComponent) },
-  { path: 'tenant-not-found', loadComponent: () => import('./public/pages/tenant-not-found/tenant-not-found.component').then(m => m.TenantNotFoundComponent) },
 
   // Tenant Admin
   { path: 'admin/login', loadComponent: () => import('./admin/pages/login/login.component').then(m => m.LoginComponent) },
