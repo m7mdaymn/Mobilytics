@@ -1,9 +1,6 @@
 {
   "buildCommand": "cd frontend && npm run build",
-  "outputDirectory": "frontend/dist/frontend",
-  "rwx": [
-    "frontend/node_modules"
-  ],
+  "outputDirectory": "frontend/dist/frontend/browser",
   "routes": [
     {
       "src": "/index.html",
@@ -17,7 +14,7 @@
       "src": "^/(assets|styles.*)",
       "dest": "/$1"
     },
-    
+
     {
       "src": "^/(.*)$",
       "dest": "/index.html",
