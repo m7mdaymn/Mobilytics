@@ -1,0 +1,19 @@
+{
+  "buildCommand": "cd frontend && npm run build",
+  "outputDirectory": "frontend/dist/frontend",
+  "env": {
+    "ANGULAR_ENVIRONMENT_PRODUCTION": "true"
+  },
+  "routes": [
+    {
+      "src": "^/((?!.*\\.).*)",
+      "dest": "/index.html",
+      "status": 200
+    },
+    {
+      "src": "/(.+)",
+      "dest": "/",
+      "status": 308
+    }
+  ]
+}
