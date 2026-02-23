@@ -15,16 +15,19 @@ export class WhatsAppService {
     return this.api.post('/Public/whatsapp-click', dto).pipe(
       tap(() => {
         const settings = this.settingsStore.settings();
-        if (!settings?.whatsappNumber) return;
+        if (!settings?.whatsAppNumber) return;
+
+        let templates: { inquiryTemplate?: string; followUpTemplate?: string } = {};
+        try { templates = settings.whatsAppTemplatesJson ? JSON.parse(settings.whatsAppTemplatesJson) : {}; } catch {}
 
         const message = this.buildInquiryMessage(
-          settings.whatsappInquiryTemplate,
+          templates.inquiryTemplate || '',
           dto.targetTitle || '',
           dto.pageUrl,
           settings.storeName
         );
 
-        const phone = settings.whatsappNumber.replace(/\D/g, '');
+        const phone = settings.whatsAppNumber.replace(/\D/g, '');
         const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
         window.open(url, '_blank');
       })
@@ -39,7 +42,9 @@ export class WhatsAppService {
     const settings = this.settingsStore.settings();
     if (!settings) return;
 
-    const template = settings.whatsappFollowUpTemplate || 'Hi {name}, following up about {item} from {store}.';
+    let templates: { followUpTemplate?: string } = {};
+    try { templates = settings.whatsAppTemplatesJson ? JSON.parse(settings.whatsAppTemplatesJson) : {}; } catch {}
+    const template = templates.followUpTemplate || 'Hi {name}, following up about {item} from {store}.';
     const message = template
       .replace('{item}', itemTitle)
       .replace('{store}', settings.storeName)

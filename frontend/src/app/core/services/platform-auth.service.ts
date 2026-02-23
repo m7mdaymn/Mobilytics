@@ -73,13 +73,17 @@ export class PlatformAuthService {
   }
 
   private decodeToken(token: string): PlatformUser {
-    const payload = JSON.parse(atob(token.split('.')[1]));
-    return {
-      id: payload.sub || payload.nameid,
-      email: payload.email,
-      name: payload.name || payload.unique_name || 'SuperAdmin',
-      role: 'SuperAdmin',
-    };
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return {
+        id: payload.sub || payload.nameid,
+        email: payload.email,
+        name: payload.name || payload.unique_name || 'SuperAdmin',
+        role: 'SuperAdmin',
+      };
+    } catch {
+      return { id: '', email: '', name: 'SuperAdmin', role: 'SuperAdmin' };
+    }
   }
 
   private getTokenExpiry(token: string): number | null {

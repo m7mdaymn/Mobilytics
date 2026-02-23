@@ -1,3 +1,4 @@
+using NovaNode.Application.DTOs;
 using NovaNode.Application.DTOs.Auth;
 using NovaNode.Application.DTOs.Brands;
 using NovaNode.Application.DTOs.Categories;
@@ -141,6 +142,7 @@ public interface IReportService
 
 public interface IPlatformService
 {
+    // Tenants
     Task<List<TenantDto>> GetTenantsAsync(CancellationToken ct = default);
     Task<TenantDto> GetTenantAsync(Guid id, CancellationToken ct = default);
     Task<TenantDto> CreateTenantAsync(CreateTenantRequest request, CancellationToken ct = default);
@@ -148,15 +150,39 @@ public interface IPlatformService
     Task DeleteTenantAsync(Guid id, CancellationToken ct = default);
     Task SuspendTenantAsync(Guid id, CancellationToken ct = default);
     Task ActivateTenantAsync(Guid id, CancellationToken ct = default);
+
+    // Onboard (single transaction)
+    Task<OnboardTenantResponse> OnboardTenantAsync(OnboardTenantRequest request, CancellationToken ct = default);
+
+    // Plans
     Task<List<PlanDto>> GetPlansAsync(CancellationToken ct = default);
     Task<PlanDto> CreatePlanAsync(CreatePlanRequest request, CancellationToken ct = default);
     Task<PlanDto> UpdatePlanAsync(Guid id, UpdatePlanRequest request, CancellationToken ct = default);
     Task DeletePlanAsync(Guid id, CancellationToken ct = default);
+
+    // Subscriptions
     Task StartTrialAsync(Guid tenantId, StartTrialRequest request, CancellationToken ct = default);
     Task ActivateSubscriptionAsync(Guid tenantId, ActivateSubscriptionRequest request, CancellationToken ct = default);
     Task RenewSubscriptionAsync(Guid tenantId, RenewSubscriptionRequest request, CancellationToken ct = default);
-    Task<List<SubscriptionSummaryDto>> GetExpiringSubscriptionsAsync(int days, CancellationToken ct = default);
+    Task<List<ExpiringSubscriptionDto>> GetExpiringSubscriptionsAsync(int days, CancellationToken ct = default);
+
+    // Features
     Task<FeatureToggleDto> GetFeaturesAsync(Guid tenantId, CancellationToken ct = default);
     Task UpdateFeaturesAsync(Guid tenantId, UpdateFeatureToggleRequest request, CancellationToken ct = default);
+
+    // Invoices
+    Task<List<PlatformInvoiceDto>> GetInvoicesAsync(Guid? tenantId = null, CancellationToken ct = default);
+    Task<PlatformInvoiceDto> GetInvoiceAsync(Guid id, CancellationToken ct = default);
+
+    // Dashboard
     Task<PlatformDashboardDto> GetDashboardAsync(string range, CancellationToken ct = default);
+
+    // Store Settings (platform-managed)
+    Task<TenantStoreSettingsDto> GetStoreSettingsAsync(Guid tenantId, CancellationToken ct = default);
+    Task<TenantStoreSettingsDto> UpdateStoreSettingsAsync(Guid tenantId, UpdateStoreSettingsRequest request, CancellationToken ct = default);
+
+    // Store Requests (platform-managed)
+    Task<List<StoreRegistrationDto>> GetStoreRequestsAsync(string? status = null, CancellationToken ct = default);
+    Task<StoreRegistrationDto> UpdateStoreRequestStatusAsync(Guid id, string status, string? notes, Guid userId, CancellationToken ct = default);
 }
+

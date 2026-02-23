@@ -4,12 +4,13 @@ import { platformAuthGuard } from './core/guards/platform-auth.guard';
 import { tenantResolverGuard } from './core/guards/tenant-resolver.guard';
 
 export const routes: Routes = [
-  // Landing page (no tenant required)
-  { path: 'landing', loadComponent: () => import('./public/pages/landing/landing.component').then(m => m.LandingComponent) },
+  // Landing page - DEFAULT
+  { path: '', loadComponent: () => import('./public/pages/landing/landing.component').then(m => m.LandingComponent) },
+  { path: 'landing', redirectTo: '' },
 
   // Public storefront (requires valid tenant)
   {
-    path: '',
+    path: 'store',
     loadComponent: () => import('./public/layouts/storefront-shell.component').then(m => m.StorefrontShellComponent),
     canActivate: [tenantResolverGuard],
     children: [
@@ -25,6 +26,7 @@ export const routes: Routes = [
     ],
   },
   { path: 'inactive', loadComponent: () => import('./public/pages/inactive/inactive.component').then(m => m.InactiveComponent) },
+  { path: 'tenant-not-found', loadComponent: () => import('./public/pages/tenant-not-found/tenant-not-found.component').then(m => m.TenantNotFoundComponent) },
 
   // Tenant Admin
   { path: 'admin/login', loadComponent: () => import('./admin/pages/login/login.component').then(m => m.LoginComponent) },
@@ -48,6 +50,7 @@ export const routes: Routes = [
       { path: 'employees', loadComponent: () => import('./admin/pages/employees/employees.component').then(m => m.EmployeesComponent) },
       { path: 'leads', loadComponent: () => import('./admin/pages/leads/leads.component').then(m => m.LeadsComponent) },
       { path: 'settings', loadComponent: () => import('./admin/pages/settings/admin-settings.component').then(m => m.AdminSettingsComponent) },
+      { path: 'approvals', loadComponent: () => import('./admin/pages/store-approvals/store-approvals.component').then(m => m.StoreApprovalsComponent) },
       { path: 'blocked', loadComponent: () => import('./admin/pages/blocked/blocked.component').then(m => m.BlockedComponent) },
     ],
   },
@@ -65,7 +68,6 @@ export const routes: Routes = [
       { path: 'tenants/:id', loadComponent: () => import('./platform/pages/tenants/tenant-detail.component').then(m => m.TenantDetailComponent) },
       { path: 'plans', loadComponent: () => import('./platform/pages/plans/plans.component').then(m => m.PlansComponent) },
       { path: 'subscriptions', loadComponent: () => import('./platform/pages/subscriptions/subscriptions.component').then(m => m.SubscriptionsComponent) },
-      { path: 'features', loadComponent: () => import('./platform/pages/features/features.component').then(m => m.FeaturesComponent) },
     ],
   },
 

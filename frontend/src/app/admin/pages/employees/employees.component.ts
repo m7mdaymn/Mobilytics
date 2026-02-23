@@ -23,7 +23,7 @@ import { ALL_PERMISSIONS, PermissionKey } from '../../../core/models/auth.models
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label class="block text-sm font-medium mb-1">Full Name <span class="text-red-500">*</span></label>
-              <input [(ngModel)]="form.fullName" class="input-field" />
+              <input [(ngModel)]="form.name" class="input-field" />
             </div>
             <div>
               <label class="block text-sm font-medium mb-1">Email <span class="text-red-500">*</span></label>
@@ -41,8 +41,8 @@ import { ALL_PERMISSIONS, PermissionKey } from '../../../core/models/auth.models
               </select>
             </div>
             <div>
-              <label class="block text-sm font-medium mb-1">Salary</label>
-              <input [(ngModel)]="form.salary" type="number" min="0" class="input-field" />
+              <label class="block text-sm font-medium mb-1">Salary (Monthly)</label>
+              <input [(ngModel)]="form.salaryMonthly" type="number" min="0" class="input-field" />
             </div>
             @if (!editId()) {
               <div>
@@ -58,7 +58,7 @@ import { ALL_PERMISSIONS, PermissionKey } from '../../../core/models/auth.models
             <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
               @for (perm of allPermissions; track perm) {
                 <label class="flex items-center gap-2 text-sm p-2 rounded hover:bg-gray-50 cursor-pointer">
-                  <input type="checkbox" [checked]="form.permissions.includes(perm)"
+                  <input type="checkbox" [checked]="isPermissionEnabled(perm)"
                     (change)="togglePermission(perm)" class="w-4 h-4 rounded" />
                   <span>{{ formatPermission(perm) }}</span>
                 </label>
@@ -88,7 +88,7 @@ import { ALL_PERMISSIONS, PermissionKey } from '../../../core/models/auth.models
           <tbody class="divide-y">
             @for (emp of employees(); track emp.id) {
               <tr class="hover:bg-gray-50">
-                <td class="px-4 py-3 font-medium">{{ emp.fullName }}</td>
+                <td class="px-4 py-3 font-medium">{{ emp.name }}</td>
                 <td class="px-4 py-3 text-gray-500">{{ emp.email }}</td>
                 <td class="px-4 py-3">
                   <span class="text-xs px-2 py-1 rounded-full"
@@ -96,9 +96,9 @@ import { ALL_PERMISSIONS, PermissionKey } from '../../../core/models/auth.models
                     {{ emp.role }}
                   </span>
                 </td>
-                <td class="px-4 py-3 text-right">{{ emp.salary | currency }}</td>
+                <td class="px-4 py-3 text-right">{{ emp.salaryMonthly | currency }}</td>
                 <td class="px-4 py-3 text-center text-xs text-gray-500">
-                  {{ emp.permissions?.length || 0 }} perms
+                  {{ countEnabledPerms(emp) }} perms
                 </td>
                 <td class="px-4 py-3 text-right space-x-2">
                   @if (emp.role !== 'Owner') {
@@ -128,11 +128,11 @@ export class EmployeesComponent implements OnInit {
   readonly allPermissions = ALL_PERMISSIONS;
 
   form: {
-    fullName: string; email: string; phone: string; role: string;
-    salary: number; password: string; permissions: PermissionKey[];
+    name: string; email: string; phone: string; role: string;
+    salaryMonthly: number; password: string; enabledPermissions: Set<PermissionKey>;
   } = {
-    fullName: '', email: '', phone: '', role: 'Employee',
-    salary: 0, password: '', permissions: [],
+    name: '', email: '', phone: '', role: 'Employee',
+    salaryMonthly: 0, password: '', enabledPermissions: new Set(),
   };
 
   ngOnInit(): void { this.load(); }
@@ -142,41 +142,54 @@ export class EmployeesComponent implements OnInit {
   }
 
   openForm(): void {
-    this.form = { fullName: '', email: '', phone: '', role: 'Employee', salary: 0, password: '', permissions: [] };
+    this.form = { name: '', email: '', phone: '', role: 'Employee', salaryMonthly: 0, password: '', enabledPermissions: new Set() };
     this.editId.set(null);
     this.showForm.set(true);
   }
 
   editEmployee(emp: Employee): void {
+    const enabled = new Set<PermissionKey>(
+      (emp.permissions || []).filter(p => p.isEnabled).map(p => p.key as PermissionKey)
+    );
     this.form = {
-      fullName: emp.fullName, email: emp.email, phone: emp.phone || '',
-      role: emp.role, salary: emp.salary || 0, password: '',
-      permissions: [...(emp.permissions || [])] as PermissionKey[],
+      name: emp.name, email: emp.email, phone: emp.phone || '',
+      role: emp.role, salaryMonthly: emp.salaryMonthly || 0, password: '',
+      enabledPermissions: enabled,
     };
     this.editId.set(emp.id);
     this.showForm.set(true);
   }
 
   deleteEmployee(emp: Employee): void {
-    if (!confirm(`Delete "${emp.fullName}"?`)) return;
+    if (!confirm(`Delete "${emp.name}"?`)) return;
     this.api.delete(`/Employees/${emp.id}`).subscribe({
       next: () => { this.toastService.success('Deleted'); this.load(); },
       error: () => this.toastService.error('Failed'),
     });
   }
 
+  isPermissionEnabled(perm: PermissionKey): boolean {
+    return this.form.enabledPermissions.has(perm);
+  }
+
   togglePermission(perm: PermissionKey): void {
-    const idx = this.form.permissions.indexOf(perm);
-    if (idx >= 0) this.form.permissions.splice(idx, 1);
-    else this.form.permissions.push(perm);
+    if (this.form.enabledPermissions.has(perm)) {
+      this.form.enabledPermissions.delete(perm);
+    } else {
+      this.form.enabledPermissions.add(perm);
+    }
   }
 
   formatPermission(perm: string): string {
-    return perm.replace(':', ' ').replace(/([A-Z])/g, ' $1').trim();
+    return perm.replace('.', ' › ').replace(/([A-Z])/g, ' $1').trim();
+  }
+
+  countEnabledPerms(emp: Employee): number {
+    return (emp.permissions || []).filter(p => p.isEnabled).length;
   }
 
   saveEmployee(): void {
-    if (!this.form.fullName || !this.form.email) {
+    if (!this.form.name || !this.form.email) {
       this.toastService.error('Name and email required');
       return;
     }
@@ -185,15 +198,55 @@ export class EmployeesComponent implements OnInit {
       return;
     }
     this.saving.set(true);
-    const body: any = { ...this.form };
-    if (this.editId()) delete body.password;
 
-    const req$ = this.editId()
-      ? this.api.put(`/Employees/${this.editId()}`, body)
-      : this.api.post('/Employees', body);
-    req$.subscribe({
-      next: () => { this.saving.set(false); this.showForm.set(false); this.toastService.success('Saved'); this.load(); },
-      error: (err) => { this.saving.set(false); this.toastService.error(err.message || 'Failed'); },
+    if (this.editId()) {
+      // Update employee details
+      const updateBody = {
+        name: this.form.name, email: this.form.email, phone: this.form.phone,
+        role: this.form.role, salaryMonthly: this.form.salaryMonthly, isActive: true,
+      };
+      this.api.put(`/Employees/${this.editId()}`, updateBody).subscribe({
+        next: () => {
+          // Then update permissions
+          this.savePermissions(this.editId()!);
+        },
+        error: (err) => { this.saving.set(false); this.toastService.error(err.message || 'Failed'); },
+      });
+    } else {
+      // Create new employee
+      const createBody = {
+        name: this.form.name, email: this.form.email, phone: this.form.phone,
+        password: this.form.password, role: this.form.role,
+        salaryMonthly: this.form.salaryMonthly,
+      };
+      this.api.post<Employee>('/Employees', createBody).subscribe({
+        next: (emp) => {
+          if (emp?.id) {
+            this.savePermissions(emp.id);
+          } else {
+            this.saving.set(false); this.showForm.set(false);
+            this.toastService.success('Saved'); this.load();
+          }
+        },
+        error: (err) => { this.saving.set(false); this.toastService.error(err.message || 'Failed'); },
+      });
+    }
+  }
+
+  private savePermissions(employeeId: string): void {
+    const permissions = this.allPermissions.map(key => ({
+      key, isEnabled: this.form.enabledPermissions.has(key),
+    }));
+    this.api.put(`/Employees/${employeeId}/permissions`, { permissions }).subscribe({
+      next: () => {
+        this.saving.set(false); this.showForm.set(false);
+        this.toastService.success('Saved'); this.load();
+      },
+      error: () => {
+        this.saving.set(false);
+        this.toastService.error('Employee saved but permissions failed');
+        this.load();
+      },
     });
   }
 }

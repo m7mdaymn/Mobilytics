@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using NovaNode.Application.DTOs.Auth;
 using NovaNode.Application.DTOs.Common;
 using NovaNode.Application.DTOs.Platform;
+using NovaNode.Domain.Enums;
 using NovaNode.Infrastructure.Persistence;
 using Xunit;
 
@@ -113,7 +114,7 @@ public class PlatformEndpointTests : IClassFixture<CustomWebApplicationFactory>
         var tenantEnvelope = JsonSerializer.Deserialize<ApiResponse<TenantDto>>(body, JsonOpts);
         Assert.NotNull(tenantEnvelope?.Data);
         Assert.Equal(request.Name, tenantEnvelope.Data.Name);
-        Assert.True(tenantEnvelope.Data.IsActive);
+        Assert.Equal("Pending", tenantEnvelope.Data.Status);
     }
 
     [Fact]
@@ -138,5 +139,116 @@ public class PlatformEndpointTests : IClassFixture<CustomWebApplicationFactory>
         _client.DefaultRequestHeaders.Authorization = null;
         var response = await _client.GetAsync("/api/v1/platform/dashboard");
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    // ── Onboarding ──────────────────────────────────────────────
+
+    [Fact]
+    public async Task OnboardTenant_ShouldCreateTenantWithInvoice()
+    {
+        var token = await GetPlatformTokenAsync();
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        // Get plan
+        var plansResp = await _client.GetAsync("/api/v1/platform/plans");
+        plansResp.EnsureSuccessStatusCode();
+        var plansList = JsonSerializer.Deserialize<ApiResponse<List<PlanDto>>>(
+            await plansResp.Content.ReadAsStringAsync(), JsonOpts)!.Data!;
+        var plan = plansList.First();
+
+        var request = new OnboardTenantRequest
+        {
+            StoreName = "Onboard Test Store",
+            Slug = "onboard-" + Guid.NewGuid().ToString()[..6],
+            OwnerName = "Test Owner",
+            OwnerEmail = "onboard@test.com",
+            OwnerPassword = "Onboard@123",
+            PlanId = plan.Id,
+            DurationMonths = 3,
+            IsTrial = false,
+            ActivationFeePaid = plan.ActivationFee,
+            SubscriptionAmountPaid = plan.PriceMonthly * 3,
+            Discount = 0,
+            PaymentMethod = PaymentMethod.Cash
+        };
+
+        var response = await _client.PostAsJsonAsync("/api/v1/platform/tenants/onboard", request);
+        var body = await response.Content.ReadAsStringAsync();
+        Assert.True(response.IsSuccessStatusCode, $"Status={response.StatusCode} Body={body}");
+
+        var envelope = JsonSerializer.Deserialize<ApiResponse<OnboardTenantResponse>>(body, JsonOpts);
+        Assert.NotNull(envelope?.Data);
+        Assert.Equal("Active", envelope.Data.Tenant.Status);
+        Assert.NotNull(envelope.Data.Tenant.Subscription);
+        Assert.Equal("Active", envelope.Data.Tenant.Subscription!.Status);
+        Assert.NotNull(envelope.Data.Invoice);
+        Assert.True(envelope.Data.Invoice!.Total > 0);
+    }
+
+    [Fact]
+    public async Task OnboardTenant_AsTrial_ShouldCreateTrialSubscription()
+    {
+        var token = await GetPlatformTokenAsync();
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        var plansList = JsonSerializer.Deserialize<ApiResponse<List<PlanDto>>>(
+            await (await _client.GetAsync("/api/v1/platform/plans")).Content.ReadAsStringAsync(), JsonOpts)!.Data!;
+        var plan = plansList.First();
+
+        var request = new OnboardTenantRequest
+        {
+            StoreName = "Trial Store",
+            Slug = "trial-" + Guid.NewGuid().ToString()[..6],
+            OwnerName = "Trial Owner",
+            OwnerEmail = "trial@test.com",
+            OwnerPassword = "Trial@123",
+            PlanId = plan.Id,
+            DurationMonths = 1,
+            IsTrial = true,
+            ActivationFeePaid = 0,
+            SubscriptionAmountPaid = 0,
+            Discount = 0,
+            PaymentMethod = PaymentMethod.Cash
+        };
+
+        var response = await _client.PostAsJsonAsync("/api/v1/platform/tenants/onboard", request);
+        var body = await response.Content.ReadAsStringAsync();
+        Assert.True(response.IsSuccessStatusCode, $"Status={response.StatusCode} Body={body}");
+
+        var envelope = JsonSerializer.Deserialize<ApiResponse<OnboardTenantResponse>>(body, JsonOpts);
+        Assert.NotNull(envelope?.Data);
+        Assert.Equal("Trial", envelope.Data.Tenant.Subscription!.Status);
+    }
+
+    // ── Invoices ────────────────────────────────────────────────
+
+    [Fact]
+    public async Task GetInvoices_ShouldReturnList()
+    {
+        var token = await GetPlatformTokenAsync();
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        var response = await _client.GetAsync("/api/v1/platform/invoices");
+        var body = await response.Content.ReadAsStringAsync();
+        Assert.True(response.IsSuccessStatusCode, $"Status={response.StatusCode} Body={body}");
+
+        var envelope = JsonSerializer.Deserialize<ApiResponse<List<PlatformInvoiceDto>>>(body, JsonOpts);
+        Assert.NotNull(envelope?.Data);
+    }
+
+    // ── Store Requests ──────────────────────────────────────────
+
+    [Fact]
+    public async Task GetStoreRequests_ShouldReturnList()
+    {
+        var token = await GetPlatformTokenAsync();
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        var response = await _client.GetAsync("/api/v1/platform/store-requests");
+        var body = await response.Content.ReadAsStringAsync();
+        Assert.True(response.IsSuccessStatusCode, $"Status={response.StatusCode} Body={body}");
+
+        var envelope = JsonSerializer.Deserialize<ApiResponse<List<object>>>(body, JsonOpts);
+        Assert.NotNull(envelope?.Data);
     }
 }

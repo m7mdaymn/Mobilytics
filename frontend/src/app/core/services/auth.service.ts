@@ -79,15 +79,19 @@ export class AuthService {
   }
 
   private decodeToken(token: string): AuthUser {
-    const payload = JSON.parse(atob(token.split('.')[1]));
-    return {
-      id: payload.sub || payload.nameid || '',
-      email: payload.email || '',
-      name: payload.unique_name || payload.name || '',
-      role: payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] || payload.role || 'Manager',
-      permissions: payload.permissions ? (Array.isArray(payload.permissions) ? payload.permissions : [payload.permissions]) : [],
-      tenantId: payload.tenant_id || '',
-    };
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return {
+        id: payload.sub || payload.nameid || '',
+        email: payload.email || '',
+        name: payload.unique_name || payload.name || '',
+        role: payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] || payload.role || 'Manager',
+        permissions: payload.permissions ? (Array.isArray(payload.permissions) ? payload.permissions : [payload.permissions]) : [],
+        tenantId: payload.tenant_id || '',
+      };
+    } catch {
+      return { id: '', email: '', name: '', role: 'Manager', permissions: [], tenantId: '' };
+    }
   }
 
   private getTokenExpiry(token: string): number | null {

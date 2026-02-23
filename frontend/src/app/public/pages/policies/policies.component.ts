@@ -29,7 +29,8 @@ export class PoliciesComponent implements OnInit {
     this.route.params.subscribe(params => {
       const key = params['key'];
       this.key.set(key);
-      const policies = this.settingsStore.settings()?.policies || {};
+      let policies: Record<string, string> = {};
+      try { policies = this.settingsStore.settings()?.policiesJson ? JSON.parse(this.settingsStore.settings()!.policiesJson!) : {}; } catch {}
       this.content.set(policies[key] || '');
     });
   }

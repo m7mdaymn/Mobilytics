@@ -28,6 +28,8 @@ public class StoreSettingsService : IStoreSettingsService
         var isActive = tenant.IsActive && IsSubscriptionValid(tenant);
         var poweredByEnabled = tenant.FeatureToggle == null || !tenant.FeatureToggle.CanRemovePoweredBy;
         var s = tenant.StoreSettings;
+        var presetId = s?.ThemePresetId ?? 1;
+        var preset = StoreSettings.Presets.GetValueOrDefault(presetId, StoreSettings.Presets[1]);
 
         return new PublicSettingsDto
         {
@@ -36,10 +38,10 @@ public class StoreSettingsService : IStoreSettingsService
             BannerUrl = s?.BannerUrl,
             WhatsAppNumber = s?.WhatsAppNumber,
             PhoneNumber = s?.PhoneNumber,
-            ThemeId = s?.ThemeId ?? 1,
-            PrimaryColor = s?.PrimaryColor,
-            SecondaryColor = s?.SecondaryColor,
-            AccentColor = s?.AccentColor,
+            ThemePresetId = presetId,
+            PrimaryColor = preset.Primary,
+            SecondaryColor = preset.Secondary,
+            AccentColor = preset.Accent,
             CurrencyCode = s?.CurrencyCode ?? "EGP",
             FooterAddress = s?.FooterAddress,
             WorkingHours = s?.WorkingHours,
@@ -47,6 +49,7 @@ public class StoreSettingsService : IStoreSettingsService
             PoliciesJson = s?.PoliciesJson,
             MapUrl = s?.MapUrl,
             PwaSettingsJson = s?.PwaSettingsJson,
+            WhatsAppTemplatesJson = s?.WhatsAppTemplatesJson,
             IsActive = isActive,
             PoweredByEnabled = poweredByEnabled
         };
@@ -62,8 +65,7 @@ public class StoreSettingsService : IStoreSettingsService
         }
         s.StoreName = request.StoreName; s.LogoUrl = request.LogoUrl; s.BannerUrl = request.BannerUrl;
         s.WhatsAppNumber = request.WhatsAppNumber; s.PhoneNumber = request.PhoneNumber;
-        s.ThemeId = request.ThemeId; s.PrimaryColor = request.PrimaryColor;
-        s.SecondaryColor = request.SecondaryColor; s.AccentColor = request.AccentColor;
+        s.ThemePresetId = request.ThemePresetId;
         s.CurrencyCode = request.CurrencyCode; s.FooterAddress = request.FooterAddress;
         s.WorkingHours = request.WorkingHours; s.SocialLinksJson = request.SocialLinksJson;
         s.PoliciesJson = request.PoliciesJson; s.MapUrl = request.MapUrl;
@@ -75,8 +77,7 @@ public class StoreSettingsService : IStoreSettingsService
     public async Task UpdateThemeAsync(Guid tenantId, UpdateThemeRequest request, CancellationToken ct = default)
     {
         var s = await GetOrCreateSettings(tenantId, ct);
-        s.ThemeId = request.ThemeId; s.PrimaryColor = request.PrimaryColor;
-        s.SecondaryColor = request.SecondaryColor; s.AccentColor = request.AccentColor;
+        s.ThemePresetId = request.ThemePresetId;
         await _db.SaveChangesAsync(ct);
     }
 
@@ -127,8 +128,7 @@ public class StoreSettingsService : IStoreSettingsService
     {
         StoreName = s.StoreName, LogoUrl = s.LogoUrl, BannerUrl = s.BannerUrl,
         WhatsAppNumber = s.WhatsAppNumber, PhoneNumber = s.PhoneNumber,
-        ThemeId = s.ThemeId, PrimaryColor = s.PrimaryColor,
-        SecondaryColor = s.SecondaryColor, AccentColor = s.AccentColor,
+        ThemePresetId = s.ThemePresetId,
         CurrencyCode = s.CurrencyCode, FooterAddress = s.FooterAddress,
         WorkingHours = s.WorkingHours, SocialLinksJson = s.SocialLinksJson,
         PoliciesJson = s.PoliciesJson, MapUrl = s.MapUrl,

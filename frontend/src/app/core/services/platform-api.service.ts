@@ -5,8 +5,11 @@ import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../models/api.models';
 import {
   Tenant, Plan, PlatformDashboard, ExpiringSubscription,
-  CreateTenantRequest, UpdateTenantRequest, CreatePlanRequest,
-  TenantFeatures, StartTrialRequest, ActivateSubscriptionRequest, RenewSubscriptionRequest
+  CreateTenantRequest, UpdateTenantRequest, CreatePlanFormData,
+  TenantFeatures, StartTrialRequest, ActivateSubscriptionRequest, RenewSubscriptionRequest,
+  OnboardTenantRequest, OnboardTenantResponse, PlatformInvoice,
+  StoreRequest, UpdateStoreRequestStatusRequest,
+  TenantStoreSettings, UpdateStoreSettingsRequest
 } from '../models/platform.models';
 
 @Injectable({ providedIn: 'root' })
@@ -34,6 +37,11 @@ export class PlatformApiService {
 
   createTenant(data: CreateTenantRequest): Observable<Tenant> {
     return this.http.post<ApiResponse<Tenant>>(`${this.baseUrl}/tenants`, data)
+      .pipe(map(res => this.unwrap(res)));
+  }
+
+  onboardTenant(data: OnboardTenantRequest): Observable<OnboardTenantResponse> {
+    return this.http.post<ApiResponse<OnboardTenantResponse>>(`${this.baseUrl}/tenants/onboard`, data)
       .pipe(map(res => this.unwrap(res)));
   }
 
@@ -68,19 +76,44 @@ export class PlatformApiService {
       .pipe(map(res => this.unwrap(res)));
   }
 
+  // Tenant Store Settings
+  getStoreSettings(tenantId: string): Observable<TenantStoreSettings> {
+    return this.http.get<ApiResponse<TenantStoreSettings>>(`${this.baseUrl}/tenants/${tenantId}/store-settings`)
+      .pipe(map(res => this.unwrap(res)));
+  }
+
+  updateStoreSettings(tenantId: string, data: UpdateStoreSettingsRequest): Observable<TenantStoreSettings> {
+    return this.http.put<ApiResponse<TenantStoreSettings>>(`${this.baseUrl}/tenants/${tenantId}/store-settings`, data)
+      .pipe(map(res => this.unwrap(res)));
+  }
+
   // Plans
   getPlans(): Observable<Plan[]> {
     return this.http.get<ApiResponse<Plan[]>>(`${this.baseUrl}/plans`)
       .pipe(map(res => this.unwrap(res)));
   }
 
-  createPlan(data: CreatePlanRequest): Observable<Plan> {
-    return this.http.post<ApiResponse<Plan>>(`${this.baseUrl}/plans`, data)
+  createPlan(data: CreatePlanFormData): Observable<Plan> {
+    const body = {
+      name: data.name,
+      priceMonthly: data.priceMonthly,
+      activationFee: data.activationFee,
+      limitsJson: JSON.stringify(data.limits),
+      featuresJson: JSON.stringify(data.features),
+    };
+    return this.http.post<ApiResponse<Plan>>(`${this.baseUrl}/plans`, body)
       .pipe(map(res => this.unwrap(res)));
   }
 
-  updatePlan(id: string, data: CreatePlanRequest): Observable<Plan> {
-    return this.http.put<ApiResponse<Plan>>(`${this.baseUrl}/plans/${id}`, data)
+  updatePlan(id: string, data: CreatePlanFormData): Observable<Plan> {
+    const body = {
+      name: data.name,
+      priceMonthly: data.priceMonthly,
+      activationFee: data.activationFee,
+      limitsJson: JSON.stringify(data.limits),
+      featuresJson: JSON.stringify(data.features),
+    };
+    return this.http.put<ApiResponse<Plan>>(`${this.baseUrl}/plans/${id}`, body)
       .pipe(map(res => this.unwrap(res)));
   }
 
@@ -109,6 +142,32 @@ export class PlatformApiService {
     return this.http.get<ApiResponse<ExpiringSubscription[]>>(`${this.baseUrl}/subscriptions/expiring`, {
       params: { days: days.toString() }
     }).pipe(map(res => this.unwrap(res)));
+  }
+
+  // Invoices
+  getInvoices(tenantId?: string): Observable<PlatformInvoice[]> {
+    let params = new HttpParams();
+    if (tenantId) params = params.set('tenantId', tenantId);
+    return this.http.get<ApiResponse<PlatformInvoice[]>>(`${this.baseUrl}/invoices`, { params })
+      .pipe(map(res => this.unwrap(res)));
+  }
+
+  getInvoice(id: string): Observable<PlatformInvoice> {
+    return this.http.get<ApiResponse<PlatformInvoice>>(`${this.baseUrl}/invoices/${id}`)
+      .pipe(map(res => this.unwrap(res)));
+  }
+
+  // Store Requests (Leads)
+  getStoreRequests(status?: string): Observable<StoreRequest[]> {
+    let params = new HttpParams();
+    if (status) params = params.set('status', status);
+    return this.http.get<ApiResponse<StoreRequest[]>>(`${this.baseUrl}/store-requests`, { params })
+      .pipe(map(res => this.unwrap(res)));
+  }
+
+  updateStoreRequestStatus(id: string, data: UpdateStoreRequestStatusRequest): Observable<StoreRequest> {
+    return this.http.patch<ApiResponse<StoreRequest>>(`${this.baseUrl}/store-requests/${id}/status`, data)
+      .pipe(map(res => this.unwrap(res)));
   }
 
   private unwrap<T>(response: ApiResponse<T>): T {

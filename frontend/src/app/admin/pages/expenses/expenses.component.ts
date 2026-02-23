@@ -6,6 +6,13 @@ import { ToastService } from '../../../core/services/toast.service';
 import { Expense, ExpenseCategory } from '../../../core/models/item.models';
 import { AuthService } from '../../../core/services/auth.service';
 
+interface PagedExpenses {
+  items: Expense[];
+  totalCount: number;
+  page: number;
+  pageSize: number;
+}
+
 @Component({
   selector: 'app-expenses',
   standalone: true,
@@ -60,15 +67,15 @@ import { AuthService } from '../../../core/services/auth.service';
             </div>
             <div>
               <label class="block text-sm font-medium mb-1">Date</label>
-              <input [(ngModel)]="expenseForm.date" type="date" class="input-field" />
+              <input [(ngModel)]="expenseForm.occurredAt" type="date" class="input-field" />
             </div>
             <div class="md:col-span-2">
-              <label class="block text-sm font-medium mb-1">Description</label>
-              <input [(ngModel)]="expenseForm.description" class="input-field" />
+              <label class="block text-sm font-medium mb-1">Title / Description</label>
+              <input [(ngModel)]="expenseForm.title" class="input-field" />
             </div>
             <div>
-              <label class="block text-sm font-medium mb-1">Reference</label>
-              <input [(ngModel)]="expenseForm.reference" class="input-field" placeholder="Receipt #" />
+              <label class="block text-sm font-medium mb-1">Notes</label>
+              <input [(ngModel)]="expenseForm.notes" class="input-field" placeholder="Optional notes" />
             </div>
           </div>
           <div class="flex gap-2">
@@ -126,7 +133,7 @@ import { AuthService } from '../../../core/services/auth.service';
             <tr>
               <th class="px-4 py-3 text-left font-medium">Date</th>
               <th class="px-4 py-3 text-left font-medium">Category</th>
-              <th class="px-4 py-3 text-left font-medium">Description</th>
+              <th class="px-4 py-3 text-left font-medium">Title</th>
               <th class="px-4 py-3 text-right font-medium">Amount</th>
               <th class="px-4 py-3 text-right font-medium">Actions</th>
             </tr>
@@ -134,9 +141,9 @@ import { AuthService } from '../../../core/services/auth.service';
           <tbody class="divide-y">
             @for (exp of expenses(); track exp.id) {
               <tr class="hover:bg-gray-50">
-                <td class="px-4 py-3">{{ exp.date | date:'mediumDate' }}</td>
+                <td class="px-4 py-3">{{ exp.occurredAt | date:'mediumDate' }}</td>
                 <td class="px-4 py-3">{{ exp.categoryName }}</td>
-                <td class="px-4 py-3 text-gray-600">{{ exp.description || '—' }}</td>
+                <td class="px-4 py-3 text-gray-600">{{ exp.title || '—' }}</td>
                 <td class="px-4 py-3 text-right font-medium">{{ exp.amount | currency }}</td>
                 <td class="px-4 py-3 text-right space-x-2">
                   <button (click)="editExpense(exp)" class="text-blue-600 hover:underline">Edit</button>
@@ -149,6 +156,15 @@ import { AuthService } from '../../../core/services/auth.service';
           </tbody>
         </table>
       </div>
+
+      <!-- Pagination -->
+      @if (totalCount() > pageSize) {
+        <div class="flex justify-center gap-2 pt-2">
+          <button (click)="page = page - 1; load()" [disabled]="page <= 1" class="btn-outline text-sm">Prev</button>
+          <span class="text-sm py-2">Page {{ page }} of {{ totalPages() }}</span>
+          <button (click)="page = page + 1; load()" [disabled]="page >= totalPages()" class="btn-outline text-sm">Next</button>
+        </div>
+      }
     </div>
   `,
 })
@@ -160,19 +176,23 @@ export class ExpensesComponent implements OnInit {
   readonly expenses = signal<Expense[]>([]);
   readonly expenseCategories = signal<ExpenseCategory[]>([]);
   readonly totalExpenses = signal(0);
+  readonly totalCount = signal(0);
   readonly showCategoryForm = signal(false);
   readonly showExpenseForm = signal(false);
   readonly editExpenseId = signal<string | null>(null);
   readonly saving = signal(false);
   readonly generatingSalaries = signal(false);
+  readonly totalPages = signal(1);
 
   newCatName = '';
   dateFrom = '';
   dateTo = '';
   categoryFilter = '';
   salaryMonth = '';
+  page = 1;
+  readonly pageSize = 20;
 
-  expenseForm = { categoryId: '', amount: 0, date: '', description: '', reference: '' };
+  expenseForm = { categoryId: '', amount: 0, occurredAt: '', title: '', notes: '' };
 
   months = Array.from({ length: 12 }, (_, i) => ({
     value: `${new Date().getFullYear()}-${String(i + 1).padStart(2, '0')}`,
@@ -191,14 +211,17 @@ export class ExpensesComponent implements OnInit {
   }
 
   load(): void {
-    const params: any = {};
-    if (this.dateFrom) params.dateFrom = this.dateFrom;
-    if (this.dateTo) params.dateTo = this.dateTo;
-    if (this.categoryFilter) params.categoryId = this.categoryFilter;
+    const params: Record<string, string | number | boolean> = { page: this.page, pageSize: this.pageSize };
+    if (this.dateFrom) params['from'] = this.dateFrom;
+    if (this.dateTo) params['to'] = this.dateTo;
+    if (this.categoryFilter) params['categoryId'] = this.categoryFilter;
 
-    this.api.get<Expense[]>('/Expenses', params).subscribe(d => {
-      this.expenses.set(d || []);
-      this.totalExpenses.set((d || []).reduce((s, e) => s + e.amount, 0));
+    this.api.get<PagedExpenses>('/Expenses', params).subscribe(d => {
+      const items = d?.items || [];
+      this.expenses.set(items);
+      this.totalCount.set(d?.totalCount || 0);
+      this.totalPages.set(Math.max(1, Math.ceil((d?.totalCount || 0) / this.pageSize)));
+      this.totalExpenses.set(items.reduce((s, e) => s + e.amount, 0));
     });
   }
 
@@ -219,7 +242,7 @@ export class ExpensesComponent implements OnInit {
   }
 
   openExpenseForm(): void {
-    this.expenseForm = { categoryId: '', amount: 0, date: new Date().toISOString().split('T')[0], description: '', reference: '' };
+    this.expenseForm = { categoryId: '', amount: 0, occurredAt: new Date().toISOString().split('T')[0], title: '', notes: '' };
     this.editExpenseId.set(null);
     this.showExpenseForm.set(true);
   }
@@ -227,7 +250,7 @@ export class ExpensesComponent implements OnInit {
   editExpense(exp: Expense): void {
     this.expenseForm = {
       categoryId: exp.categoryId, amount: exp.amount,
-      date: exp.date?.split('T')[0] || '', description: exp.description || '', reference: exp.reference || '',
+      occurredAt: exp.occurredAt?.split('T')[0] || '', title: exp.title || '', notes: exp.notes || '',
     };
     this.editExpenseId.set(exp.id);
     this.showExpenseForm.set(true);
@@ -247,9 +270,16 @@ export class ExpensesComponent implements OnInit {
       return;
     }
     this.saving.set(true);
+    const body = {
+      categoryId: this.expenseForm.categoryId,
+      title: this.expenseForm.title,
+      amount: this.expenseForm.amount,
+      occurredAt: this.expenseForm.occurredAt || new Date().toISOString(),
+      notes: this.expenseForm.notes || null,
+    };
     const req$ = this.editExpenseId()
-      ? this.api.put(`/Expenses/${this.editExpenseId()}`, this.expenseForm)
-      : this.api.post('/Expenses', this.expenseForm);
+      ? this.api.put(`/Expenses/${this.editExpenseId()}`, body)
+      : this.api.post('/Expenses', body);
     req$.subscribe({
       next: () => { this.saving.set(false); this.showExpenseForm.set(false); this.toastService.success('Saved'); this.load(); },
       error: () => { this.saving.set(false); this.toastService.error('Failed'); },
@@ -259,7 +289,7 @@ export class ExpensesComponent implements OnInit {
   generateSalaries(): void {
     if (!confirm(`Generate salary expenses for ${this.salaryMonth}?`)) return;
     this.generatingSalaries.set(true);
-    this.api.post('/Expenses/generate-salaries', { month: this.salaryMonth }).subscribe({
+    this.api.post('/Employees/generate-salary-expenses', { month: this.salaryMonth }).subscribe({
       next: () => { this.generatingSalaries.set(false); this.toastService.success('Salaries generated'); this.load(); },
       error: () => { this.generatingSalaries.set(false); this.toastService.error('Failed'); },
     });

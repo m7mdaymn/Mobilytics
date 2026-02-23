@@ -2,9 +2,10 @@ import { Component, inject, signal } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { SettingsStore } from '../../core/stores/settings.store';
+import { I18nService } from '../../core/services/i18n.service';
 
 interface NavItem {
-  label: string;
+  i18nKey: string;
   icon: string;
   route: string;
   permission?: string;
@@ -46,7 +47,7 @@ interface NavItem {
                (click)="sidebarOpen.set(false)"
                class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-300 hover:bg-white/5 hover:text-white transition-colors">
               <span class="text-lg" [innerHTML]="item.icon"></span>
-              <span>{{ item.label }}</span>
+              <span>{{ i18n.t(item.i18nKey) }}</span>
             </a>
           }
         </nav>
@@ -83,9 +84,14 @@ interface NavItem {
 
           <div class="flex-1"></div>
 
+          <!-- Language toggle -->
+          <button (click)="i18n.toggle()" class="text-sm font-medium text-gray-600 hover:text-gray-900 px-2 py-1 rounded-md hover:bg-gray-100">
+            {{ i18n.t('lang.switch') }}
+          </button>
+
           <!-- Quick Actions -->
-          <a routerLink="/admin/items/new" class="btn-primary text-xs py-1.5 hidden sm:inline-flex">+ New Item</a>
-          <a routerLink="/admin/invoices/new" class="btn-accent text-xs py-1.5 hidden sm:inline-flex">+ Invoice</a>
+          <a routerLink="/admin/items/new" class="btn-primary text-xs py-1.5 hidden sm:inline-flex">+ {{ i18n.t('items.addNew') }}</a>
+          <a routerLink="/admin/invoices/new" class="btn-accent text-xs py-1.5 hidden sm:inline-flex">+ {{ i18n.t('admin.nav.invoices') }}</a>
 
           <!-- Store link -->
           <a href="/" target="_blank" class="text-sm text-[color:var(--color-text-muted)] hover:text-[color:var(--color-primary)]" title="View Store">
@@ -107,20 +113,21 @@ interface NavItem {
 export class AdminLayoutComponent {
   readonly authService = inject(AuthService);
   readonly settingsStore = inject(SettingsStore);
+  readonly i18n = inject(I18nService);
   readonly sidebarOpen = signal(false);
 
   private readonly navItems: NavItem[] = [
-    { label: 'Dashboard', icon: '📊', route: '/admin' },
-    { label: 'Items', icon: '📱', route: '/admin/items', permission: 'items.create' },
-    { label: 'Item Types', icon: '🏷️', route: '/admin/item-types', permission: 'itemtypes.manage' },
-    { label: 'Brands', icon: '🏢', route: '/admin/brands', permission: 'brands.manage' },
-    { label: 'Categories', icon: '📁', route: '/admin/categories', permission: 'categories.manage' },
-    { label: 'Home Page', icon: '🏠', route: '/admin/home', permission: 'home.manage' },
-    { label: 'Invoices', icon: '🧾', route: '/admin/invoices', permission: 'invoices.create' },
-    { label: 'Expenses', icon: '💸', route: '/admin/expenses', permission: 'expenses.manage' },
-    { label: 'Employees', icon: '👥', route: '/admin/employees', permission: 'employees.manage' },
-    { label: 'Leads', icon: '🎯', route: '/admin/leads', permission: 'leads.manage' },
-    { label: 'Settings', icon: '⚙️', route: '/admin/settings', permission: 'settings.edit' },
+    { i18nKey: 'admin.nav.dashboard', icon: '📊', route: '/admin' },
+    { i18nKey: 'admin.nav.items', icon: '📱', route: '/admin/items', permission: 'items.create' },
+    { i18nKey: 'admin.nav.itemTypes', icon: '🏷️', route: '/admin/item-types', permission: 'itemtypes.manage' },
+    { i18nKey: 'admin.nav.brands', icon: '🏢', route: '/admin/brands', permission: 'brands.manage' },
+    { i18nKey: 'admin.nav.categories', icon: '📁', route: '/admin/categories', permission: 'categories.manage' },
+    { i18nKey: 'admin.nav.homeSections', icon: '🏠', route: '/admin/home', permission: 'home.manage' },
+    { i18nKey: 'admin.nav.invoices', icon: '🧾', route: '/admin/invoices', permission: 'invoices.create' },
+    { i18nKey: 'admin.nav.expenses', icon: '💸', route: '/admin/expenses', permission: 'expenses.manage' },
+    { i18nKey: 'admin.nav.employees', icon: '👥', route: '/admin/employees', permission: 'employees.manage' },
+    { i18nKey: 'admin.nav.leads', icon: '🎯', route: '/admin/leads', permission: 'leads.manage' },
+    { i18nKey: 'admin.nav.settings', icon: '⚙️', route: '/admin/settings', permission: 'settings.edit' },
   ];
 
   visibleNavItems(): NavItem[] {

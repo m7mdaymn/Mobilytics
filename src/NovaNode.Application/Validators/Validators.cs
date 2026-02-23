@@ -163,6 +163,6 @@ public class UpdateThemeRequestValidator : AbstractValidator<UpdateThemeRequest>
 {
     public UpdateThemeRequestValidator()
     {
-        RuleFor(x => x.ThemeId).InclusiveBetween(1, 3);
+        RuleFor(x => x.ThemePresetId).InclusiveBetween(1, 6);
     }
 }

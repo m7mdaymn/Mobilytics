@@ -54,7 +54,7 @@ public class EmployeesController : BaseApiController
     {
         var tenantId = _tenantContext.TenantId!.Value;
         await _svc.DeleteAsync(tenantId, id, ct);
-        return NoContent();
+        return Ok(true);
     }
 
     [HttpPut("{id:guid}/permissions")]
@@ -62,7 +62,7 @@ public class EmployeesController : BaseApiController
     {
         var tenantId = _tenantContext.TenantId!.Value;
         await _svc.UpdatePermissionsAsync(tenantId, id, request, ct);
-        return NoContent();
+        return Ok(true);
     }
 
     [HttpPost("generate-salary-expenses")]

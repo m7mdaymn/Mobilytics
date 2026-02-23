@@ -9,6 +9,11 @@ public class GlobalExceptionMiddleware
     private readonly RequestDelegate _next;
     private readonly ILogger<GlobalExceptionMiddleware> _logger;
 
+    private static readonly JsonSerializerOptions _jsonOpts = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+    };
+
     public GlobalExceptionMiddleware(RequestDelegate next, ILogger<GlobalExceptionMiddleware> logger)
     {
         _next = next;
@@ -23,35 +28,33 @@ public class GlobalExceptionMiddleware
         }
         catch (ValidationException ex)
         {
-            context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-            context.Response.ContentType = "application/json";
-            var errors = ex.Errors.Select(e => new { e.PropertyName, e.ErrorMessage });
-            await context.Response.WriteAsync(JsonSerializer.Serialize(new { errors }));
+            var errors = ex.Errors.Select(e => $"{e.PropertyName}: {e.ErrorMessage}").ToList();
+            await WriteEnvelope(context, 400, string.Join(" ", errors), errors);
         }
         catch (KeyNotFoundException ex)
         {
-            context.Response.StatusCode = (int)HttpStatusCode.NotFound;
-            context.Response.ContentType = "application/json";
-            await context.Response.WriteAsync(JsonSerializer.Serialize(new { error = ex.Message }));
+            await WriteEnvelope(context, 404, ex.Message);
         }
         catch (UnauthorizedAccessException ex)
         {
-            context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
-            context.Response.ContentType = "application/json";
-            await context.Response.WriteAsync(JsonSerializer.Serialize(new { error = ex.Message }));
+            await WriteEnvelope(context, 401, ex.Message);
         }
         catch (InvalidOperationException ex)
         {
-            context.Response.StatusCode = (int)HttpStatusCode.Conflict;
-            context.Response.ContentType = "application/json";
-            await context.Response.WriteAsync(JsonSerializer.Serialize(new { error = ex.Message }));
+            await WriteEnvelope(context, 400, ex.Message);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Unhandled exception");
-            context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-            context.Response.ContentType = "application/json";
-            await context.Response.WriteAsync(JsonSerializer.Serialize(new { error = "An unexpected error occurred." }));
+            await WriteEnvelope(context, 500, "An unexpected error occurred.");
         }
+    }
+
+    private static async Task WriteEnvelope(HttpContext context, int statusCode, string message, List<string>? errors = null)
+    {
+        context.Response.StatusCode = statusCode;
+        context.Response.ContentType = "application/json";
+        var envelope = new { success = false, message, errors, data = (object?)null };
+        await context.Response.WriteAsync(JsonSerializer.Serialize(envelope, _jsonOpts));
     }
 }

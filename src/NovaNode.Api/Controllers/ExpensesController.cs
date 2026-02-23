@@ -47,7 +47,7 @@ public class ExpensesController : BaseApiController
     {
         var tenantId = _tenantContext.TenantId!.Value;
         await _svc.DeleteCategoryAsync(tenantId, id, ct);
-        return NoContent();
+        return Ok(true);
     }
 
     [HttpGet]
@@ -77,6 +77,6 @@ public class ExpensesController : BaseApiController
     {
         var tenantId = _tenantContext.TenantId!.Value;
         await _svc.DeleteAsync(tenantId, id, ct);
-        return NoContent();
+        return Ok(true);
     }
 }

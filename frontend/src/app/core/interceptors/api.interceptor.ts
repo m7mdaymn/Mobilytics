@@ -59,8 +59,17 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
       const body = error.error;
 
       if (error.status === 400) {
-        const message = body?.message || 'Validation error';
-        const errors = body?.errors || null;
+        // Support both our envelope {message, errors} and ASP.NET ProblemDetails {title, errors}
+        let message = body?.message || body?.title || 'Validation error';
+        let errors = body?.errors || null;
+        // ProblemDetails errors are Record<string, string[]> — flatten to readable text
+        if (errors && typeof errors === 'object' && !Array.isArray(errors)) {
+          const flat = Object.entries(errors as Record<string, string[]>)
+            .flatMap(([, msgs]) => msgs);
+          if (flat.length && message === 'Validation error') {
+            message = flat.join(' ');
+          }
+        }
         return throwError(() => new ApiError(400, message, errors, body));
       }
 

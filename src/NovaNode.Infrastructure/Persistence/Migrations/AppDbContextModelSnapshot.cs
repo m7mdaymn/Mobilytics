@@ -795,6 +795,80 @@ namespace NovaNode.Infrastructure.Persistence.Migrations
                     b.ToTable("Plans");
                 });
 
+            modelBuilder.Entity("NovaNode.Domain.Entities.PlatformInvoice", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("ActivationFee")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("Discount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("InvoiceNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("InvoiceType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Months")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("PaymentMethod")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PaymentStatus")
+                        .HasColumnType("int");
+
+                    b.Property<string>("PdfPath")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid?>("PlanId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("SubscriptionAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<Guid?>("SubscriptionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("Total")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("InvoiceNumber")
+                        .IsUnique();
+
+                    b.HasIndex("PlanId");
+
+                    b.HasIndex("SubscriptionId");
+
+                    b.HasIndex("TenantId");
+
+                    b.ToTable("PlatformInvoices");
+                });
+
             modelBuilder.Entity("NovaNode.Domain.Entities.PlatformUser", b =>
                 {
                     b.Property<Guid>("Id")
@@ -821,14 +895,74 @@ namespace NovaNode.Infrastructure.Persistence.Migrations
                     b.ToTable("PlatformUsers");
                 });
 
-            modelBuilder.Entity("NovaNode.Domain.Entities.StoreSettings", b =>
+            modelBuilder.Entity("NovaNode.Domain.Entities.StoreRegistration", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("AccentColor")
+                    b.Property<string>("ApprovalNotes")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("ApprovedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("ApprovedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Location")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("MonthlyRevenue")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NumberOfStores")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("OwnerName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Phone")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RejectionReason")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Source")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<string>("StoreName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("SubmittedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("StoreRegistrations");
+                });
+
+            modelBuilder.Entity("NovaNode.Domain.Entities.StoreSettings", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("BannerUrl")
                         .HasColumnType("nvarchar(max)");
@@ -852,13 +986,7 @@ namespace NovaNode.Infrastructure.Persistence.Migrations
                     b.Property<string>("PoliciesJson")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("PrimaryColor")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("PwaSettingsJson")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("SecondaryColor")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("SocialLinksJson")
@@ -871,7 +999,7 @@ namespace NovaNode.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("TenantId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("ThemeId")
+                    b.Property<int>("ThemePresetId")
                         .HasColumnType("int");
 
                     b.Property<string>("WhatsAppNumber")
@@ -1047,8 +1175,7 @@ namespace NovaNode.Infrastructure.Persistence.Migrations
                     b.HasOne("NovaNode.Domain.Entities.HomeSection", "HomeSection")
                         .WithMany("Items")
                         .HasForeignKey("HomeSectionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("HomeSection");
                 });
@@ -1076,8 +1203,7 @@ namespace NovaNode.Infrastructure.Persistence.Migrations
                     b.HasOne("NovaNode.Domain.Entities.Invoice", "Invoice")
                         .WithMany("Items")
                         .HasForeignKey("InvoiceId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("NovaNode.Domain.Entities.Item", "Item")
                         .WithMany("InvoiceItems")
@@ -1133,6 +1259,31 @@ namespace NovaNode.Infrastructure.Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("Employee");
+                });
+
+            modelBuilder.Entity("NovaNode.Domain.Entities.PlatformInvoice", b =>
+                {
+                    b.HasOne("NovaNode.Domain.Entities.Plan", "Plan")
+                        .WithMany()
+                        .HasForeignKey("PlanId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("NovaNode.Domain.Entities.Subscription", "Subscription")
+                        .WithMany()
+                        .HasForeignKey("SubscriptionId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("NovaNode.Domain.Entities.Tenant", "Tenant")
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Plan");
+
+                    b.Navigation("Subscription");
+
+                    b.Navigation("Tenant");
                 });
 
             modelBuilder.Entity("NovaNode.Domain.Entities.StoreSettings", b =>

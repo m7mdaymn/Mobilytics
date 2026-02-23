@@ -80,3 +80,26 @@ public enum WarrantyType
     Extended = 2,
     None = 3
 }
+
+public enum PaymentMethod
+{
+    Cash = 0,
+    Instapay = 1,
+    BankTransfer = 2,
+    Other = 3
+}
+
+public enum PaymentStatus
+{
+    Paid = 0,
+    Unpaid = 1,
+    Partial = 2
+}
+
+public enum RegistrationStatus
+{
+    PendingApproval = 0,
+    Approved = 1,
+    Rejected = 2,
+    OnHold = 3
+}

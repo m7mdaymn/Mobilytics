@@ -24,6 +24,10 @@ public class PlatformTenantsController : BaseApiController
     public async Task<IActionResult> Create([FromBody] CreateTenantRequest request, CancellationToken ct) =>
         Created(await _svc.CreateTenantAsync(request, ct));
 
+    [HttpPost("onboard")]
+    public async Task<IActionResult> Onboard([FromBody] OnboardTenantRequest request, CancellationToken ct) =>
+        Created(await _svc.OnboardTenantAsync(request, ct));
+
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateTenantRequest request, CancellationToken ct) =>
         Ok(await _svc.UpdateTenantAsync(id, request, ct));
@@ -59,4 +63,12 @@ public class PlatformTenantsController : BaseApiController
         await _svc.UpdateFeaturesAsync(id, request, ct);
         return NoContent();
     }
+
+    [HttpGet("{id:guid}/store-settings")]
+    public async Task<IActionResult> GetStoreSettings(Guid id, CancellationToken ct) =>
+        Ok(await _svc.GetStoreSettingsAsync(id, ct));
+
+    [HttpPut("{id:guid}/store-settings")]
+    public async Task<IActionResult> UpdateStoreSettings(Guid id, [FromBody] UpdateStoreSettingsRequest request, CancellationToken ct) =>
+        Ok(await _svc.UpdateStoreSettingsAsync(id, request, ct));
 }

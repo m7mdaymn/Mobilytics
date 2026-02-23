@@ -29,18 +29,38 @@ public static class DatabaseSeeder
             });
         }
 
-        // Seed default plan
+        // Seed default plans
         if (!await db.Plans.AnyAsync())
         {
-            db.Plans.Add(new Plan
-            {
-                Name = "Standard",
-                PriceMonthly = 500m,
-                ActivationFee = 1500m,
-                LimitsJson = "{}",
-                FeaturesJson = "{}",
-                IsActive = true
-            });
+            db.Plans.AddRange(
+                new Plan
+                {
+                    Name = "Trial",
+                    PriceMonthly = 0m,
+                    ActivationFee = 0m,
+                    LimitsJson = "{\"maxItems\":20,\"maxEmployees\":2,\"maxImages\":3,\"maxStorageMB\":100}",
+                    FeaturesJson = "{\"canRemovePoweredBy\":false,\"advancedReports\":false,\"customDomain\":false,\"apiAccess\":false,\"prioritySupport\":false}",
+                    IsActive = true
+                },
+                new Plan
+                {
+                    Name = "Standard",
+                    PriceMonthly = 500m,
+                    ActivationFee = 1500m,
+                    LimitsJson = "{\"maxItems\":500,\"maxEmployees\":10,\"maxImages\":10,\"maxStorageMB\":2048}",
+                    FeaturesJson = "{\"canRemovePoweredBy\":true,\"advancedReports\":true,\"customDomain\":false,\"apiAccess\":false,\"prioritySupport\":false}",
+                    IsActive = true
+                },
+                new Plan
+                {
+                    Name = "Premium",
+                    PriceMonthly = 1200m,
+                    ActivationFee = 2500m,
+                    LimitsJson = "{\"maxItems\":5000,\"maxEmployees\":50,\"maxImages\":20,\"maxStorageMB\":10240}",
+                    FeaturesJson = "{\"canRemovePoweredBy\":true,\"advancedReports\":true,\"customDomain\":true,\"apiAccess\":true,\"prioritySupport\":true}",
+                    IsActive = true
+                }
+            );
         }
 
         await db.SaveChangesAsync();
@@ -65,16 +85,9 @@ public static class DatabaseSeeder
             { 
                 TenantId = tenant.Id, 
                 StoreName = "TechHub Electronics",
-                Currency = "EGP",
-                IsActive = true,
-                ThemeId = 1,
-                PrimaryColor = "#2563eb",
-                SecondaryColor = "#64748b",
-                AccentColor = "#f97316",
-                PwaShortName = "TechHub",
-                PwaDescription = "Your Ultimate Tech Store",
-                CanRemovePoweredBy = true,
-                ShowPoweredBy = false
+                CurrencyCode = "EGP",
+                ThemePresetId = 1,
+                PwaSettingsJson = "{\"shortName\":\"TechHub\",\"description\":\"Your Ultimate Tech Store\"}"
             });
 
             db.TenantFeatureToggles.Add(new TenantFeatureToggle 
@@ -84,7 +97,7 @@ public static class DatabaseSeeder
                 AdvancedReports = true 
             });
 
-            db.Subscriptions.Add(new Subscription
+            var demoSubscription = new Subscription
             {
                 TenantId = tenant.Id,
                 PlanId = plan.Id,
@@ -92,7 +105,8 @@ public static class DatabaseSeeder
                 StartDate = DateTime.UtcNow,
                 EndDate = DateTime.UtcNow.AddMonths(12),
                 GraceEnd = DateTime.UtcNow.AddMonths(12).AddDays(3)
-            });
+            };
+            db.Subscriptions.Add(demoSubscription);
 
             db.Employees.Add(new Employee
             {
@@ -102,6 +116,9 @@ public static class DatabaseSeeder
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("Demo@123"),
                 Role = "Owner"
             });
+
+            // Mark tenant active (has an active subscription)
+            tenant.IsActive = true;
 
             // ===== CATEGORIES =====
             var categories = new[]
@@ -149,10 +166,10 @@ public static class DatabaseSeeder
                     BrandId = brands[0].Id,
                     ItemTypeId = itemTypes[0].Id,
                     Description = "Latest Apple flagship with advanced camera system",
-                    PriceEgp = 24999,
+                    Price = 24999,
                     IsFeatured = true,
                     Status = ItemStatus.Available,
-                    ImageUrl = "https://via.placeholder.com/400x400?text=iPhone+15+Pro"
+                    MainImageUrl = "https://via.placeholder.com/400x400?text=iPhone+15+Pro"
                 },
                 new Item 
                 { 
@@ -163,10 +180,10 @@ public static class DatabaseSeeder
                     BrandId = brands[1].Id,
                     ItemTypeId = itemTypes[0].Id,
                     Description = "Premium Android phone with AI features",
-                    PriceEgp = 23999,
+                    Price = 23999,
                     IsFeatured = true,
                     Status = ItemStatus.Available,
-                    ImageUrl = "https://via.placeholder.com/400x400?text=Galaxy+S24"
+                    MainImageUrl = "https://via.placeholder.com/400x400?text=Galaxy+S24"
                 },
                 new Item 
                 { 
@@ -177,10 +194,10 @@ public static class DatabaseSeeder
                     BrandId = brands[0].Id,
                     ItemTypeId = itemTypes[2].Id,
                     Description = "High-performance tablet perfect for work and play",
-                    PriceEgp = 15999,
+                    Price = 15999,
                     IsFeatured = true,
                     Status = ItemStatus.Available,
-                    ImageUrl = "https://via.placeholder.com/400x400?text=iPad+Air"
+                    MainImageUrl = "https://via.placeholder.com/400x400?text=iPad+Air"
                 },
                 new Item 
                 { 
@@ -191,10 +208,10 @@ public static class DatabaseSeeder
                     BrandId = brands[0].Id,
                     ItemTypeId = itemTypes[1].Id,
                     Description = "Powerful laptop for professionals",
-                    PriceEgp = 49999,
+                    Price = 49999,
                     IsFeatured = true,
                     Status = ItemStatus.Available,
-                    ImageUrl = "https://via.placeholder.com/400x400?text=MacBook+Pro"
+                    MainImageUrl = "https://via.placeholder.com/400x400?text=MacBook+Pro"
                 },
                 new Item 
                 { 
@@ -205,10 +222,10 @@ public static class DatabaseSeeder
                     BrandId = brands[2].Id,
                     ItemTypeId = itemTypes[3].Id,
                     Description = "Premium noise-cancelling headphones",
-                    PriceEgp = 3999,
+                    Price = 3999,
                     IsFeatured = true,
                     Status = ItemStatus.Available,
-                    ImageUrl = "https://via.placeholder.com/400x400?text=Headphones"
+                    MainImageUrl = "https://via.placeholder.com/400x400?text=Headphones"
                 },
                 new Item 
                 { 
@@ -219,10 +236,10 @@ public static class DatabaseSeeder
                     BrandId = null,
                     ItemTypeId = itemTypes[3].Id,
                     Description = "High-quality USB-C charging cable",
-                    PriceEgp = 89,
+                    Price = 89,
                     IsFeatured = false,
                     Status = ItemStatus.Available,
-                    ImageUrl = "https://via.placeholder.com/400x400?text=USB-C"
+                    MainImageUrl = "https://via.placeholder.com/400x400?text=USB-C"
                 },
             }.ToList();
             db.Items.AddRange(items);
@@ -230,44 +247,103 @@ public static class DatabaseSeeder
             await db.SaveChangesAsync();
 
             // ===== HOME SECTIONS =====
-            var homeSections = new[]
+            var bannerSection = new HomeSection
             {
-                new HomeSection
-                {
-                    TenantId = tenant.Id,
-                    Title = "🔥 Hot Deals This Week",
-                    Type = "BannerSlider",
-                    DisplayOrder = 0,
-                    IsActive = true,
-                    ItemsJson = "[{\"id\":1,\"title\":\"Get iPhone 15 Pro Max at Best Price!\",\"imageUrl\":\"https://via.placeholder.com/1200x400?text=iPhone+Deal\",\"ctaText\":\"Shop Now\",\"linkValue\":\"/catalog?search=iphone\"},{\"id\":2,\"title\":\"Fresh Samsung Galaxy S24 Arrivals\",\"imageUrl\":\"https://via.placeholder.com/1200x400?text=Samsung+Deal\",\"ctaText\":\"Explore\",\"linkValue\":\"/catalog?brand=samsung\"}]"
-                },
-                new HomeSection
-                {
-                    TenantId = tenant.Id,
-                    Title = "Featured Products",
-                    Type = "FeaturedItems",
-                    DisplayOrder = 1,
-                    IsActive = true
-                },
-                new HomeSection
-                {
-                    TenantId = tenant.Id,
-                    Title = "Shop By Category",
-                    Type = "CategoriesShowcase",
-                    DisplayOrder = 2,
-                    IsActive = true,
-                    ItemsJson = "[{\"id\":1,\"title\":\"Smartphones\",\"imageUrl\":\"https://via.placeholder.com/200x200?text=Phones\",\"linkValue\":\"smartphones\"},{\"id\":2,\"title\":\"Tablets\",\"imageUrl\":\"https://via.placeholder.com/200x200?text=Tablets\",\"linkValue\":\"tablets\"},{\"id\":3,\"title\":\"Laptops\",\"imageUrl\":\"https://via.placeholder.com/200x200?text=Laptops\",\"linkValue\":\"laptops\"},{\"id\":4,\"title\":\"Accessories\",\"imageUrl\":\"https://via.placeholder.com/200x200?text=Accessories\",\"linkValue\":\"accessories\"}]"
-                },
-                new HomeSection
-                {
-                    TenantId = tenant.Id,
-                    Title = "Top Brands",
-                    Type = "BrandsCarousel",
-                    DisplayOrder = 3,
-                    IsActive = true
-                },
-            }.ToList();
-            db.HomeSections.AddRange(homeSections);
+                TenantId = tenant.Id,
+                Title = "🔥 Hot Deals This Week",
+                SectionType = HomeSectionType.BannerSlider,
+                DisplayOrder = 0,
+                IsActive = true
+            };
+            var featuredSection = new HomeSection
+            {
+                TenantId = tenant.Id,
+                Title = "Featured Products",
+                SectionType = HomeSectionType.FeaturedItems,
+                DisplayOrder = 1,
+                IsActive = true
+            };
+            var categoriesSection = new HomeSection
+            {
+                TenantId = tenant.Id,
+                Title = "Shop By Category",
+                SectionType = HomeSectionType.CategoriesShowcase,
+                DisplayOrder = 2,
+                IsActive = true
+            };
+            var brandsSection = new HomeSection
+            {
+                TenantId = tenant.Id,
+                Title = "Our Top Brands",
+                SectionType = HomeSectionType.BrandsCarousel,
+                DisplayOrder = 3,
+                IsActive = true
+            };
+            db.HomeSections.AddRange(bannerSection, featuredSection, categoriesSection, brandsSection);
+            await db.SaveChangesAsync();
+
+            // ===== HOME SECTION ITEMS =====
+            db.HomeSectionItems.AddRange(
+                new HomeSectionItem { HomeSectionId = bannerSection.Id, TargetType = HomeSectionTargetType.Url, Title = "Get iPhone 15 Pro Max at Best Price!", ImageUrl = "https://via.placeholder.com/1200x400?text=iPhone+Deal", Url = "/catalog?search=iphone", DisplayOrder = 0 },
+                new HomeSectionItem { HomeSectionId = bannerSection.Id, TargetType = HomeSectionTargetType.Url, Title = "Fresh Samsung Galaxy S24 Arrivals", ImageUrl = "https://via.placeholder.com/1200x400?text=Samsung+Deal", Url = "/catalog?brand=samsung", DisplayOrder = 1 },
+                new HomeSectionItem { HomeSectionId = categoriesSection.Id, TargetType = HomeSectionTargetType.Category, TargetId = categories[0].Id, Title = "Smartphones", ImageUrl = "https://via.placeholder.com/200x200?text=Phones", DisplayOrder = 0 },
+                new HomeSectionItem { HomeSectionId = categoriesSection.Id, TargetType = HomeSectionTargetType.Category, TargetId = categories[1].Id, Title = "Tablets", ImageUrl = "https://via.placeholder.com/200x200?text=Tablets", DisplayOrder = 1 },
+                new HomeSectionItem { HomeSectionId = categoriesSection.Id, TargetType = HomeSectionTargetType.Category, TargetId = categories[2].Id, Title = "Laptops", ImageUrl = "https://via.placeholder.com/200x200?text=Laptops", DisplayOrder = 2 },
+                new HomeSectionItem { HomeSectionId = categoriesSection.Id, TargetType = HomeSectionTargetType.Category, TargetId = categories[3].Id, Title = "Accessories", ImageUrl = "https://via.placeholder.com/200x200?text=Accessories", DisplayOrder = 3 },
+                new HomeSectionItem { HomeSectionId = brandsSection.Id, TargetType = HomeSectionTargetType.Brand, TargetId = brands[0].Id, Title = "Apple", ImageUrl = "https://via.placeholder.com/200x100?text=Apple", DisplayOrder = 0 },
+                new HomeSectionItem { HomeSectionId = brandsSection.Id, TargetType = HomeSectionTargetType.Brand, TargetId = brands[1].Id, Title = "Samsung", ImageUrl = "https://via.placeholder.com/200x100?text=Samsung", DisplayOrder = 1 },
+                new HomeSectionItem { HomeSectionId = brandsSection.Id, TargetType = HomeSectionTargetType.Brand, TargetId = brands[2].Id, Title = "Sony", ImageUrl = "https://via.placeholder.com/200x100?text=Sony", DisplayOrder = 2 }
+            );
+
+            await db.SaveChangesAsync();
+
+            // ===== PLATFORM INVOICE (demo subscription) =====
+            db.PlatformInvoices.Add(new PlatformInvoice
+            {
+                InvoiceNumber = $"INV-{DateTime.UtcNow:yyyyMMdd}-DEMO01",
+                TenantId = tenant.Id,
+                PlanId = plan.Id,
+                SubscriptionId = demoSubscription.Id,
+                InvoiceType = "Activation",
+                Months = 12,
+                ActivationFee = plan.ActivationFee,
+                SubscriptionAmount = plan.PriceMonthly * 12,
+                Discount = 0,
+                Total = plan.ActivationFee + (plan.PriceMonthly * 12),
+                PaymentMethod = PaymentMethod.Cash,
+                PaymentStatus = PaymentStatus.Paid,
+                Notes = "Demo store — full year activation"
+            });
+
+            // ===== SAMPLE STORE REGISTRATION (lead) =====
+            db.Set<StoreRegistration>().Add(new StoreRegistration
+            {
+                StoreName = "ElectroMart",
+                Category = "Electronics",
+                Location = "Cairo, Egypt",
+                OwnerName = "Ahmed Hassan",
+                Email = "ahmed@electromart.com",
+                Phone = "+201234567890",
+                NumberOfStores = "2",
+                MonthlyRevenue = "50000-100000",
+                Source = "Facebook Ad",
+                Status = RegistrationStatus.PendingApproval,
+                SubmittedAt = DateTime.UtcNow.AddDays(-2)
+            });
+            db.Set<StoreRegistration>().Add(new StoreRegistration
+            {
+                StoreName = "PhoneZone",
+                Category = "Mobile Phones",
+                Location = "Alexandria, Egypt",
+                OwnerName = "Sara Ali",
+                Email = "sara@phonezone.com",
+                Phone = "+201098765432",
+                NumberOfStores = "1",
+                MonthlyRevenue = "20000-50000",
+                Source = "Referral",
+                Status = RegistrationStatus.PendingApproval,
+                SubmittedAt = DateTime.UtcNow.AddDays(-1)
+            });
 
             await db.SaveChangesAsync();
         }

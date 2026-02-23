@@ -3,7 +3,7 @@ import { DOCUMENT } from '@angular/common';
 import { Inject } from '@angular/core';
 import { Observable, tap, catchError, of } from 'rxjs';
 import { ApiService } from '../services/api.service';
-import { StoreSettings } from '../models/settings.models';
+import { StoreSettings, THEME_PRESETS } from '../models/settings.models';
 
 @Injectable({ providedIn: 'root' })
 export class SettingsStore {
@@ -16,13 +16,17 @@ export class SettingsStore {
   readonly error = this._error.asReadonly();
   readonly isActive = computed(() => this._settings()?.isActive ?? false);
   readonly storeName = computed(() => this._settings()?.storeName ?? 'Store');
-  readonly currency = computed(() => this._settings()?.currency ?? 'EGP');
-  readonly themeId = computed(() => this._settings()?.themeId ?? 1);
-  readonly whatsappNumber = computed(() => this._settings()?.whatsappNumber ?? '');
-  readonly showPoweredBy = computed(() => {
-    const s = this._settings();
-    if (!s) return true;
-    return !(s.canRemovePoweredBy && !s.showPoweredBy);
+  readonly currency = computed(() => this._settings()?.currencyCode ?? 'EGP');
+  readonly themePresetId = computed(() => this._settings()?.themePresetId ?? 1);
+  readonly whatsappNumber = computed(() => this._settings()?.whatsAppNumber ?? '');
+  readonly showPoweredBy = computed(() => this._settings()?.poweredByEnabled ?? true);
+  readonly phone = computed(() => this._settings()?.phoneNumber ?? '');
+  readonly address = computed(() => this._settings()?.footerAddress ?? '');
+  readonly workingHours = computed(() => this._settings()?.workingHours ?? '');
+  readonly mapUrl = computed(() => this._settings()?.mapUrl ?? '');
+  readonly socialLinks = computed<Record<string, string>>(() => {
+    const json = this._settings()?.socialLinksJson;
+    try { return json ? JSON.parse(json) : {}; } catch { return {}; }
   });
 
   constructor(
@@ -50,24 +54,22 @@ export class SettingsStore {
   private applyTheme(settings: StoreSettings): void {
     const root = this.document.documentElement;
 
-    // CSS custom properties
-    if (settings.primaryColor) {
-      root.style.setProperty('--color-primary', settings.primaryColor);
-      root.style.setProperty('--color-primary-hover', this.darken(settings.primaryColor, 15));
-      root.style.setProperty('--color-primary-light', this.lighten(settings.primaryColor, 85));
-    }
-    if (settings.secondaryColor) {
-      root.style.setProperty('--color-secondary', settings.secondaryColor);
-      root.style.setProperty('--color-secondary-hover', this.darken(settings.secondaryColor, 15));
-    }
-    if (settings.accentColor) {
-      root.style.setProperty('--color-accent', settings.accentColor);
-      root.style.setProperty('--color-accent-hover', this.darken(settings.accentColor, 15));
-    }
+    // Backend resolves colors from preset — use them directly
+    const primary = settings.primaryColor || '#111827';
+    const secondary = settings.secondaryColor || '#374151';
+    const accent = settings.accentColor || '#f59e0b';
+
+    root.style.setProperty('--color-primary', primary);
+    root.style.setProperty('--color-primary-hover', this.darken(primary, 15));
+    root.style.setProperty('--color-primary-light', this.lighten(primary, 85));
+    root.style.setProperty('--color-secondary', secondary);
+    root.style.setProperty('--color-secondary-hover', this.darken(secondary, 15));
+    root.style.setProperty('--color-accent', accent);
+    root.style.setProperty('--color-accent-hover', this.darken(accent, 15));
 
     // Theme wrapper class
-    this.document.body.classList.remove('theme-1', 'theme-2', 'theme-3');
-    this.document.body.classList.add(`theme-${settings.themeId || 1}`);
+    this.document.body.classList.remove('theme-1', 'theme-2', 'theme-3', 'theme-4', 'theme-5', 'theme-6');
+    this.document.body.classList.add(`theme-${settings.themePresetId || 1}`);
 
     // Document title
     this.document.title = `${settings.storeName} | Mobilytics`;
@@ -79,21 +81,24 @@ export class SettingsStore {
       meta.name = 'theme-color';
       this.document.head.appendChild(meta);
     }
-    meta.content = settings.primaryColor || '#2563eb';
+    meta.content = primary;
 
     // Dynamic manifest for PWA
-    this.updateManifest(settings);
+    this.updateManifest(settings, primary);
   }
 
-  private updateManifest(settings: StoreSettings): void {
+  private updateManifest(settings: StoreSettings, primary: string): void {
+    let pwa: { shortName?: string; description?: string } = {};
+    try { pwa = settings.pwaSettingsJson ? JSON.parse(settings.pwaSettingsJson) : {}; } catch {}
+
     const manifest = {
       name: settings.storeName || 'Mobilytics Store',
-      short_name: settings.pwaShortName || settings.storeName || 'Store',
-      description: settings.pwaDescription || `${settings.storeName} - Mobile Store`,
+      short_name: pwa.shortName || settings.storeName || 'Store',
+      description: pwa.description || `${settings.storeName} - Mobile Store`,
       start_url: '/',
       display: 'standalone',
       background_color: '#ffffff',
-      theme_color: settings.primaryColor || '#2563eb',
+      theme_color: primary,
       icons: [
         { src: 'icons/icon-72x72.png', sizes: '72x72', type: 'image/png' },
         { src: 'icons/icon-96x96.png', sizes: '96x96', type: 'image/png' },

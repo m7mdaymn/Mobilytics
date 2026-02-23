@@ -37,7 +37,7 @@ public class SettingsController : BaseApiController
     {
         var tenantId = _tenantContext.TenantId!.Value;
         await _svc.UpdateThemeAsync(tenantId, request, ct);
-        return NoContent();
+        return Ok(true);
     }
 
     [HttpPut("footer")]
@@ -45,7 +45,7 @@ public class SettingsController : BaseApiController
     {
         var tenantId = _tenantContext.TenantId!.Value;
         await _svc.UpdateFooterAsync(tenantId, request, ct);
-        return NoContent();
+        return Ok(true);
     }
 
     [HttpPut("whatsapp")]
@@ -53,7 +53,7 @@ public class SettingsController : BaseApiController
     {
         var tenantId = _tenantContext.TenantId!.Value;
         await _svc.UpdateWhatsAppTemplatesAsync(tenantId, request, ct);
-        return NoContent();
+        return Ok(true);
     }
 
     [HttpPut("pwa")]
@@ -61,6 +61,6 @@ public class SettingsController : BaseApiController
     {
         var tenantId = _tenantContext.TenantId!.Value;
         await _svc.UpdatePwaAsync(tenantId, request, ct);
-        return NoContent();
+        return Ok(true);
     }
 }

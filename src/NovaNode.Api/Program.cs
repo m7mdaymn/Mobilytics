@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.Json.Serialization;
 using Asp.Versioning;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -59,7 +60,11 @@ builder.Services.AddApiVersioning(o =>
     o.SubstituteApiVersionInUrl = true;
 });
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(o =>
+    {
+        o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -89,6 +94,9 @@ var app = builder.Build();
 
 // Seed
 await DatabaseSeeder.SeedAsync(app.Services);
+
+// Backfill default data for all existing tenants (idempotent)
+await TenantDefaultDataSeeder.BackfillAllTenantsAsync(app.Services);
 
 // Swagger always open
 app.UseSwagger();

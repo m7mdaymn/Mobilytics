@@ -56,6 +56,9 @@ export class ApiService {
   }
 
   private unwrap<T>(response: ApiResponse<T>): T {
+    if (!response) {
+      return null as T;
+    }
     if (!response.success) {
       throw response;
     }

@@ -43,6 +43,7 @@ public static class DependencyInjection
         services.AddScoped<IStoreSettingsService, StoreSettingsService>();
         services.AddScoped<IReportService, ReportService>();
         services.AddScoped<IPlatformService, PlatformService>();
+        services.AddScoped<IStoreRegistrationService, StoreRegistrationService>();
 
         return services;
     }

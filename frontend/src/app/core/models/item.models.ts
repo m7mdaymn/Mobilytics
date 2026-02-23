@@ -217,34 +217,36 @@ export interface RefundDto {
 export interface ExpenseCategory {
   id: string;
   name: string;
-  createdAt: string;
+  isActive: boolean;
 }
 
 export interface Expense {
   id: string;
   title: string;
-  description: string;
   amount: number;
   categoryId: string;
   categoryName: string;
-  date: string;
-  reference: string;
+  occurredAt: string;
   notes: string;
   createdAt: string;
 }
 
 export interface Employee {
   id: string;
-  fullName: string;
   name: string;
   email: string;
   phone: string;
   role: 'Owner' | 'Manager' | 'Employee';
-  salary: number;
   salaryMonthly: number;
   isActive: boolean;
-  permissions: string[];
+  permissions: PermissionEntry[];
   createdAt: string;
+}
+
+export interface PermissionEntry {
+  id?: string;
+  key: string;
+  isEnabled: boolean;
 }
 
 export interface Lead {
@@ -261,16 +263,22 @@ export interface Lead {
 }
 
 export interface DashboardData {
-  salesToday: number;
-  invoicesCount: number;
-  devicesSold: number;
-  accessoriesSoldQty: number;
-  leadsToday: number;
-  expensesToday: number;
+  totalSales: number;
+  totalExpenses: number;
   netAfterExpenses: number;
+  invoicesCount: number;
+  devicesSoldCount: number;
+  accessoriesSoldQty: number;
+  leadsCount: number;
+  itemsInStock: number;
   salesTrend: TrendPoint[];
   leadsTrend: TrendPoint[];
   topItemTypes: TopItemType[];
+  topLeadsTargets: TopLeadTarget[];
+  lowStockItems: AlertItem[];
+  missingImagesItems: AlertItem[];
+  missingPriceItems: AlertItem[];
+  recentInvoices: RecentInvoice[];
 }
 
 export interface TrendPoint {
@@ -280,7 +288,29 @@ export interface TrendPoint {
 
 export interface TopItemType {
   name: string;
-  count: number;
+  soldCount: number;
+  revenue: number;
+}
+
+export interface TopLeadTarget {
+  itemTitle: string;
+  leadCount: number;
+}
+
+export interface AlertItem {
+  id: string;
+  title: string;
+  quantity?: number;
+}
+
+export interface RecentInvoice {
+  id: string;
+  invoiceNumber: string;
+  customerName: string | null;
+  total: number;
+  paymentMethod: string;
+  isRefund: boolean;
+  createdAt: string;
 }
 
 export interface WhatsAppClickDto {

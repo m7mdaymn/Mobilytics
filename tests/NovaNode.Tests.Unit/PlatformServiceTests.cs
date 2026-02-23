@@ -40,7 +40,7 @@ public class PlatformServiceTests
 
         Assert.Equal("Test Store", result.Name);
         Assert.Equal("test-store", result.Slug);
-        Assert.True(result.IsActive);
+        Assert.Equal("Pending", result.Status); // No subscription yet
 
         // Verify employee was created
         var employee = await db.Employees.FirstOrDefaultAsync(e => e.Email == "owner@test.com");

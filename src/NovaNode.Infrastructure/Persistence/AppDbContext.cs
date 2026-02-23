@@ -20,6 +20,8 @@ public class AppDbContext : DbContext
     public DbSet<Subscription> Subscriptions => Set<Subscription>();
     public DbSet<TenantFeatureToggle> TenantFeatureToggles => Set<TenantFeatureToggle>();
     public DbSet<PlatformUser> PlatformUsers => Set<PlatformUser>();
+    public DbSet<StoreRegistration> StoreRegistrations => Set<StoreRegistration>();
+    public DbSet<PlatformInvoice> PlatformInvoices => Set<PlatformInvoice>();
 
     // Tenant-scoped
     public DbSet<StoreSettings> StoreSettings => Set<StoreSettings>();
@@ -78,6 +80,19 @@ public class AppDbContext : DbContext
             b.HasOne(s => s.Tenant).WithOne(t => t.StoreSettings).HasForeignKey<StoreSettings>(s => s.TenantId);
         });
 
+        // PlatformInvoice
+        modelBuilder.Entity<PlatformInvoice>(b =>
+        {
+            b.HasIndex(i => i.InvoiceNumber).IsUnique();
+            b.Property(i => i.ActivationFee).HasPrecision(18, 2);
+            b.Property(i => i.SubscriptionAmount).HasPrecision(18, 2);
+            b.Property(i => i.Discount).HasPrecision(18, 2);
+            b.Property(i => i.Total).HasPrecision(18, 2);
+            b.HasOne(i => i.Tenant).WithMany().HasForeignKey(i => i.TenantId).OnDelete(DeleteBehavior.Cascade);
+            b.HasOne(i => i.Plan).WithMany().HasForeignKey(i => i.PlanId).OnDelete(DeleteBehavior.NoAction);
+            b.HasOne(i => i.Subscription).WithMany().HasForeignKey(i => i.SubscriptionId).OnDelete(DeleteBehavior.NoAction);
+        });
+
         // Brand - Global Query Filter
         modelBuilder.Entity<Brand>(b =>
         {
@@ -133,7 +148,7 @@ public class AppDbContext : DbContext
         // HomeSectionItem
         modelBuilder.Entity<HomeSectionItem>(b =>
         {
-            b.HasOne(hsi => hsi.HomeSection).WithMany(hs => hs.Items).HasForeignKey(hsi => hsi.HomeSectionId).OnDelete(DeleteBehavior.Cascade);
+            b.HasOne(hsi => hsi.HomeSection).WithMany(hs => hs.Items).HasForeignKey(hsi => hsi.HomeSectionId).OnDelete(DeleteBehavior.Cascade).IsRequired(false);
         });
 
         // Lead - Global Query Filter
@@ -164,7 +179,7 @@ public class AppDbContext : DbContext
             b.Property(ii => ii.UnitPrice).HasPrecision(18, 2);
             b.Property(ii => ii.LineTotal).HasPrecision(18, 2);
             b.Property(ii => ii.VatPercentSnapshot).HasPrecision(5, 2);
-            b.HasOne(ii => ii.Invoice).WithMany(inv => inv.Items).HasForeignKey(ii => ii.InvoiceId).OnDelete(DeleteBehavior.Cascade);
+            b.HasOne(ii => ii.Invoice).WithMany(inv => inv.Items).HasForeignKey(ii => ii.InvoiceId).OnDelete(DeleteBehavior.Cascade).IsRequired(false);
             b.HasOne(ii => ii.Item).WithMany(i => i.InvoiceItems).HasForeignKey(ii => ii.ItemId).OnDelete(DeleteBehavior.SetNull);
         });
 

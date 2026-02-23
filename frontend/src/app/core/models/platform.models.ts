@@ -22,16 +22,54 @@ export interface Tenant {
   name: string;
   slug: string;
   status: TenantStatus;
+  supportPhone?: string;
+  supportWhatsApp?: string;
+  address?: string;
+  mapUrl?: string;
   createdAt: string;
   updatedAt: string;
   subscription?: TenantSubscription;
   owner?: TenantOwner;
+  features?: TenantFeatures;
+  storeSettings?: TenantStoreSettings;
 }
 
 export interface TenantOwner {
   id: string;
   name: string;
   email: string;
+  phone?: string;
+  whatsApp?: string;
+}
+
+export interface TenantStoreSettings {
+  storeName: string;
+  logoUrl?: string;
+  bannerUrl?: string;
+  whatsAppNumber?: string;
+  phoneNumber?: string;
+  themePresetId: number;
+  currencyCode: string;
+  footerAddress?: string;
+  workingHours?: string;
+  socialLinksJson?: string;
+  policiesJson?: string;
+  mapUrl?: string;
+}
+
+export interface UpdateStoreSettingsRequest {
+  storeName: string;
+  logoUrl?: string;
+  bannerUrl?: string;
+  whatsAppNumber?: string;
+  phoneNumber?: string;
+  themePresetId: number;
+  currencyCode: string;
+  footerAddress?: string;
+  workingHours?: string;
+  socialLinksJson?: string;
+  policiesJson?: string;
+  mapUrl?: string;
 }
 
 export interface TenantSubscription {
@@ -51,17 +89,25 @@ export interface CreateTenantRequest {
   ownerEmail: string;
   ownerPassword: string;
   ownerName: string;
+  supportPhone?: string;
+  supportWhatsApp?: string;
+  address?: string;
+  mapUrl?: string;
 }
 
 export interface UpdateTenantRequest {
   name: string;
   slug?: string;
+  supportPhone?: string;
+  supportWhatsApp?: string;
+  address?: string;
+  mapUrl?: string;
 }
 
 export interface Plan {
   id: string;
   name: string;
-  monthlyPrice: number;
+  priceMonthly: number;
   activationFee: number;
   isActive: boolean;
   limits: PlanLimits;
@@ -85,9 +131,10 @@ export interface PlanFeatures {
   prioritySupport: boolean;
 }
 
-export interface CreatePlanRequest {
+/** Form-facing model for plan create/edit — limits & features as objects for easy binding */
+export interface CreatePlanFormData {
   name: string;
-  monthlyPrice: number;
+  priceMonthly: number;
   activationFee: number;
   limits: PlanLimits;
   features: PlanFeatures;
@@ -102,8 +149,7 @@ export interface TenantFeatures {
 }
 
 export interface StartTrialRequest {
-  durationDays: number;
-  notes?: string;
+  planId: string;
 }
 
 export interface ActivateSubscriptionRequest {
@@ -124,10 +170,36 @@ export interface PlatformDashboard {
   activeTenants: number;
   suspendedTenants: number;
   trialTenants: number;
+  expiredTenants: number;
   expiringSubscriptions: number;
   monthlyRevenue: number;
+  totalRevenue: number;
   totalLeads: number;
   recentTenants: Tenant[];
+  revenueChart: RevenueChartPoint[];
+  recentInvoices: PlatformInvoice[];
+  tenantRevenueBreakdown: TenantRevenueBreakdown[];
+}
+
+export interface RevenueChartPoint {
+  label: string;
+  amount: number;
+}
+
+export interface TenantRevenueBreakdown {
+  tenantId: string;
+  tenantName: string;
+  tenantSlug: string;
+  planName: string;
+  subscriptionStatus: string;
+  totalFees: number;
+  totalSubscriptionRevenue: number;
+  totalDiscount: number;
+  totalPaid: number;
+  totalMonths: number;
+  subscriptionStart?: string;
+  subscriptionEnd?: string;
+  invoiceCount: number;
 }
 
 export interface ExpiringSubscription {
@@ -140,4 +212,85 @@ export interface ExpiringSubscription {
 }
 
 export type TenantStatus = 'Active' | 'Suspended' | 'Pending';
-export type SubscriptionStatus = 'Trial' | 'Active' | 'Grace' | 'Expired' | 'Cancelled';
+export type SubscriptionStatus = 'Trial' | 'Active' | 'Grace' | 'Expired' | 'Suspended';
+
+// ── Onboarding ──────────────────────────────────────────────
+
+export interface OnboardTenantRequest {
+  storeName: string;
+  slug: string;
+  storePhone?: string;
+  storeWhatsApp?: string;
+  address?: string;
+  logoUrl?: string;
+  socialLinksJson?: string;
+  mapUrl?: string;
+  ownerName: string;
+  ownerEmail: string;
+  ownerPhone?: string;
+  ownerWhatsApp?: string;
+  ownerPassword: string;
+  planId: string;
+  durationMonths: number;
+  isTrial: boolean;
+  activationFeePaid: number;
+  subscriptionAmountPaid: number;
+  discount: number;
+  paymentMethod: PaymentMethod;
+  paymentNotes?: string;
+}
+
+export interface OnboardTenantResponse {
+  tenant: Tenant;
+  invoice?: PlatformInvoice;
+}
+
+// ── Invoices ────────────────────────────────────────────────
+
+export interface PlatformInvoice {
+  id: string;
+  invoiceNumber: string;
+  tenantId: string;
+  tenantName: string;
+  tenantSlug?: string;
+  planName: string;
+  invoiceType: string;
+  months: number;
+  activationFee: number;
+  subscriptionAmount: number;
+  discount: number;
+  total: number;
+  paymentMethod: string;
+  paymentStatus: string;
+  notes?: string;
+  createdAt: string;
+}
+
+// ── Store Requests (Leads) ──────────────────────────────────
+
+export interface StoreRequest {
+  id: string;
+  storeName: string;
+  category: string;
+  location: string;
+  ownerName: string;
+  email: string;
+  phone: string;
+  numberOfStores: string;
+  monthlyRevenue?: string;
+  source?: string;
+  status: RegistrationStatus;
+  approvalNotes?: string;
+  approvedAt?: string;
+  submittedAt: string;
+  rejectionReason?: string;
+}
+
+export interface UpdateStoreRequestStatusRequest {
+  status: string;
+  notes?: string;
+}
+
+export type PaymentMethod = 'Cash' | 'Instapay' | 'BankTransfer' | 'Other';
+export type PaymentStatus = 'Paid' | 'Unpaid' | 'Partial';
+export type RegistrationStatus = 'PendingApproval' | 'Approved' | 'Rejected' | 'OnHold';

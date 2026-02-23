@@ -1,6 +1,6 @@
 {
-  "name": "frontend",
-  "short_name": "frontend",
+  "name": "Mobilytics",
+  "short_name": "Mobilytics",
   "display": "standalone",
   "scope": "./",
   "start_url": "./",
