@@ -79,7 +79,7 @@ import { Item, CustomFieldValue } from '../../../core/models/item.models';
 
           <!-- Comparison Rows -->
           @for (row of comparisonRows(); track row.key; let odd = $odd) {
-            <div class="grid" [class.bg-gray-50/50]="odd" [style.grid-template-columns]="'200px repeat(' + compareStore.count() + ', 1fr)'">
+            <div [class]="'grid' + (odd ? ' bg-gray-50/50' : '')" [style.grid-template-columns]="'200px repeat(' + compareStore.count() + ', 1fr)'">
               <div class="px-5 py-3.5 text-sm font-medium text-gray-500 flex items-center">{{ row.label }}</div>
               @for (val of row.values; track $index) {
                 <div class="px-5 py-3.5 text-sm font-semibold text-gray-900 border-s border-gray-100 flex items-center"
@@ -127,7 +127,7 @@ import { Item, CustomFieldValue } from '../../../core/models/item.models';
               </div>
               <div class="divide-y divide-gray-50">
                 @for (row of getMobileRows(item); track row.label; let odd = $odd) {
-                  <div class="flex justify-between px-4 py-2.5 text-sm" [class.bg-gray-50/50]="odd">
+                  <div [class]="'flex justify-between px-4 py-2.5 text-sm' + (odd ? ' bg-gray-50/50' : '')">
                     <span class="text-gray-500">{{ row.label }}</span>
                     <span class="font-semibold text-gray-900">{{ row.value }}</span>
                   </div>

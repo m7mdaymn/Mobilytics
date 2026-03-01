@@ -164,7 +164,7 @@ interface SubscriptionInfo {
           <div class="bg-white rounded-2xl p-5 border border-gray-200">
             <h3 class="font-semibold text-gray-900 mb-4">{{ i18n.t('dashboard.salesTrend') }}</h3>
             <div class="h-48 flex items-end gap-1">
-              @if (data()?.salesTrend?.some(p => p.value > 0)) {
+              @if (hasSalesTrend()) {
                 @for (point of data()!.salesTrend; track point.date) {
                   <div class="flex-1 flex flex-col items-center gap-1 group relative">
                     <div class="absolute -top-8 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap z-10">
@@ -188,7 +188,7 @@ interface SubscriptionInfo {
           <div class="bg-white rounded-2xl p-5 border border-gray-200">
             <h3 class="font-semibold text-gray-900 mb-4">{{ i18n.t('dashboard.leadsTrend') }}</h3>
             <div class="h-48 flex items-end gap-1">
-              @if (data()?.leadsTrend?.some(p => p.value > 0)) {
+              @if (hasLeadsTrend()) {
                 @for (point of data()!.leadsTrend; track point.date) {
                   <div class="flex-1 flex flex-col items-center gap-1 group relative">
                     <div class="absolute -top-8 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap z-10">
@@ -327,6 +327,9 @@ export class DashboardComponent implements OnInit {
   readonly subscription = signal<SubscriptionInfo | null>(null);
   readonly loading = signal(true);
   dateRange = '7d';
+
+  readonly hasSalesTrend = computed(() => this.data()?.salesTrend?.some(p => p.value > 0) ?? false);
+  readonly hasLeadsTrend = computed(() => this.data()?.leadsTrend?.some(p => p.value > 0) ?? false);
 
   ngOnInit(): void {
     this.loadData();
