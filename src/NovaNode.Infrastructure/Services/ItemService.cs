@@ -25,12 +25,16 @@ public partial class ItemService : IItemService
     public async Task<PagedResult<ItemDto>> GetAllAsync(Guid tenantId, ItemFilterRequest filter, CancellationToken ct = default)
     {
         var query = _db.Items
-            .Include(i => i.ItemType).Include(i => i.Brand).Include(i => i.Category)
+            .Include(i => i.Brand).Include(i => i.Category)
             .Where(i => i.TenantId == tenantId);
 
-        if (filter.TypeId.HasValue) query = query.Where(i => i.ItemTypeId == filter.TypeId.Value);
         if (filter.CategoryId.HasValue) query = query.Where(i => i.CategoryId == filter.CategoryId.Value);
+        else if (!string.IsNullOrEmpty(filter.CategorySlug)) query = query.Where(i => i.Category != null && i.Category.Slug == filter.CategorySlug);
+        // Legacy: still support ItemTypeSlug filter via category slug
+        else if (!string.IsNullOrEmpty(filter.ItemTypeSlug)) query = query.Where(i => i.Category != null && i.Category.Slug == filter.ItemTypeSlug);
+        if (filter.TypeId.HasValue) query = query.Where(i => i.CategoryId == filter.TypeId.Value);
         if (filter.BrandId.HasValue) query = query.Where(i => i.BrandId == filter.BrandId.Value);
+        else if (!string.IsNullOrEmpty(filter.BrandSlug)) query = query.Where(i => i.Brand != null && i.Brand.Slug == filter.BrandSlug);
         if (filter.Condition.HasValue) query = query.Where(i => i.Condition == filter.Condition.Value);
         if (filter.PriceMin.HasValue) query = query.Where(i => i.Price >= filter.PriceMin.Value);
         if (filter.PriceMax.HasValue) query = query.Where(i => i.Price <= filter.PriceMax.Value);
@@ -38,6 +42,16 @@ public partial class ItemService : IItemService
         if (filter.Featured.HasValue) query = query.Where(i => i.IsFeatured == filter.Featured.Value);
         if (!string.IsNullOrEmpty(filter.Search))
             query = query.Where(i => i.Title.Contains(filter.Search) || (i.Description != null && i.Description.Contains(filter.Search)));
+        if (!string.IsNullOrEmpty(filter.Color))
+            query = query.Where(i => i.Color != null && i.Color == filter.Color);
+        if (!string.IsNullOrEmpty(filter.Storage))
+            query = query.Where(i => i.Storage != null && i.Storage == filter.Storage);
+        if (!string.IsNullOrEmpty(filter.RAM))
+            query = query.Where(i => i.RAM != null && i.RAM == filter.RAM);
+        if (filter.InstallmentAvailable.HasValue)
+            query = query.Where(i => i.InstallmentAvailable == filter.InstallmentAvailable.Value);
+        if (filter.WarrantyType.HasValue)
+            query = query.Where(i => i.WarrantyType == filter.WarrantyType.Value);
 
         query = filter.Sort?.ToLowerInvariant() switch
         {
@@ -57,7 +71,7 @@ public partial class ItemService : IItemService
 
     public async Task<ItemDto> GetByIdAsync(Guid tenantId, Guid id, CancellationToken ct = default)
     {
-        var item = await _db.Items.Include(i => i.ItemType).Include(i => i.Brand).Include(i => i.Category)
+        var item = await _db.Items.Include(i => i.Brand).Include(i => i.Category)
             .FirstOrDefaultAsync(i => i.TenantId == tenantId && i.Id == id, ct)
             ?? throw new KeyNotFoundException("Item not found.");
         return MapDto(item);
@@ -65,7 +79,7 @@ public partial class ItemService : IItemService
 
     public async Task<ItemDto?> GetBySlugAsync(Guid tenantId, string slug, CancellationToken ct = default)
     {
-        var item = await _db.Items.Include(i => i.ItemType).Include(i => i.Brand).Include(i => i.Category)
+        var item = await _db.Items.Include(i => i.Brand).Include(i => i.Category)
             .FirstOrDefaultAsync(i => i.TenantId == tenantId && i.Slug == slug, ct);
         return item == null ? null : MapDto(item);
     }
@@ -74,7 +88,7 @@ public partial class ItemService : IItemService
     {
         var item = new Item
         {
-            TenantId = tenantId, ItemTypeId = request.ItemTypeId, BrandId = request.BrandId,
+            TenantId = tenantId, BrandId = request.BrandId,
             CategoryId = request.CategoryId, Title = request.Title,
             Slug = string.IsNullOrEmpty(request.Slug) ? Slugify(request.Title) : request.Slug,
             Description = request.Description, Price = request.Price, OldPrice = request.OldPrice,
@@ -82,7 +96,10 @@ public partial class ItemService : IItemService
             BatteryHealth = request.BatteryHealth, IMEI = request.IMEI, SerialNumber = request.SerialNumber,
             WarrantyType = request.WarrantyType, WarrantyMonths = request.WarrantyMonths,
             Quantity = request.Quantity, ChecklistJson = request.ChecklistJson,
-            CustomFieldsJson = request.CustomFieldsJson, IsFeatured = request.IsFeatured
+            CustomFieldsJson = request.CustomFieldsJson, IsFeatured = request.IsFeatured,
+            Color = request.Color, Storage = request.Storage, RAM = request.RAM,
+            InstallmentAvailable = request.InstallmentAvailable,
+            Specs = request.Specs, WhatsInTheBox = request.WhatsInTheBox
         };
         _db.Items.Add(item);
         await _db.SaveChangesAsync(ct);
@@ -95,7 +112,7 @@ public partial class ItemService : IItemService
         var item = await _db.Items.FirstOrDefaultAsync(i => i.TenantId == tenantId && i.Id == id, ct)
             ?? throw new KeyNotFoundException("Item not found.");
 
-        item.ItemTypeId = request.ItemTypeId; item.BrandId = request.BrandId;
+        item.BrandId = request.BrandId;
         item.CategoryId = request.CategoryId; item.Title = request.Title;
         item.Slug = string.IsNullOrEmpty(request.Slug) ? Slugify(request.Title) : request.Slug;
         item.Description = request.Description; item.Price = request.Price; item.OldPrice = request.OldPrice;
@@ -104,6 +121,9 @@ public partial class ItemService : IItemService
         item.WarrantyType = request.WarrantyType; item.WarrantyMonths = request.WarrantyMonths;
         item.Quantity = request.Quantity; item.ChecklistJson = request.ChecklistJson;
         item.CustomFieldsJson = request.CustomFieldsJson; item.IsFeatured = request.IsFeatured;
+        item.Color = request.Color; item.Storage = request.Storage; item.RAM = request.RAM;
+        item.InstallmentAvailable = request.InstallmentAvailable;
+        item.Specs = request.Specs; item.WhatsInTheBox = request.WhatsInTheBox;
         await _db.SaveChangesAsync(ct);
 
         return await GetByIdAsync(tenantId, item.Id, ct);
@@ -177,7 +197,7 @@ public partial class ItemService : IItemService
 
     private static ItemDto MapDto(Item i) => new()
     {
-        Id = i.Id, ItemTypeId = i.ItemTypeId, ItemTypeName = i.ItemType?.Name,
+        Id = i.Id, ItemTypeId = i.ItemTypeId, ItemTypeName = i.Category?.Name,
         BrandId = i.BrandId, BrandName = i.Brand?.Name,
         CategoryId = i.CategoryId, CategoryName = i.Category?.Name,
         Title = i.Title, Slug = i.Slug, Description = i.Description,
@@ -187,6 +207,9 @@ public partial class ItemService : IItemService
         Quantity = i.Quantity, Status = i.Status, MainImageUrl = i.MainImageUrl,
         GalleryImagesJson = i.GalleryImagesJson, ChecklistJson = i.ChecklistJson,
         CustomFieldsJson = i.CustomFieldsJson, IsFeatured = i.IsFeatured,
+        Color = i.Color, Storage = i.Storage, RAM = i.RAM,
+        InstallmentAvailable = i.InstallmentAvailable,
+        Specs = i.Specs, WhatsInTheBox = i.WhatsInTheBox,
         CreatedAt = i.CreatedAt, UpdatedAt = i.UpdatedAt
     };
 

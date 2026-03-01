@@ -1,6 +1,7 @@
 using System.Text.RegularExpressions;
 using Microsoft.EntityFrameworkCore;
 using NovaNode.Application.DTOs.Brands;
+using NovaNode.Application.DTOs.Categories;
 using NovaNode.Application.Interfaces;
 using NovaNode.Domain.Entities;
 using NovaNode.Infrastructure.Persistence;
@@ -33,8 +34,10 @@ public partial class BrandService : IBrandService
             TenantId = tenantId,
             Name = request.Name,
             Slug = string.IsNullOrEmpty(request.Slug) ? Slugify(request.Name) : request.Slug,
+            LogoUrl = request.LogoUrl,
             DisplayOrder = request.DisplayOrder,
-            IsActive = request.IsActive
+            IsActive = request.IsActive,
+            IsVisibleInNav = request.IsVisibleInNav
         };
         _db.Brands.Add(brand);
         await _db.SaveChangesAsync(ct);
@@ -47,8 +50,10 @@ public partial class BrandService : IBrandService
             ?? throw new KeyNotFoundException("Brand not found.");
         brand.Name = request.Name;
         brand.Slug = string.IsNullOrEmpty(request.Slug) ? Slugify(request.Name) : request.Slug;
+        brand.LogoUrl = request.LogoUrl;
         brand.DisplayOrder = request.DisplayOrder;
         brand.IsActive = request.IsActive;
+        brand.IsVisibleInNav = request.IsVisibleInNav;
         await _db.SaveChangesAsync(ct);
         return MapDto(brand);
     }
@@ -61,10 +66,22 @@ public partial class BrandService : IBrandService
         await _db.SaveChangesAsync(ct);
     }
 
+    public async Task ReorderAsync(Guid tenantId, ReorderRequest request, CancellationToken ct = default)
+    {
+        var brands = await _db.Brands.Where(b => b.TenantId == tenantId).ToListAsync(ct);
+        foreach (var item in request.Items)
+        {
+            var b = brands.FirstOrDefault(x => x.Id == item.Id);
+            if (b != null) b.DisplayOrder = item.DisplayOrder;
+        }
+        await _db.SaveChangesAsync(ct);
+    }
+
     private static BrandDto MapDto(Brand b) => new()
     {
         Id = b.Id, Name = b.Name, Slug = b.Slug,
-        LogoUrl = b.LogoUrl, DisplayOrder = b.DisplayOrder, IsActive = b.IsActive
+        LogoUrl = b.LogoUrl, DisplayOrder = b.DisplayOrder, IsActive = b.IsActive,
+        IsVisibleInNav = b.IsVisibleInNav
     };
 
     private static string Slugify(string text) =>

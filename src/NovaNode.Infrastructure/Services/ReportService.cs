@@ -23,43 +23,53 @@ public class ReportService : IReportService
         var totalSales = await invoices.SumAsync(i => (decimal?)i.Total, ct) ?? 0;
         var totalRefunds = await refunds.SumAsync(i => (decimal?)i.Total, ct) ?? 0;
         var totalExpenses = await expenses.SumAsync(e => (decimal?)e.Amount, ct) ?? 0;
-        var netSales = totalSales + totalRefunds;
+        var netSales = totalSales - totalRefunds;
 
         var invoiceItems = _db.InvoiceItems
             .Where(ii => ii.Invoice.TenantId == tenantId && ii.Invoice.CreatedAt >= from && ii.Invoice.CreatedAt <= to && !ii.Invoice.IsRefund);
 
-        var devicesSold = await invoiceItems.Where(ii => ii.Item != null && ii.Item.ItemType.IsDevice).CountAsync(ct);
-        var accessoriesQty = await invoiceItems.Where(ii => ii.Item != null && ii.Item.ItemType.IsStockItem).SumAsync(ii => (int?)ii.Quantity, ct) ?? 0;
+        var devicesSold = await invoiceItems.Where(ii => ii.Item != null && ii.Item.Category.IsDevice).CountAsync(ct);
+        var accessoriesQty = await invoiceItems.Where(ii => ii.Item != null && ii.Item.Category.IsStockItem).SumAsync(ii => (int?)ii.Quantity, ct) ?? 0;
 
         var itemsInStock = await _db.Items.CountAsync(i => i.TenantId == tenantId && i.Status == ItemStatus.Available, ct);
 
         // ── Sales trend (daily totals) ──
-        var salesTrend = await _db.Invoices
+        var salesRaw = await _db.Invoices
             .Where(i => i.TenantId == tenantId && i.CreatedAt >= from && i.CreatedAt <= to && !i.IsRefund)
+            .Select(i => new { i.CreatedAt, i.Total })
+            .ToListAsync(ct);
+        var salesTrend = salesRaw
             .GroupBy(i => i.CreatedAt.Date)
             .Select(g => new TrendPointDto { Date = g.Key.ToString("yyyy-MM-dd"), Value = g.Sum(x => x.Total) })
-            .OrderBy(x => x.Date)
-            .ToListAsync(ct);
+            .OrderBy(x => x.Date).ToList();
 
         // ── Leads trend (daily counts) ──
-        var leadsTrend = await _db.Leads
+        var leadsRaw = await _db.Leads
             .Where(l => l.TenantId == tenantId && l.CreatedAt >= from && l.CreatedAt <= to)
+            .Select(l => new { l.CreatedAt })
+            .ToListAsync(ct);
+        var leadsTrend = leadsRaw
             .GroupBy(l => l.CreatedAt.Date)
             .Select(g => new TrendPointDto { Date = g.Key.ToString("yyyy-MM-dd"), Value = g.Count() })
-            .OrderBy(x => x.Date)
+            .OrderBy(x => x.Date).ToList();
+
+        var topItemTypesRaw = await invoiceItems.Where(ii => ii.Item != null)
+            .Select(ii => new { ii.Item!.Category.Name, ii.LineTotal })
             .ToListAsync(ct);
-
-        var topItemTypes = await invoiceItems.Where(ii => ii.Item != null)
-            .GroupBy(ii => ii.Item!.ItemType.Name)
+        var topItemTypes = topItemTypesRaw
+            .GroupBy(x => x.Name)
             .Select(g => new TopItemTypeDto { Name = g.Key, SoldCount = g.Count(), Revenue = g.Sum(x => x.LineTotal) })
-            .OrderByDescending(x => x.Revenue).Take(5).ToListAsync(ct);
+            .OrderByDescending(x => x.Revenue).Take(5).ToList();
 
-        var topLeads = await leads.Where(l => l.TargetTitleSnapshot != null)
-            .GroupBy(l => l.TargetTitleSnapshot!)
+        var topLeadsRaw = await leads.Where(l => l.TargetTitleSnapshot != null)
+            .Select(l => l.TargetTitleSnapshot!)
+            .ToListAsync(ct);
+        var topLeads = topLeadsRaw
+            .GroupBy(t => t)
             .Select(g => new TopLeadTargetDto { ItemTitle = g.Key, LeadCount = g.Count() })
-            .OrderByDescending(x => x.LeadCount).Take(5).ToListAsync(ct);
+            .OrderByDescending(x => x.LeadCount).Take(5).ToList();
 
-        var lowStock = await _db.Items.Where(i => i.TenantId == tenantId && i.ItemType.IsStockItem && i.Quantity <= 3 && i.Status == ItemStatus.Available)
+        var lowStock = await _db.Items.Where(i => i.TenantId == tenantId && i.Category.IsStockItem && i.Quantity <= 3 && i.Status == ItemStatus.Available)
             .Select(i => new LowStockItemDto { Id = i.Id, Title = i.Title, Quantity = i.Quantity })
             .Take(10).ToListAsync(ct);
 
@@ -81,6 +91,7 @@ public class ReportService : IReportService
                 Id = i.Id,
                 InvoiceNumber = i.InvoiceNumber,
                 CustomerName = i.CustomerName,
+                CustomerPhone = i.CustomerPhone,
                 Total = i.Total,
                 PaymentMethod = i.PaymentMethod.ToString(),
                 IsRefund = i.IsRefund,
@@ -112,6 +123,11 @@ public class ReportService : IReportService
     private static (DateTime from, DateTime to) GetDateRange(DashboardFilterRequest filter)
     {
         var to = filter.To ?? DateTime.UtcNow;
+
+        // If explicit From is provided (even without Range="custom"), use it
+        if (filter.From.HasValue)
+            return (filter.From.Value, to);
+
         var from = filter.Range?.ToLowerInvariant() switch
         {
             "today" => to.Date,

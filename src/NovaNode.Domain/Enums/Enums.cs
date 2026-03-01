@@ -38,7 +38,9 @@ public enum HomeSectionType
     CategoriesShowcase = 3,
     BrandsCarousel = 4,
     Testimonials = 5,
-    CustomHtml = 6
+    CustomHtml = 6,
+    InstallmentOffers = 7,
+    BestSellers = 8
 }
 
 public enum HomeSectionTargetType

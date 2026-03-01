@@ -6,8 +6,8 @@ using NovaNode.Application.DTOs.Common;
 using NovaNode.Application.DTOs.CustomFields;
 using NovaNode.Application.DTOs.Employees;
 using NovaNode.Application.DTOs.Expenses;
-using NovaNode.Application.DTOs.HomeSections;
 using NovaNode.Application.DTOs.Invoices;
+using NovaNode.Application.DTOs.Installments;
 using NovaNode.Application.DTOs.Items;
 using NovaNode.Application.DTOs.ItemTypes;
 using NovaNode.Application.DTOs.Leads;
@@ -20,8 +20,10 @@ namespace NovaNode.Application.Interfaces;
 public interface IAuthService
 {
     Task<LoginResponse> LoginAsync(Guid tenantId, LoginRequest request, CancellationToken ct = default);
+    Task<UnifiedLoginResponse> UnifiedLoginAsync(LoginRequest request, CancellationToken ct = default);
     Task<LoginResponse> RefreshTokenAsync(Guid tenantId, string refreshToken, CancellationToken ct = default);
     Task<PlatformLoginResponse> PlatformLoginAsync(PlatformLoginRequest request, CancellationToken ct = default);
+    Task ChangePasswordAsync(Guid tenantId, Guid userId, ChangePasswordRequest request, CancellationToken ct = default);
 }
 
 public interface IBrandService
@@ -31,6 +33,7 @@ public interface IBrandService
     Task<BrandDto> CreateAsync(Guid tenantId, CreateBrandRequest request, CancellationToken ct = default);
     Task<BrandDto> UpdateAsync(Guid tenantId, Guid id, UpdateBrandRequest request, CancellationToken ct = default);
     Task DeleteAsync(Guid tenantId, Guid id, CancellationToken ct = default);
+    Task ReorderAsync(Guid tenantId, ReorderRequest request, CancellationToken ct = default);
 }
 
 public interface ICategoryService
@@ -51,14 +54,16 @@ public interface IItemTypeService
     Task<ItemTypeDto> CreateAsync(Guid tenantId, CreateItemTypeRequest request, CancellationToken ct = default);
     Task<ItemTypeDto> UpdateAsync(Guid tenantId, Guid id, UpdateItemTypeRequest request, CancellationToken ct = default);
     Task DeleteAsync(Guid tenantId, Guid id, CancellationToken ct = default);
+    Task ReorderAsync(Guid tenantId, ReorderRequest request, CancellationToken ct = default);
 }
 
 public interface ICustomFieldService
 {
-    Task<List<CustomFieldDto>> GetAllAsync(Guid tenantId, Guid? itemTypeId = null, CancellationToken ct = default);
+    Task<List<CustomFieldDto>> GetAllAsync(Guid tenantId, Guid? categoryId = null, CancellationToken ct = default);
     Task<CustomFieldDto> CreateAsync(Guid tenantId, CreateCustomFieldRequest request, CancellationToken ct = default);
     Task<CustomFieldDto> UpdateAsync(Guid tenantId, Guid id, UpdateCustomFieldRequest request, CancellationToken ct = default);
     Task DeleteAsync(Guid tenantId, Guid id, CancellationToken ct = default);
+    Task ReorderAsync(Guid tenantId, ReorderRequest request, CancellationToken ct = default);
 }
 
 public interface IItemService
@@ -74,14 +79,7 @@ public interface IItemService
     Task DeleteImageAsync(Guid tenantId, Guid itemId, string imageKey, CancellationToken ct = default);
 }
 
-public interface IHomeSectionService
-{
-    Task<List<HomeSectionDto>> GetAllAsync(Guid tenantId, bool activeOnly = false, CancellationToken ct = default);
-    Task<HomeSectionDto> CreateAsync(Guid tenantId, CreateHomeSectionRequest request, CancellationToken ct = default);
-    Task<HomeSectionDto> UpdateAsync(Guid tenantId, Guid id, UpdateHomeSectionRequest request, CancellationToken ct = default);
-    Task DeleteAsync(Guid tenantId, Guid id, CancellationToken ct = default);
-    Task ReorderAsync(Guid tenantId, ReorderRequest request, CancellationToken ct = default);
-}
+// IHomeSectionService removed — feature deprecated
 
 public interface ILeadService
 {
@@ -164,6 +162,8 @@ public interface IPlatformService
     Task StartTrialAsync(Guid tenantId, StartTrialRequest request, CancellationToken ct = default);
     Task ActivateSubscriptionAsync(Guid tenantId, ActivateSubscriptionRequest request, CancellationToken ct = default);
     Task RenewSubscriptionAsync(Guid tenantId, RenewSubscriptionRequest request, CancellationToken ct = default);
+    Task DeleteSubscriptionAsync(Guid tenantId, CancellationToken ct = default);
+    Task UpdateSubscriptionAsync(Guid tenantId, UpdateSubscriptionRequest request, CancellationToken ct = default);
     Task<List<ExpiringSubscriptionDto>> GetExpiringSubscriptionsAsync(int days, CancellationToken ct = default);
 
     // Features
@@ -173,6 +173,7 @@ public interface IPlatformService
     // Invoices
     Task<List<PlatformInvoiceDto>> GetInvoicesAsync(Guid? tenantId = null, CancellationToken ct = default);
     Task<PlatformInvoiceDto> GetInvoiceAsync(Guid id, CancellationToken ct = default);
+    Task DeleteInvoiceAsync(Guid id, CancellationToken ct = default);
 
     // Dashboard
     Task<PlatformDashboardDto> GetDashboardAsync(string range, CancellationToken ct = default);
@@ -186,3 +187,21 @@ public interface IPlatformService
     Task<StoreRegistrationDto> UpdateStoreRequestStatusAsync(Guid id, string status, string? notes, Guid userId, CancellationToken ct = default);
 }
 
+public interface IInstallmentService
+{
+    // Providers
+    Task<List<InstallmentProviderDto>> GetProvidersAsync(Guid tenantId, CancellationToken ct = default);
+    Task<InstallmentProviderDto> GetProviderAsync(Guid tenantId, Guid id, CancellationToken ct = default);
+    Task<InstallmentProviderDto> CreateProviderAsync(Guid tenantId, CreateProviderRequest request, CancellationToken ct = default);
+    Task<InstallmentProviderDto> UpdateProviderAsync(Guid tenantId, Guid id, UpdateProviderRequest request, CancellationToken ct = default);
+    Task DeleteProviderAsync(Guid tenantId, Guid id, CancellationToken ct = default);
+
+    // Plans
+    Task<List<InstallmentPlanDto>> GetPlansAsync(Guid tenantId, Guid? providerId = null, Guid? itemId = null, CancellationToken ct = default);
+    Task<InstallmentPlanDto> CreatePlanAsync(Guid tenantId, CreateInstallmentPlanRequest request, CancellationToken ct = default);
+    Task<InstallmentPlanDto> UpdatePlanAsync(Guid tenantId, Guid id, UpdateInstallmentPlanRequest request, CancellationToken ct = default);
+    Task DeletePlanAsync(Guid tenantId, Guid id, CancellationToken ct = default);
+
+    // Public
+    Task<List<ItemInstallmentInfoDto>> GetItemInstallmentsAsync(Guid tenantId, Guid itemId, CancellationToken ct = default);
+}

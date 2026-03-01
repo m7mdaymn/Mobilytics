@@ -159,10 +159,23 @@ public class TenantFlowTests : IClassFixture<CustomWebApplicationFactory>
     [Fact]
     public async Task Unauthenticated_BrandsGet_ShouldReturn401()
     {
+        // Create a real tenant first so tenant resolution succeeds
+        var platformToken = await GetPlatformTokenAsync();
         var client = _factory.CreateClient();
-        client.DefaultRequestHeaders.Add("X-Tenant-Slug", "some-slug");
-        // No auth header
-        var response = await client.GetAsync("/api/v1/brands");
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", platformToken);
+
+        var slug = "unauth-" + Guid.NewGuid().ToString()[..6];
+        await client.PostAsJsonAsync("/api/v1/platform/tenants", new CreateTenantRequest
+        {
+            Name = "Unauth Test", Slug = slug, OwnerEmail = "unauth@test.com",
+            OwnerPassword = "Owner@123", OwnerName = "Unauth Owner"
+        });
+
+        // Now use a fresh client with no auth
+        var unauthClient = _factory.CreateClient();
+        unauthClient.DefaultRequestHeaders.Add("X-Tenant-Slug", slug);
+        // No Authorization header
+        var response = await unauthClient.GetAsync("/api/v1/brands");
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
@@ -199,5 +212,78 @@ public class TenantFlowTests : IClassFixture<CustomWebApplicationFactory>
         var envelope = JsonSerializer.Deserialize<ApiResponse<PlatformLoginResponse>>(
             await response.Content.ReadAsStringAsync(), JsonOpts)!;
         return envelope.Data!.Token;
+    }
+
+    [Fact]
+    public async Task CrossTenantAccess_ShouldReturn403()
+    {
+        // Create two tenants
+        var platformToken = await GetPlatformTokenAsync();
+        var client = _factory.CreateClient();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", platformToken);
+
+        var slugA = "cross-a-" + Guid.NewGuid().ToString()[..6];
+        var slugB = "cross-b-" + Guid.NewGuid().ToString()[..6];
+
+        await client.PostAsJsonAsync("/api/v1/platform/tenants", new CreateTenantRequest
+        {
+            Name = "Store A", Slug = slugA, OwnerEmail = "a@cross.com",
+            OwnerPassword = "Owner@123", OwnerName = "Owner A"
+        });
+        await client.PostAsJsonAsync("/api/v1/platform/tenants", new CreateTenantRequest
+        {
+            Name = "Store B", Slug = slugB, OwnerEmail = "b@cross.com",
+            OwnerPassword = "Owner@123", OwnerName = "Owner B"
+        });
+
+        // Login as Owner A
+        client.DefaultRequestHeaders.Authorization = null;
+        client.DefaultRequestHeaders.Add("X-Tenant-Slug", slugA);
+        var loginResp = await client.PostAsJsonAsync("/api/v1/auth/login",
+            new LoginRequest { Email = "a@cross.com", Password = "Owner@123" });
+        loginResp.EnsureSuccessStatusCode();
+        var loginData = JsonSerializer.Deserialize<ApiResponse<LoginResponse>>(
+            await loginResp.Content.ReadAsStringAsync(), JsonOpts)!;
+
+        // Try to access Store B with Owner A's token
+        var crossClient = _factory.CreateClient();
+        crossClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", loginData.Data!.Token);
+        crossClient.DefaultRequestHeaders.Add("X-Tenant-Slug", slugB);
+
+        var crossResp = await crossClient.GetAsync("/api/v1/brands");
+
+        // TenantClaimValidationMiddleware should block this with 403
+        Assert.Equal(HttpStatusCode.Forbidden, crossResp.StatusCode);
+        var body = await crossResp.Content.ReadAsStringAsync();
+        Assert.Contains("Access denied", body);
+    }
+
+    [Fact]
+    public async Task UnifiedLogin_ShouldReturnCorrectSlug()
+    {
+        // Create tenant
+        var platformToken = await GetPlatformTokenAsync();
+        var client = _factory.CreateClient();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", platformToken);
+
+        var slug = "unified-" + Guid.NewGuid().ToString()[..6];
+        await client.PostAsJsonAsync("/api/v1/platform/tenants", new CreateTenantRequest
+        {
+            Name = "Unified Store", Slug = slug, OwnerEmail = "unified@test.com",
+            OwnerPassword = "Owner@123", OwnerName = "Unified Owner"
+        });
+
+        // Use unified login (no slug needed)
+        var loginClient = _factory.CreateClient();
+        var loginResp = await loginClient.PostAsJsonAsync("/api/v1/stores/login",
+            new LoginRequest { Email = "unified@test.com", Password = "Owner@123" });
+        loginResp.EnsureSuccessStatusCode();
+
+        var loginBody = await loginResp.Content.ReadAsStringAsync();
+        var envelope = JsonSerializer.Deserialize<ApiResponse<UnifiedLoginResponse>>(loginBody, JsonOpts)!;
+
+        Assert.Equal(slug, envelope.Data!.TenantSlug);
+        Assert.Equal("Unified Store", envelope.Data.TenantName);
+        Assert.NotEmpty(envelope.Data.Token);
     }
 }

@@ -1,5 +1,7 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using NovaNode.Api.Middleware;
 using NovaNode.Application.DTOs.Invoices;
 using NovaNode.Application.Interfaces;
 using NovaNode.Domain.Interfaces;
@@ -19,7 +21,7 @@ public class InvoicesController : BaseApiController
     }
 
     private Guid GetUserId() =>
-        Guid.Parse(User.FindFirst("userId")?.Value ?? throw new UnauthorizedAccessException());
+        Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? throw new UnauthorizedAccessException());
 
     [HttpGet]
     public async Task<IActionResult> GetAll([FromQuery] InvoiceFilterRequest filter, CancellationToken ct)
@@ -36,6 +38,7 @@ public class InvoicesController : BaseApiController
     }
 
     [HttpPost]
+    [RequirePermission("invoices.create")]
     public async Task<IActionResult> Create([FromBody] CreateInvoiceRequest request, CancellationToken ct)
     {
         var tenantId = _tenantContext.TenantId!.Value;
@@ -44,6 +47,7 @@ public class InvoicesController : BaseApiController
     }
 
     [HttpPost("{id:guid}/refund")]
+    [RequirePermission("invoices.refund")]
     public async Task<IActionResult> Refund(Guid id, [FromBody] RefundInvoiceRequest request, CancellationToken ct)
     {
         var tenantId = _tenantContext.TenantId!.Value;

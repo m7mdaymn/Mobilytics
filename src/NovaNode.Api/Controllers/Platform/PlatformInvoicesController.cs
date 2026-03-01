@@ -18,4 +18,11 @@ public class PlatformInvoicesController : BaseApiController
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> Get(Guid id, CancellationToken ct) =>
         Ok(await _svc.GetInvoiceAsync(id, ct));
+
+    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
+    {
+        await _svc.DeleteInvoiceAsync(id, ct);
+        return Ok(true);
+    }
 }

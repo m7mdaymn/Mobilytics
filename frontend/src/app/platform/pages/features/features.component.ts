@@ -154,8 +154,7 @@ export class FeaturesComponent implements OnInit {
         this.selectedTenant.set(tenant);
         // Find plan defaults
         if (tenant.subscription) {
-          const plan = this.plans().find(p => p.name === tenant.subscription!.planName);
-          this.planFeatures.set(plan?.features ?? null);
+          this.planFeatures.set(null);
         } else {
           this.planFeatures.set(null);
         }

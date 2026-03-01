@@ -24,6 +24,26 @@ public class StoreSettings : BaseEntity
     public string? PwaSettingsJson { get; set; }
     public string? WhatsAppTemplatesJson { get; set; }
 
+    // Header
+    public string? HeaderNoticeText { get; set; }
+
+    // About page
+    public string? AboutTitle { get; set; }
+    public string? AboutDescription { get; set; }
+    public string? AboutImageUrl { get; set; }
+
+    // Hero banners JSON: [{"imageUrl":"","title":"","subtitle":"","linkUrl":""}]
+    public string? HeroBannersJson { get; set; }
+
+    // Testimonials JSON: [{"name":"","text":"","rating":5,"imageUrl":""}]
+    public string? TestimonialsJson { get; set; }
+
+    // FAQ JSON: [{"question":"","answer":""}]
+    public string? FaqJson { get; set; }
+
+    // Trust badges JSON: ["Trusted Store","Fast Delivery"]
+    public string? TrustBadgesJson { get; set; }
+
     // Navigation
     public Tenant Tenant { get; set; } = null!;
 
@@ -36,6 +56,8 @@ public class StoreSettings : BaseEntity
         [4] = new("Royal Purple", "#5b21b6", "#4c1d95", "#a78bfa"),
         [5] = new("Sunset Orange", "#c2410c", "#9a3412", "#fb923c"),
         [6] = new("Slate Minimal", "#0f172a", "#334155", "#94a3b8"),
+        [7] = new("Rose Gold", "#9f1239", "#881337", "#fda4af"),
+        [8] = new("Arctic Blue", "#0369a1", "#075985", "#7dd3fc"),
     };
 
     public record ThemePreset(string Name, string Primary, string Secondary, string Accent);

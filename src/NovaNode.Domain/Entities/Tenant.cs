@@ -19,4 +19,5 @@ public class Tenant : AuditableEntity
     public ICollection<Subscription> Subscriptions { get; set; } = [];
     public TenantFeatureToggle? FeatureToggle { get; set; }
     public StoreSettings? StoreSettings { get; set; }
+    public ICollection<TenantSlugHistory> SlugHistory { get; set; } = [];
 }

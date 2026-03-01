@@ -5,6 +5,8 @@ import { ApiService } from '../../../core/services/api.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { Expense, ExpenseCategory } from '../../../core/models/item.models';
 import { AuthService } from '../../../core/services/auth.service';
+import { SettingsStore } from '../../../core/stores/settings.store';
+import { I18nService } from '../../../core/services/i18n.service';
 
 interface PagedExpenses {
   items: Expense[];
@@ -20,67 +22,67 @@ interface PagedExpenses {
   template: `
     <div class="space-y-6">
       <div class="flex items-center justify-between">
-        <h1 class="text-2xl font-bold">Expenses</h1>
+        <h1 class="text-2xl font-bold">{{ i18n.t('expenses.title') }}</h1>
         <div class="flex gap-2">
-          <button (click)="showCategoryForm.set(true)" class="btn-outline text-sm">Manage Categories</button>
-          <button (click)="openExpenseForm()" class="btn-primary">+ Add Expense</button>
+          <button (click)="showCategoryForm.set(true)" class="btn-outline text-sm">{{ i18n.t('expenses.manageCategories') }}</button>
+          <button (click)="openExpenseForm()" class="btn-primary">+ {{ i18n.t('expenses.addNew') }}</button>
         </div>
       </div>
 
       <!-- Category Manager -->
       @if (showCategoryForm()) {
         <div class="card p-6 space-y-4">
-          <h2 class="font-semibold">Expense Categories</h2>
+          <h2 class="font-semibold">{{ i18n.t('expenses.categoriesTitle') }}</h2>
           <div class="flex gap-2">
-            <input [(ngModel)]="newCatName" class="input-field flex-1" placeholder="Category name" />
-            <button (click)="addCategory()" class="btn-primary">Add</button>
+            <input [(ngModel)]="newCatName" class="input-field flex-1" [placeholder]="i18n.t('expenses.categoryNamePlaceholder')" />
+            <button (click)="addCategory()" class="btn-primary">{{ i18n.t('common.add') }}</button>
           </div>
           <div class="flex flex-wrap gap-2">
             @for (cat of expenseCategories(); track cat.id) {
               <span class="inline-flex items-center gap-1 px-3 py-1 bg-gray-100 rounded-full text-sm">
                 {{ cat.name }}
-                <button (click)="deleteCategory(cat)" class="text-red-500 hover:text-red-700 ml-1">✕</button>
+                <button (click)="deleteCategory(cat)" class="text-red-500 hover:text-red-700 ms-1">✕</button>
               </span>
             }
           </div>
-          <button (click)="showCategoryForm.set(false)" class="btn-outline text-sm">Close</button>
+          <button (click)="showCategoryForm.set(false)" class="btn-outline text-sm">{{ i18n.t('common.close') }}</button>
         </div>
       }
 
       <!-- Expense Form -->
       @if (showExpenseForm()) {
         <div class="card p-6 space-y-4">
-          <h2 class="font-semibold">{{ editExpenseId() ? 'Edit' : 'New' }} Expense</h2>
+          <h2 class="font-semibold">{{ editExpenseId() ? i18n.t('expenses.editExpense') : i18n.t('expenses.newExpense') }}</h2>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label class="block text-sm font-medium mb-1">Category <span class="text-red-500">*</span></label>
+              <label class="block text-sm font-medium mb-1">{{ i18n.t('expenses.category') }} <span class="text-red-500">*</span></label>
               <select [(ngModel)]="expenseForm.categoryId" class="input-field">
-                <option value="">Select...</option>
+                <option value="">{{ i18n.t('common.select') }}</option>
                 @for (cat of expenseCategories(); track cat.id) {
                   <option [value]="cat.id">{{ cat.name }}</option>
                 }
               </select>
             </div>
             <div>
-              <label class="block text-sm font-medium mb-1">Amount <span class="text-red-500">*</span></label>
+              <label class="block text-sm font-medium mb-1">{{ i18n.t('expenses.amount') }} <span class="text-red-500">*</span></label>
               <input [(ngModel)]="expenseForm.amount" type="number" min="0" class="input-field" />
             </div>
             <div>
-              <label class="block text-sm font-medium mb-1">Date</label>
+              <label class="block text-sm font-medium mb-1">{{ i18n.t('expenses.date') }}</label>
               <input [(ngModel)]="expenseForm.occurredAt" type="date" class="input-field" />
             </div>
             <div class="md:col-span-2">
-              <label class="block text-sm font-medium mb-1">Title / Description</label>
+              <label class="block text-sm font-medium mb-1">{{ i18n.t('expenses.titleDescription') }}</label>
               <input [(ngModel)]="expenseForm.title" class="input-field" />
             </div>
             <div>
-              <label class="block text-sm font-medium mb-1">Notes</label>
-              <input [(ngModel)]="expenseForm.notes" class="input-field" placeholder="Optional notes" />
+              <label class="block text-sm font-medium mb-1">{{ i18n.t('expenses.notes') }}</label>
+              <input [(ngModel)]="expenseForm.notes" class="input-field" [placeholder]="i18n.t('expenses.notesPlaceholder')" />
             </div>
           </div>
           <div class="flex gap-2">
-            <button (click)="saveExpense()" class="btn-primary" [disabled]="saving()">Save</button>
-            <button (click)="showExpenseForm.set(false)" class="btn-outline">Cancel</button>
+            <button (click)="saveExpense()" class="btn-primary" [disabled]="saving()">{{ saving() ? i18n.t('common.saving') : i18n.t('common.save') }}</button>
+            <button (click)="showExpenseForm.set(false)" class="btn-outline">{{ i18n.t('common.cancel') }}</button>
           </div>
         </div>
       }
@@ -88,42 +90,42 @@ interface PagedExpenses {
       <!-- Salary Generation -->
       @if (authService.hasPermission('expenses.manage')) {
         <div class="card p-4 flex items-center gap-4">
-          <span class="text-sm font-medium">Generate Monthly Salaries</span>
+          <span class="text-sm font-medium">{{ i18n.t('expenses.generateSalaries') }}</span>
           <select [(ngModel)]="salaryMonth" class="input-field w-40">
             @for (m of months; track m.value) {
               <option [value]="m.value">{{ m.label }}</option>
             }
           </select>
-          <button (click)="generateSalaries()" class="btn-accent text-sm" [disabled]="generatingSalaries()">Generate</button>
+          <button (click)="generateSalaries()" class="btn-accent text-sm" [disabled]="generatingSalaries()">{{ i18n.t('expenses.generate') }}</button>
         </div>
       }
 
       <!-- Filters -->
       <div class="flex flex-wrap gap-3">
         <div>
-          <label class="block text-xs text-gray-500 mb-1">From</label>
+          <label class="block text-xs text-gray-500 mb-1">{{ i18n.t('common.from') }}</label>
           <input [(ngModel)]="dateFrom" type="date" class="input-field" />
         </div>
         <div>
-          <label class="block text-xs text-gray-500 mb-1">To</label>
+          <label class="block text-xs text-gray-500 mb-1">{{ i18n.t('common.to') }}</label>
           <input [(ngModel)]="dateTo" type="date" class="input-field" />
         </div>
         <div>
-          <label class="block text-xs text-gray-500 mb-1">Category</label>
+          <label class="block text-xs text-gray-500 mb-1">{{ i18n.t('expenses.category') }}</label>
           <select [(ngModel)]="categoryFilter" class="input-field">
-            <option value="">All</option>
+            <option value="">{{ i18n.t('common.all') }}</option>
             @for (cat of expenseCategories(); track cat.id) {
               <option [value]="cat.id">{{ cat.name }}</option>
             }
           </select>
         </div>
-        <button (click)="load()" class="btn-primary mt-auto">Filter</button>
+        <button (click)="load()" class="btn-primary mt-auto">{{ i18n.t('common.filter') }}</button>
       </div>
 
       <!-- Summary -->
       <div class="card p-4 flex items-center justify-between">
-        <span class="text-sm text-gray-500">Total Expenses (filtered)</span>
-        <span class="text-xl font-bold text-red-600">{{ totalExpenses() | currency }}</span>
+        <span class="text-sm text-gray-500">{{ i18n.t('expenses.totalFiltered') }}</span>
+        <span class="text-xl font-bold text-red-600">{{ totalExpenses() | currency: settingsStore.currency() : 'symbol-narrow' : '1.0-0' }}</span>
       </div>
 
       <!-- Table -->
@@ -131,11 +133,11 @@ interface PagedExpenses {
         <table class="w-full text-sm">
           <thead class="bg-gray-50">
             <tr>
-              <th class="px-4 py-3 text-left font-medium">Date</th>
-              <th class="px-4 py-3 text-left font-medium">Category</th>
-              <th class="px-4 py-3 text-left font-medium">Title</th>
-              <th class="px-4 py-3 text-right font-medium">Amount</th>
-              <th class="px-4 py-3 text-right font-medium">Actions</th>
+              <th class="px-4 py-3 text-start font-medium">{{ i18n.t('expenses.date') }}</th>
+              <th class="px-4 py-3 text-start font-medium">{{ i18n.t('expenses.category') }}</th>
+              <th class="px-4 py-3 text-start font-medium">{{ i18n.t('expenses.titleDescription') }}</th>
+              <th class="px-4 py-3 text-end font-medium">{{ i18n.t('expenses.amount') }}</th>
+              <th class="px-4 py-3 text-end font-medium">{{ i18n.t('common.actions') }}</th>
             </tr>
           </thead>
           <tbody class="divide-y">
@@ -144,14 +146,14 @@ interface PagedExpenses {
                 <td class="px-4 py-3">{{ exp.occurredAt | date:'mediumDate' }}</td>
                 <td class="px-4 py-3">{{ exp.categoryName }}</td>
                 <td class="px-4 py-3 text-gray-600">{{ exp.title || '—' }}</td>
-                <td class="px-4 py-3 text-right font-medium">{{ exp.amount | currency }}</td>
-                <td class="px-4 py-3 text-right space-x-2">
-                  <button (click)="editExpense(exp)" class="text-blue-600 hover:underline">Edit</button>
-                  <button (click)="deleteExpense(exp)" class="text-red-600 hover:underline">Delete</button>
+                <td class="px-4 py-3 text-end font-medium">{{ exp.amount | currency: settingsStore.currency() : 'symbol-narrow' : '1.0-0' }}</td>
+                <td class="px-4 py-3 text-end space-x-2">
+                  <button (click)="editExpense(exp)" class="text-blue-600 hover:underline">{{ i18n.t('common.edit') }}</button>
+                  <button (click)="deleteExpense(exp)" class="text-red-600 hover:underline">{{ i18n.t('common.delete') }}</button>
                 </td>
               </tr>
             } @empty {
-              <tr><td colspan="5" class="px-4 py-8 text-center text-gray-400">No expenses found</td></tr>
+              <tr><td colspan="5" class="px-4 py-8 text-center text-gray-400">{{ i18n.t('expenses.noData') }}</td></tr>
             }
           </tbody>
         </table>
@@ -160,9 +162,9 @@ interface PagedExpenses {
       <!-- Pagination -->
       @if (totalCount() > pageSize) {
         <div class="flex justify-center gap-2 pt-2">
-          <button (click)="page = page - 1; load()" [disabled]="page <= 1" class="btn-outline text-sm">Prev</button>
-          <span class="text-sm py-2">Page {{ page }} of {{ totalPages() }}</span>
-          <button (click)="page = page + 1; load()" [disabled]="page >= totalPages()" class="btn-outline text-sm">Next</button>
+          <button (click)="page = page - 1; load()" [disabled]="page <= 1" class="btn-outline text-sm">{{ i18n.t('common.prev') }}</button>
+          <span class="text-sm py-2">{{ i18n.t('common.pageOf').replace('{0}', '' + page).replace('{1}', '' + totalPages()) }}</span>
+          <button (click)="page = page + 1; load()" [disabled]="page >= totalPages()" class="btn-outline text-sm">{{ i18n.t('common.next') }}</button>
         </div>
       }
     </div>
@@ -172,6 +174,8 @@ export class ExpensesComponent implements OnInit {
   private readonly api = inject(ApiService);
   private readonly toastService = inject(ToastService);
   readonly authService = inject(AuthService);
+  readonly settingsStore = inject(SettingsStore);
+  readonly i18n = inject(I18nService);
 
   readonly expenses = signal<Expense[]>([]);
   readonly expenseCategories = signal<ExpenseCategory[]>([]);
@@ -228,16 +232,16 @@ export class ExpensesComponent implements OnInit {
   addCategory(): void {
     if (!this.newCatName) return;
     this.api.post('/Expenses/categories', { name: this.newCatName }).subscribe({
-      next: () => { this.newCatName = ''; this.loadCategories(); this.toastService.success('Category added'); },
-      error: () => this.toastService.error('Failed'),
+      next: () => { this.newCatName = ''; this.loadCategories(); this.toastService.success(this.i18n.t('expenses.categoryAdded')); },
+      error: () => this.toastService.error(this.i18n.t('expenses.failed')),
     });
   }
 
   deleteCategory(cat: ExpenseCategory): void {
-    if (!confirm(`Delete category "${cat.name}"?`)) return;
+    if (!confirm(this.i18n.t('expenses.confirmDeleteCategory'))) return;
     this.api.delete(`/Expenses/categories/${cat.id}`).subscribe({
-      next: () => { this.loadCategories(); this.toastService.success('Deleted'); },
-      error: () => this.toastService.error('Failed'),
+      next: () => { this.loadCategories(); this.toastService.success(this.i18n.t('expenses.deleted')); },
+      error: () => this.toastService.error(this.i18n.t('expenses.failed')),
     });
   }
 
@@ -257,16 +261,16 @@ export class ExpensesComponent implements OnInit {
   }
 
   deleteExpense(exp: Expense): void {
-    if (!confirm('Delete this expense?')) return;
+    if (!confirm(this.i18n.t('expenses.confirmDeleteExpense'))) return;
     this.api.delete(`/Expenses/${exp.id}`).subscribe({
-      next: () => { this.toastService.success('Deleted'); this.load(); },
-      error: () => this.toastService.error('Failed'),
+      next: () => { this.toastService.success(this.i18n.t('expenses.deleted')); this.load(); },
+      error: () => this.toastService.error(this.i18n.t('expenses.failed')),
     });
   }
 
   saveExpense(): void {
     if (!this.expenseForm.categoryId || !this.expenseForm.amount) {
-      this.toastService.error('Category and amount required');
+      this.toastService.error(this.i18n.t('expenses.categoryAndAmountRequired'));
       return;
     }
     this.saving.set(true);
@@ -281,17 +285,17 @@ export class ExpensesComponent implements OnInit {
       ? this.api.put(`/Expenses/${this.editExpenseId()}`, body)
       : this.api.post('/Expenses', body);
     req$.subscribe({
-      next: () => { this.saving.set(false); this.showExpenseForm.set(false); this.toastService.success('Saved'); this.load(); },
-      error: () => { this.saving.set(false); this.toastService.error('Failed'); },
+      next: () => { this.saving.set(false); this.showExpenseForm.set(false); this.toastService.success(this.i18n.t('expenses.saved')); this.load(); },
+      error: () => { this.saving.set(false); this.toastService.error(this.i18n.t('expenses.failed')); },
     });
   }
 
   generateSalaries(): void {
-    if (!confirm(`Generate salary expenses for ${this.salaryMonth}?`)) return;
+    if (!confirm(this.i18n.t('expenses.confirmGenerateSalaries'))) return;
     this.generatingSalaries.set(true);
     this.api.post('/Employees/generate-salary-expenses', { month: this.salaryMonth }).subscribe({
-      next: () => { this.generatingSalaries.set(false); this.toastService.success('Salaries generated'); this.load(); },
-      error: () => { this.generatingSalaries.set(false); this.toastService.error('Failed'); },
+      next: () => { this.generatingSalaries.set(false); this.toastService.success(this.i18n.t('expenses.salariesGenerated')); this.load(); },
+      error: () => { this.generatingSalaries.set(false); this.toastService.error(this.i18n.t('expenses.failed')); },
     });
   }
 }

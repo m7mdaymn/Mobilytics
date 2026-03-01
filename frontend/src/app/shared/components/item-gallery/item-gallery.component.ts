@@ -1,5 +1,6 @@
 import { Component, Input, signal } from '@angular/core';
 import { ItemImage } from '../../../core/models/item.models';
+import { resolveImageUrl } from '../../../core/utils/image.utils';
 
 @Component({
   selector: 'app-item-gallery',
@@ -70,9 +71,9 @@ export class ItemGalleryComponent {
 
   ngOnChanges(): void {
     const images: string[] = [];
-    if (this.mainImage) images.push(this.mainImage);
+    if (this.mainImage) images.push(resolveImageUrl(this.mainImage));
     if (this.gallery?.length) {
-      images.push(...this.gallery.sort((a, b) => a.sortOrder - b.sortOrder).map(g => g.url));
+      images.push(...this.gallery.sort((a, b) => a.sortOrder - b.sortOrder).map(g => resolveImageUrl(g.url)));
     }
     this.allImages.set(images);
     this.selectedIndex.set(0);

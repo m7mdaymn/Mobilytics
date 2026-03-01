@@ -51,7 +51,15 @@ public class StoreSettingsService : IStoreSettingsService
             PwaSettingsJson = s?.PwaSettingsJson,
             WhatsAppTemplatesJson = s?.WhatsAppTemplatesJson,
             IsActive = isActive,
-            PoweredByEnabled = poweredByEnabled
+            PoweredByEnabled = poweredByEnabled,
+            HeaderNoticeText = s?.HeaderNoticeText,
+            AboutTitle = s?.AboutTitle,
+            AboutDescription = s?.AboutDescription,
+            AboutImageUrl = s?.AboutImageUrl,
+            HeroBannersJson = s?.HeroBannersJson,
+            TestimonialsJson = s?.TestimonialsJson,
+            FaqJson = s?.FaqJson,
+            TrustBadgesJson = s?.TrustBadgesJson
         };
     }
 
@@ -70,6 +78,11 @@ public class StoreSettingsService : IStoreSettingsService
         s.WorkingHours = request.WorkingHours; s.SocialLinksJson = request.SocialLinksJson;
         s.PoliciesJson = request.PoliciesJson; s.MapUrl = request.MapUrl;
         s.PwaSettingsJson = request.PwaSettingsJson; s.WhatsAppTemplatesJson = request.WhatsAppTemplatesJson;
+        s.HeaderNoticeText = request.HeaderNoticeText;
+        s.AboutTitle = request.AboutTitle; s.AboutDescription = request.AboutDescription;
+        s.AboutImageUrl = request.AboutImageUrl;
+        s.HeroBannersJson = request.HeroBannersJson; s.TestimonialsJson = request.TestimonialsJson;
+        s.FaqJson = request.FaqJson; s.TrustBadgesJson = request.TrustBadgesJson;
         await _db.SaveChangesAsync(ct);
         return MapDto(s);
     }
@@ -132,6 +145,11 @@ public class StoreSettingsService : IStoreSettingsService
         CurrencyCode = s.CurrencyCode, FooterAddress = s.FooterAddress,
         WorkingHours = s.WorkingHours, SocialLinksJson = s.SocialLinksJson,
         PoliciesJson = s.PoliciesJson, MapUrl = s.MapUrl,
-        PwaSettingsJson = s.PwaSettingsJson, WhatsAppTemplatesJson = s.WhatsAppTemplatesJson
+        PwaSettingsJson = s.PwaSettingsJson, WhatsAppTemplatesJson = s.WhatsAppTemplatesJson,
+        HeaderNoticeText = s.HeaderNoticeText,
+        AboutTitle = s.AboutTitle, AboutDescription = s.AboutDescription,
+        AboutImageUrl = s.AboutImageUrl,
+        HeroBannersJson = s.HeroBannersJson, TestimonialsJson = s.TestimonialsJson,
+        FaqJson = s.FaqJson, TrustBadgesJson = s.TrustBadgesJson
     };
 }

@@ -98,8 +98,8 @@ export class PlatformApiService {
       name: data.name,
       priceMonthly: data.priceMonthly,
       activationFee: data.activationFee,
-      limitsJson: JSON.stringify(data.limits),
-      featuresJson: JSON.stringify(data.features),
+      limitsJson: '{}',
+      featuresJson: '{}',
     };
     return this.http.post<ApiResponse<Plan>>(`${this.baseUrl}/plans`, body)
       .pipe(map(res => this.unwrap(res)));
@@ -110,8 +110,8 @@ export class PlatformApiService {
       name: data.name,
       priceMonthly: data.priceMonthly,
       activationFee: data.activationFee,
-      limitsJson: JSON.stringify(data.limits),
-      featuresJson: JSON.stringify(data.features),
+      limitsJson: '{}',
+      featuresJson: '{}',
     };
     return this.http.put<ApiResponse<Plan>>(`${this.baseUrl}/plans/${id}`, body)
       .pipe(map(res => this.unwrap(res)));
@@ -138,6 +138,16 @@ export class PlatformApiService {
       .pipe(map(res => this.unwrap(res)));
   }
 
+  deleteSubscription(tenantId: string): Observable<void> {
+    return this.http.delete<ApiResponse<void>>(`${this.baseUrl}/subscriptions/${tenantId}`)
+      .pipe(map(res => this.unwrap(res)));
+  }
+
+  updateSubscription(tenantId: string, data: { months: number; notes?: string }): Observable<void> {
+    return this.http.put<ApiResponse<void>>(`${this.baseUrl}/subscriptions/${tenantId}`, data)
+      .pipe(map(res => this.unwrap(res)));
+  }
+
   getExpiringSubscriptions(days: number = 7): Observable<ExpiringSubscription[]> {
     return this.http.get<ApiResponse<ExpiringSubscription[]>>(`${this.baseUrl}/subscriptions/expiring`, {
       params: { days: days.toString() }
@@ -154,6 +164,11 @@ export class PlatformApiService {
 
   getInvoice(id: string): Observable<PlatformInvoice> {
     return this.http.get<ApiResponse<PlatformInvoice>>(`${this.baseUrl}/invoices/${id}`)
+      .pipe(map(res => this.unwrap(res)));
+  }
+
+  deleteInvoice(id: string): Observable<void> {
+    return this.http.delete<ApiResponse<void>>(`${this.baseUrl}/invoices/${id}`)
       .pipe(map(res => this.unwrap(res)));
   }
 

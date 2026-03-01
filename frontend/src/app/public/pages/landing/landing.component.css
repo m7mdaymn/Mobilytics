@@ -1,26 +1,346 @@
-/* Landing Page — Premium B&W Minimal */
+/* ═══════════════════════════════════════════════════════════
+   MOBILYTICS LANDING PAGE — Premium B&W Apple-Inspired
+   Ultra-professional · Smooth animations · 3D effects
+   ═══════════════════════════════════════════════════════════ */
+
 :host {
   display: block;
   background: #ffffff;
-  color: #0B0B0B;
+  color: #0a0a0a;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 html { scroll-behavior: smooth; }
 
-/* Modal animation */
-.animate-modal {
-  animation: modalIn 250ms ease-out;
+/* ═══════════════════════════════════════════
+   Scroll Reveal Animations
+   ═══════════════════════════════════════════ */
+.reveal-on-scroll {
+  opacity: 0;
+  transform: translateY(32px);
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
 }
+
+.reveal-on-scroll.revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.reveal-on-scroll.delay-1 { transition-delay: 80ms; }
+.reveal-on-scroll.delay-2 { transition-delay: 160ms; }
+.reveal-on-scroll.delay-3 { transition-delay: 240ms; }
+.reveal-on-scroll.delay-4 { transition-delay: 320ms; }
+.reveal-on-scroll.delay-5 { transition-delay: 400ms; }
+.reveal-on-scroll.delay-6 { transition-delay: 480ms; }
+
+/* Scale-up variant */
+.reveal-on-scroll.reveal-scale {
+  opacity: 0;
+  transform: scale(0.92);
+}
+.reveal-on-scroll.reveal-scale.revealed {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* ═══════════════════════════════════════════
+   3D Card Effect
+   ═══════════════════════════════════════════ */
+.card-3d {
+  transition: transform 0.4s cubic-bezier(0.03, 0.98, 0.52, 0.99),
+              box-shadow 0.4s ease;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.card-3d:hover {
+  box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.12),
+              0 0 0 1px rgba(0, 0, 0, 0.04);
+}
+
+/* ═══════════════════════════════════════════
+   Glass-morphism
+   ═══════════════════════════════════════════ */
+.glass-float {
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
+}
+
+/* ═══════════════════════════════════════════
+   Hero Gradient Orbs
+   ═══════════════════════════════════════════ */
+.hero-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(100px);
+  opacity: 0.07;
+  animation: orbFloat 12s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.hero-orb-1 {
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, #000000, #404040);
+  top: -200px;
+  right: -200px;
+  animation-delay: 0s;
+}
+
+.hero-orb-2 {
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, #333333, #555555);
+  bottom: -150px;
+  left: -150px;
+  animation-delay: -6s;
+}
+
+@keyframes orbFloat {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(40px, -30px) scale(1.08); }
+  66% { transform: translate(-30px, 20px) scale(0.92); }
+}
+
+/* ═══════════════════════════════════════════
+   Stats Cards — Floating Animation
+   ═══════════════════════════════════════════ */
+.stat-card {
+  animation: floatCard 6s ease-in-out infinite;
+}
+
+.stat-card:nth-child(2) { animation-delay: -2s; }
+.stat-card:nth-child(3) { animation-delay: -4s; }
+
+@keyframes floatCard {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+/* ═══════════════════════════════════════════
+   Gradient Text
+   ═══════════════════════════════════════════ */
+.text-gradient {
+  background: linear-gradient(135deg, #0a0a0a 0%, #525252 50%, #0a0a0a 100%);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gradientShift 8s ease infinite;
+}
+
+@keyframes gradientShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* ═══════════════════════════════════════════
+   Pricing Cards
+   ═══════════════════════════════════════════ */
+.pricing-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.pricing-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+  transition: 0.7s;
+  pointer-events: none;
+}
+
+.pricing-card:hover::before {
+  left: 120%;
+}
+
+/* ═══════════════════════════════════════════
+   Modal Animations
+   ═══════════════════════════════════════════ */
+.animate-modal {
+  animation: modalIn 400ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
 @keyframes modalIn {
-  from { opacity: 0; transform: scale(0.95) translateY(10px); }
+  from { opacity: 0; transform: scale(0.92) translateY(24px); }
   to { opacity: 1; transform: scale(1) translateY(0); }
 }
 
-/* Scrollbar */
-::-webkit-scrollbar { width: 5px; }
+.animate-overlay {
+  animation: overlayIn 300ms ease-out;
+}
+
+@keyframes overlayIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ═══════════════════════════════════════════
+   Slide Down (Mobile Menu)
+   ═══════════════════════════════════════════ */
+.animate-slideDown {
+  animation: slideDown 300ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Fade In */
+.animate-fadeIn {
+  animation: fadeIn 300ms ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ═══════════════════════════════════════════
+   3D Dashboard Mockup
+   ═══════════════════════════════════════════ */
+.mockup-3d {
+  perspective: 1200px;
+}
+
+.mockup-3d > div {
+  transform-style: preserve-3d;
+}
+
+/* ═══════════════════════════════════════════
+   Modal Input Styles
+   ═══════════════════════════════════════════ */
+.modal-input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #e5e5e5;
+  border-radius: 14px;
+  font-size: 14px;
+  transition: all 0.2s;
+  outline: none;
+}
+
+.modal-input:focus {
+  border-color: #0a0a0a;
+  box-shadow: 0 0 0 3px rgba(10, 10, 10, 0.05);
+}
+
+/* ═══════════════════════════════════════════
+   Scrollbar — Minimal
+   ═══════════════════════════════════════════ */
+::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #d4d4d4; border-radius: 3px; }
+::-webkit-scrollbar-thumb { background: #d4d4d4; border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: #a3a3a3; }
 
 /* Selection */
-::selection { background: #0B0B0B; color: #fff; }
+::selection { background: #0a0a0a; color: #fff; }
+
+/* ═══════════════════════════════════════════
+   Responsive Polish — Mobile Enhancement
+   ═══════════════════════════════════════════ */
+@media (max-width: 640px) {
+  .stat-card {
+    animation: none;
+  }
+
+  /* Smaller text and spacing on mobile */
+  :host section {
+    padding-top: 3rem;
+    padding-bottom: 3rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  :host h2 {
+    font-size: 1.5rem;
+    line-height: 1.3;
+  }
+
+  :host h3 {
+    font-size: 1rem;
+  }
+
+  /* Compact pricing cards on mobile */
+  .pricing-card {
+    padding: 1.5rem;
+  }
+
+  .pricing-card .text-5xl {
+    font-size: 2.25rem;
+  }
+
+  /* Compact FAQ on mobile */
+  :host .space-y-3 > div button {
+    padding: 0.875rem;
+  }
+
+  /* Smaller feature cards */
+  :host .card-3d {
+    padding: 1.25rem;
+  }
+
+  :host .card-3d .w-14 {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+
+  :host .card-3d .w-7 {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  /* Compact modal on mobile */
+  .animate-modal {
+    border-radius: 1rem;
+  }
+
+  .modal-input {
+    padding: 10px 12px;
+    font-size: 13px;
+    border-radius: 10px;
+  }
+
+  /* Smaller hero text */
+  :host .text-6xl {
+    font-size: 2rem;
+  }
+
+  /* Smaller footer on mobile */
+  :host footer {
+    padding-top: 2.5rem;
+    padding-bottom: 2.5rem;
+  }
+
+  :host footer .grid {
+    gap: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  :host h2 {
+    font-size: 1.25rem;
+  }
+
+  .pricing-card .text-5xl {
+    font-size: 1.875rem;
+  }
+}
+
+/* ═══════════════════════════════════════════
+   Carousel Animation
+   ═══════════════════════════════════════════ */
+.stores-carousel {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}

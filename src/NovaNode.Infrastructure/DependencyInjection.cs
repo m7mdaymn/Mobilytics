@@ -35,7 +35,7 @@ public static class DependencyInjection
         services.AddScoped<IItemTypeService, ItemTypeService>();
         services.AddScoped<ICustomFieldService, CustomFieldService>();
         services.AddScoped<IItemService, ItemService>();
-        services.AddScoped<IHomeSectionService, HomeSectionService>();
+        // HomeSectionService removed — feature deprecated
         services.AddScoped<ILeadService, LeadService>();
         services.AddScoped<IInvoiceService, InvoiceService>();
         services.AddScoped<IExpenseService, ExpenseService>();
@@ -44,6 +44,7 @@ public static class DependencyInjection
         services.AddScoped<IReportService, ReportService>();
         services.AddScoped<IPlatformService, PlatformService>();
         services.AddScoped<IStoreRegistrationService, StoreRegistrationService>();
+        services.AddScoped<IInstallmentService, InstallmentService>();
 
         return services;
     }

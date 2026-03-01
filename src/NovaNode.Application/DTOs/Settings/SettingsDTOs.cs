@@ -16,6 +16,14 @@ public class StoreSettingsDto
     public string? MapUrl { get; set; }
     public string? PwaSettingsJson { get; set; }
     public string? WhatsAppTemplatesJson { get; set; }
+    public string? HeaderNoticeText { get; set; }
+    public string? AboutTitle { get; set; }
+    public string? AboutDescription { get; set; }
+    public string? AboutImageUrl { get; set; }
+    public string? HeroBannersJson { get; set; }
+    public string? TestimonialsJson { get; set; }
+    public string? FaqJson { get; set; }
+    public string? TrustBadgesJson { get; set; }
 }
 
 public class PublicSettingsDto
@@ -39,6 +47,14 @@ public class PublicSettingsDto
     public string? WhatsAppTemplatesJson { get; set; }
     public bool IsActive { get; set; }
     public bool PoweredByEnabled { get; set; }
+    public string? HeaderNoticeText { get; set; }
+    public string? AboutTitle { get; set; }
+    public string? AboutDescription { get; set; }
+    public string? AboutImageUrl { get; set; }
+    public string? HeroBannersJson { get; set; }
+    public string? TestimonialsJson { get; set; }
+    public string? FaqJson { get; set; }
+    public string? TrustBadgesJson { get; set; }
 }
 
 public class UpdateThemeRequest

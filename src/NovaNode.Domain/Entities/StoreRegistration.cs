@@ -14,6 +14,9 @@ public class StoreRegistration : BaseEntity
     public required string OwnerName { get; set; }
     public required string Email { get; set; }
     public required string Phone { get; set; }
+    public string? WhatsApp { get; set; }
+    public string? Address { get; set; }
+    public string? PasswordHash { get; set; }
 
     // Business Details
     public required string NumberOfStores { get; set; }

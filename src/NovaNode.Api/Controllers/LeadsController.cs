@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using NovaNode.Api.Middleware;
 using NovaNode.Application.DTOs.Leads;
 using NovaNode.Application.Interfaces;
 using NovaNode.Domain.Interfaces;
@@ -7,6 +8,7 @@ using NovaNode.Domain.Interfaces;
 namespace NovaNode.Api.Controllers;
 
 [Authorize]
+[RequirePermission("leads.manage")]
 public class LeadsController : BaseApiController
 {
     private readonly ILeadService _svc;

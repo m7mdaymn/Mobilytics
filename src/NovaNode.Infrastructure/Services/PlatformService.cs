@@ -68,6 +68,10 @@ public class PlatformService : IPlatformService
         });
 
         await _db.SaveChangesAsync(ct);
+
+        // Seed default data for the new tenant
+        await Seeding.TenantDefaultDataSeeder.SeedAsync(_db, tenant.Id, request.Name, ct);
+
         return await GetTenantAsync(tenant.Id, ct);
     }
 
@@ -146,7 +150,10 @@ public class PlatformService : IPlatformService
             TenantId = tenant.Id, StoreName = request.StoreName,
             LogoUrl = request.LogoUrl, WhatsAppNumber = request.StoreWhatsApp,
             PhoneNumber = request.StorePhone, SocialLinksJson = request.SocialLinksJson,
-            MapUrl = request.MapUrl, FooterAddress = request.Address
+            MapUrl = request.MapUrl, FooterAddress = request.Address,
+            ThemePresetId = request.ThemePresetId > 0 ? request.ThemePresetId : 1,
+            CurrencyCode = string.IsNullOrWhiteSpace(request.CurrencyCode) ? "EGP" : request.CurrencyCode,
+            WorkingHours = request.WorkingHours
         });
 
         // 4. Owner employee
@@ -206,7 +213,7 @@ public class PlatformService : IPlatformService
         await _db.SaveChangesAsync(ct);
 
         // 7. Seed default data (brands, categories, item types, home sections)
-        await Seeding.TenantDefaultDataSeeder.SeedAsync(_db, tenant.Id, ct);
+        await Seeding.TenantDefaultDataSeeder.SeedAsync(_db, tenant.Id, request.StoreName, ct);
 
         var tenantDto = await GetTenantAsync(tenant.Id, ct);
         return new OnboardTenantResponse
@@ -367,6 +374,34 @@ public class PlatformService : IPlatformService
             }).ToListAsync(ct);
     }
 
+    public async Task DeleteSubscriptionAsync(Guid tenantId, CancellationToken ct = default)
+    {
+        var subs = await _db.Subscriptions.Where(s => s.TenantId == tenantId).ToListAsync(ct);
+        if (subs.Count == 0) throw new KeyNotFoundException("No subscription found.");
+        _db.Subscriptions.RemoveRange(subs);
+
+        // Also remove related platform invoices so revenue is recalculated
+        var invoices = await _db.PlatformInvoices.Where(i => i.TenantId == tenantId).ToListAsync(ct);
+        _db.PlatformInvoices.RemoveRange(invoices);
+
+        await _db.SaveChangesAsync(ct);
+    }
+
+    public async Task UpdateSubscriptionAsync(Guid tenantId, UpdateSubscriptionRequest request, CancellationToken ct = default)
+    {
+        var sub = await _db.Subscriptions.Where(s => s.TenantId == tenantId).OrderByDescending(s => s.CreatedAt).FirstOrDefaultAsync(ct)
+            ?? throw new KeyNotFoundException("No subscription found.");
+
+        if (request.Months > 0 && sub.StartDate.HasValue)
+        {
+            sub.EndDate = sub.StartDate.Value.AddMonths(request.Months);
+            sub.GraceEnd = sub.EndDate.Value.AddDays(3);
+        }
+        if (request.Notes != null) sub.Notes = request.Notes;
+
+        await _db.SaveChangesAsync(ct);
+    }
+
     // ─── Features ───────────────────────────────────────
 
     public async Task<FeatureToggleDto> GetFeaturesAsync(Guid tenantId, CancellationToken ct = default)
@@ -410,6 +445,14 @@ public class PlatformService : IPlatformService
         return MapInvoiceDto(i, i.Tenant.Name, i.Tenant.Slug, i.Plan?.Name);
     }
 
+    public async Task DeleteInvoiceAsync(Guid id, CancellationToken ct = default)
+    {
+        var invoice = await _db.PlatformInvoices.FindAsync([id], ct)
+            ?? throw new KeyNotFoundException("Invoice not found.");
+        _db.PlatformInvoices.Remove(invoice);
+        await _db.SaveChangesAsync(ct);
+    }
+
     // ─── Dashboard ──────────────────────────────────────
 
     public async Task<PlatformDashboardDto> GetDashboardAsync(string range, CancellationToken ct = default)
@@ -419,9 +462,11 @@ public class PlatformService : IPlatformService
         var trial = await _db.Subscriptions.CountAsync(s => s.Status == SubscriptionStatus.Trial, ct);
         var expired = await _db.Subscriptions.CountAsync(s => s.Status == SubscriptionStatus.Expired, ct);
         var suspended = await _db.Subscriptions.CountAsync(s => s.Status == SubscriptionStatus.Suspended, ct);
-        var totalRevenue = await _db.PlatformInvoices.SumAsync(i => (decimal?)i.Total, ct) ?? 0;
+        var totalRevenue = await _db.PlatformInvoices
+            .Where(i => i.PaymentStatus == PaymentStatus.Paid)
+            .SumAsync(i => (decimal?)i.Total, ct) ?? 0;
         var monthlyRevenue = await _db.PlatformInvoices
-            .Where(i => i.CreatedAt >= DateTime.UtcNow.AddDays(-30))
+            .Where(i => i.PaymentStatus == PaymentStatus.Paid && i.CreatedAt >= DateTime.UtcNow.AddDays(-30))
             .SumAsync(i => (decimal?)i.Total, ct) ?? 0;
         var expiringCutoff = DateTime.UtcNow.AddDays(7);
         var expiring = await _db.Subscriptions.CountAsync(s => s.EndDate != null && s.EndDate <= expiringCutoff && s.Status == SubscriptionStatus.Active, ct);
@@ -449,7 +494,7 @@ public class PlatformService : IPlatformService
             var monthStart = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1).AddMonths(-i);
             var monthEnd = monthStart.AddMonths(1);
             var amount = await _db.PlatformInvoices
-                .Where(inv => inv.CreatedAt >= monthStart && inv.CreatedAt < monthEnd)
+                .Where(inv => inv.PaymentStatus == PaymentStatus.Paid && inv.CreatedAt >= monthStart && inv.CreatedAt < monthEnd)
                 .SumAsync(inv => (decimal?)inv.Total, ct) ?? 0;
             revenueChart.Add(new RevenueChartPoint { Label = monthStart.ToString("MMM yyyy"), Amount = amount });
         }
@@ -476,7 +521,7 @@ public class PlatformService : IPlatformService
         foreach (var tb in tenantBreakdown)
         {
             var invoices = await _db.PlatformInvoices
-                .Where(inv => inv.TenantId == tb.Id)
+                .Where(inv => inv.TenantId == tb.Id && inv.PaymentStatus == PaymentStatus.Paid)
                 .ToListAsync(ct);
 
             breakdownDtos.Add(new TenantRevenueBreakdownDto
@@ -522,7 +567,12 @@ public class PlatformService : IPlatformService
             WhatsAppNumber = s.WhatsAppNumber, PhoneNumber = s.PhoneNumber,
             ThemePresetId = s.ThemePresetId,
             CurrencyCode = s.CurrencyCode, FooterAddress = s.FooterAddress, WorkingHours = s.WorkingHours,
-            SocialLinksJson = s.SocialLinksJson, PoliciesJson = s.PoliciesJson, MapUrl = s.MapUrl
+            SocialLinksJson = s.SocialLinksJson, PoliciesJson = s.PoliciesJson, MapUrl = s.MapUrl,
+            HeaderNoticeText = s.HeaderNoticeText,
+            AboutTitle = s.AboutTitle, AboutDescription = s.AboutDescription, AboutImageUrl = s.AboutImageUrl,
+            HeroBannersJson = s.HeroBannersJson, TestimonialsJson = s.TestimonialsJson,
+            FaqJson = s.FaqJson, TrustBadgesJson = s.TrustBadgesJson,
+            WhatsAppTemplatesJson = s.WhatsAppTemplatesJson, PwaSettingsJson = s.PwaSettingsJson
         };
     }
 
@@ -540,6 +590,11 @@ public class PlatformService : IPlatformService
         s.CurrencyCode = request.CurrencyCode; s.FooterAddress = request.FooterAddress;
         s.WorkingHours = request.WorkingHours; s.SocialLinksJson = request.SocialLinksJson;
         s.PoliciesJson = request.PoliciesJson; s.MapUrl = request.MapUrl;
+        s.HeaderNoticeText = request.HeaderNoticeText;
+        s.AboutTitle = request.AboutTitle; s.AboutDescription = request.AboutDescription; s.AboutImageUrl = request.AboutImageUrl;
+        s.HeroBannersJson = request.HeroBannersJson; s.TestimonialsJson = request.TestimonialsJson;
+        s.FaqJson = request.FaqJson; s.TrustBadgesJson = request.TrustBadgesJson;
+        s.WhatsAppTemplatesJson = request.WhatsAppTemplatesJson;
 
         // Also update tenant name if changed
         var tenant = await _db.Tenants.FindAsync([tenantId], ct);
@@ -650,7 +705,12 @@ public class PlatformService : IPlatformService
                 ThemePresetId = settings.ThemePresetId,
                 CurrencyCode = settings.CurrencyCode, FooterAddress = settings.FooterAddress,
                 WorkingHours = settings.WorkingHours, SocialLinksJson = settings.SocialLinksJson,
-                PoliciesJson = settings.PoliciesJson, MapUrl = settings.MapUrl
+                PoliciesJson = settings.PoliciesJson, MapUrl = settings.MapUrl,
+                HeaderNoticeText = settings.HeaderNoticeText,
+                AboutTitle = settings.AboutTitle, AboutDescription = settings.AboutDescription, AboutImageUrl = settings.AboutImageUrl,
+                HeroBannersJson = settings.HeroBannersJson, TestimonialsJson = settings.TestimonialsJson,
+                FaqJson = settings.FaqJson, TrustBadgesJson = settings.TrustBadgesJson,
+                WhatsAppTemplatesJson = settings.WhatsAppTemplatesJson, PwaSettingsJson = settings.PwaSettingsJson
             }
         };
     }

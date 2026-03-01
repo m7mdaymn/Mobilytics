@@ -9,8 +9,15 @@ public class CategoryDto
     public Guid? ParentId { get; set; }
     public int DisplayOrder { get; set; }
     public bool IsActive { get; set; }
+    public bool IsVisibleInNav { get; set; }
     public string? MetaTitle { get; set; }
     public string? MetaDesc { get; set; }
+    public bool IsDevice { get; set; }
+    public bool IsStockItem { get; set; }
+    public bool SupportsIMEI { get; set; }
+    public bool SupportsSerial { get; set; }
+    public bool SupportsBatteryHealth { get; set; }
+    public bool SupportsWarranty { get; set; }
     public List<CategoryDto> Children { get; set; } = [];
 }
 
@@ -21,8 +28,15 @@ public class CreateCategoryRequest
     public Guid? ParentId { get; set; }
     public int DisplayOrder { get; set; }
     public bool IsActive { get; set; } = true;
+    public bool IsVisibleInNav { get; set; } = true;
     public string? MetaTitle { get; set; }
     public string? MetaDesc { get; set; }
+    public bool IsDevice { get; set; }
+    public bool IsStockItem { get; set; }
+    public bool SupportsIMEI { get; set; }
+    public bool SupportsSerial { get; set; }
+    public bool SupportsBatteryHealth { get; set; }
+    public bool SupportsWarranty { get; set; }
 }
 
 public class UpdateCategoryRequest
@@ -32,8 +46,15 @@ public class UpdateCategoryRequest
     public Guid? ParentId { get; set; }
     public int DisplayOrder { get; set; }
     public bool IsActive { get; set; } = true;
+    public bool IsVisibleInNav { get; set; } = true;
     public string? MetaTitle { get; set; }
     public string? MetaDesc { get; set; }
+    public bool IsDevice { get; set; }
+    public bool IsStockItem { get; set; }
+    public bool SupportsIMEI { get; set; }
+    public bool SupportsSerial { get; set; }
+    public bool SupportsBatteryHealth { get; set; }
+    public bool SupportsWarranty { get; set; }
 }
 
 public class ReorderRequest

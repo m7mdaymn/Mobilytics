@@ -1,7 +1,8 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, OnInit } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../core/services/auth.service';
+import { TenantService } from '../../../core/services/tenant.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { I18nService } from '../../../core/services/i18n.service';
 
@@ -63,16 +64,17 @@ import { I18nService } from '../../../core/services/i18n.service';
           </form>
 
           <div class="mt-6 text-center">
-            <a routerLink="/" class="text-sm text-neutral-500 hover:text-black">← {{ i18n.t('common.back') }}</a>
+            <a [routerLink]="tenantService.storeUrl()" class="text-sm text-neutral-500 hover:text-black">← {{ i18n.t('common.back') }}</a>
           </div>
         </div>
       </div>
     </div>
   `,
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   readonly authService = inject(AuthService);
   readonly i18n = inject(I18nService);
+  readonly tenantService = inject(TenantService);
   private readonly router = inject(Router);
   private readonly toastService = inject(ToastService);
 
@@ -80,6 +82,22 @@ export class LoginComponent {
   password = '';
   submitted = false;
   readonly errorMsg = signal('');
+
+  ngOnInit(): void {
+    // If already authenticated, redirect to the owner's own store dashboard
+    if (this.authService.isAuthenticated()) {
+      const storedSlug = this.authService.getStoredSlug();
+      const currentSlug = this.tenantService.slug();
+
+      if (storedSlug && currentSlug && storedSlug !== currentSlug) {
+        // Trying to login to a different store — redirect to own store
+        this.router.navigate(['/store', storedSlug, 'admin']);
+      } else if (currentSlug) {
+        // Already authenticated for this store — go to dashboard
+        this.router.navigate(['/store', currentSlug, 'admin']);
+      }
+    }
+  }
 
   onLogin(): void {
     this.submitted = true;
@@ -89,8 +107,13 @@ export class LoginComponent {
 
     this.authService.login({ email: this.email, password: this.password }).subscribe({
       next: () => {
+        // Store the slug so the guard can enforce store isolation
+        const slug = this.tenantService.slug();
+        if (slug) {
+          sessionStorage.setItem('mobilytics_slug', slug);
+        }
         this.toastService.success('Welcome back!');
-        this.router.navigate(['/admin']);
+        this.router.navigate([this.tenantService.adminUrl()]);
       },
       error: (err: any) => {
         this.errorMsg.set(err.message || 'Invalid email or password');

@@ -13,11 +13,21 @@ public class Category : TenantEntity
     public Guid? ParentId { get; set; }
     public int DisplayOrder { get; set; }
     public bool IsActive { get; set; } = true;
+    public bool IsVisibleInNav { get; set; } = true;
     public string? MetaTitle { get; set; }
     public string? MetaDesc { get; set; }
+
+    // Capability flags (merged from ItemType)
+    public bool IsDevice { get; set; }
+    public bool IsStockItem { get; set; }
+    public bool SupportsIMEI { get; set; }
+    public bool SupportsSerial { get; set; }
+    public bool SupportsBatteryHealth { get; set; }
+    public bool SupportsWarranty { get; set; }
 
     // Navigation
     public Category? Parent { get; set; }
     public ICollection<Category> Children { get; set; } = [];
     public ICollection<Item> Items { get; set; } = [];
+    public ICollection<CustomFieldDefinition> CustomFieldDefinitions { get; set; } = [];
 }

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NovaNode.Application.DTOs;
+using NovaNode.Application.DTOs.Auth;
 using NovaNode.Application.Interfaces;
 
 namespace NovaNode.Api.Controllers;
@@ -9,10 +10,30 @@ namespace NovaNode.Api.Controllers;
 public class StoreRegistrationController : BaseApiController
 {
     private readonly IStoreRegistrationService _storeRegistrationService;
+    private readonly IAuthService _authService;
 
-    public StoreRegistrationController(IStoreRegistrationService storeRegistrationService)
+    public StoreRegistrationController(IStoreRegistrationService storeRegistrationService, IAuthService authService)
     {
         _storeRegistrationService = storeRegistrationService;
+        _authService = authService;
+    }
+
+    /// <summary>
+    /// Unified login for all tenants (no slug needed)
+    /// </summary>
+    [HttpPost("login")]
+    [AllowAnonymous]
+    public async Task<IActionResult> UnifiedLogin([FromBody] LoginRequest request)
+    {
+        try
+        {
+            var result = await _authService.UnifiedLoginAsync(request);
+            return Ok(result);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Unauthorized(new { message = ex.Message });
+        }
     }
 
     /// <summary>

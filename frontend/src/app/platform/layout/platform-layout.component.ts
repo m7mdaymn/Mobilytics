@@ -27,8 +27,13 @@ interface NavItem {
 
         <!-- Brand -->
         <div class="h-16 flex items-center gap-3 px-5 border-b border-white/10 shrink-0">
-          <div class="w-10 h-10 rounded-xl bg-white text-black flex items-center justify-center text-lg font-bold">
-            M
+          <div class="w-10 h-10 rounded-xl bg-white flex items-center justify-center">
+            <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M2 20V10L7 4L12 10V20" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M12 20V10L17 4L22 10V20" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <rect x="16" y="14" width="2" height="6" rx="1" fill="black" opacity="0.5"/>
+              <rect x="19" y="11" width="2" height="9" rx="1" fill="black" opacity="0.7"/>
+            </svg>
           </div>
           <div class="overflow-hidden">
             <p class="font-bold text-base">{{ i18n.t('app.name') }}</p>

@@ -33,6 +33,20 @@ public class PlatformSubscriptionsController : BaseApiController
         return Ok(new { message = "Subscription renewed." });
     }
 
+    [HttpDelete("{tenantId:guid}")]
+    public async Task<IActionResult> Delete(Guid tenantId, CancellationToken ct)
+    {
+        await _svc.DeleteSubscriptionAsync(tenantId, ct);
+        return Ok(true);
+    }
+
+    [HttpPut("{tenantId:guid}")]
+    public async Task<IActionResult> Update(Guid tenantId, [FromBody] UpdateSubscriptionRequest request, CancellationToken ct)
+    {
+        await _svc.UpdateSubscriptionAsync(tenantId, request, ct);
+        return Ok(true);
+    }
+
     [HttpGet("expiring")]
     public async Task<IActionResult> Expiring([FromQuery] int days = 7, CancellationToken ct = default) =>
         Ok(await _svc.GetExpiringSubscriptionsAsync(days, ct));

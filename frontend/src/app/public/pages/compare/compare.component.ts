@@ -4,7 +4,7 @@ import { CurrencyPipe } from '@angular/common';
 import { CompareStore } from '../../../core/stores/compare.store';
 import { SettingsStore } from '../../../core/stores/settings.store';
 import { WhatsAppService } from '../../../core/services/whatsapp.service';
-import { Item } from '../../../core/models/item.models';
+import { Item, CustomFieldValue } from '../../../core/models/item.models';
 
 @Component({
   selector: 'app-compare',
@@ -31,7 +31,7 @@ import { Item } from '../../../core/models/item.models';
             <div class="card p-4 space-y-4">
               <div class="relative">
                 <button (click)="compareStore.remove(item.id)"
-                  class="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full text-xs flex items-center justify-center hover:bg-red-600">&times;</button>
+                  class="absolute -top-2 -end-2 w-6 h-6 bg-red-500 text-white rounded-full text-xs flex items-center justify-center hover:bg-red-600">&times;</button>
                 <div class="aspect-square bg-gray-100 rounded-lg overflow-hidden">
                   @if (item.mainImageUrl) {
                     <img [src]="item.mainImageUrl" [alt]="item.title" class="w-full h-full object-cover" />
@@ -93,16 +93,18 @@ export class CompareComponent {
   getCompareRows(item: Item): { label: string; value: string }[] {
     const rows = [
       { label: 'Brand', value: item.brandName || '—' },
-      { label: 'Type', value: item.itemTypeName || '—' },
       { label: 'Category', value: item.categoryName || '—' },
       { label: 'Condition', value: item.condition },
       { label: 'Status', value: item.status },
     ];
 
-    if (item.customFieldValues?.length) {
-      for (const cf of item.customFieldValues) {
-        rows.push({ label: cf.fieldName, value: cf.value || '—' });
-      }
+    if (item.customFieldsJson) {
+      try {
+        const cfValues: CustomFieldValue[] = JSON.parse(item.customFieldsJson);
+        for (const cf of cfValues) {
+          rows.push({ label: cf.fieldName, value: cf.value || '—' });
+        }
+      } catch {}
     }
 
     return rows;

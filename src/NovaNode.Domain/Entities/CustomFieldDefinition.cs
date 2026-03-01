@@ -8,7 +8,7 @@ namespace NovaNode.Domain.Entities;
 /// </summary>
 public class CustomFieldDefinition : TenantEntity
 {
-    public Guid? ItemTypeId { get; set; }
+    public Guid? CategoryId { get; set; }
     public string Key { get; set; } = string.Empty;
     public string Label { get; set; } = string.Empty;
     public CustomFieldType FieldType { get; set; }
@@ -18,5 +18,5 @@ public class CustomFieldDefinition : TenantEntity
     public bool IsActive { get; set; } = true;
 
     // Navigation
-    public ItemType? ItemType { get; set; }
+    public Category? Category { get; set; }
 }

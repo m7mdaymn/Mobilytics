@@ -48,6 +48,16 @@ public class TenantStoreSettingsDto
     public string? SocialLinksJson { get; set; }
     public string? PoliciesJson { get; set; }
     public string? MapUrl { get; set; }
+    public string? HeaderNoticeText { get; set; }
+    public string? AboutTitle { get; set; }
+    public string? AboutDescription { get; set; }
+    public string? AboutImageUrl { get; set; }
+    public string? HeroBannersJson { get; set; }
+    public string? TestimonialsJson { get; set; }
+    public string? FaqJson { get; set; }
+    public string? TrustBadgesJson { get; set; }
+    public string? WhatsAppTemplatesJson { get; set; }
+    public string? PwaSettingsJson { get; set; }
 }
 
 public class UpdateStoreSettingsRequest
@@ -64,6 +74,15 @@ public class UpdateStoreSettingsRequest
     public string? SocialLinksJson { get; set; }
     public string? PoliciesJson { get; set; }
     public string? MapUrl { get; set; }
+    public string? HeaderNoticeText { get; set; }
+    public string? AboutTitle { get; set; }
+    public string? AboutDescription { get; set; }
+    public string? AboutImageUrl { get; set; }
+    public string? HeroBannersJson { get; set; }
+    public string? TestimonialsJson { get; set; }
+    public string? FaqJson { get; set; }
+    public string? TrustBadgesJson { get; set; }
+    public string? WhatsAppTemplatesJson { get; set; }
 }
 
 public class CreateTenantRequest
@@ -105,6 +124,9 @@ public class OnboardTenantRequest
     public string? LogoUrl { get; set; }
     public string? SocialLinksJson { get; set; }
     public string? MapUrl { get; set; }
+    public int ThemePresetId { get; set; } = 1;
+    public string CurrencyCode { get; set; } = "EGP";
+    public string? WorkingHours { get; set; }
 
     // Owner info
     public string OwnerName { get; set; } = string.Empty;
@@ -209,6 +231,12 @@ public class RenewSubscriptionRequest
 {
     public decimal PaymentAmount { get; set; }
     public int Months { get; set; } = 1;
+    public string? Notes { get; set; }
+}
+
+public class UpdateSubscriptionRequest
+{
+    public int Months { get; set; }
     public string? Notes { get; set; }
 }
 

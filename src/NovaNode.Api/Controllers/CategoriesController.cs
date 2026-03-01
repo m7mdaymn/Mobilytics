@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using NovaNode.Api.Middleware;
 using NovaNode.Application.DTOs.Categories;
 using NovaNode.Application.Interfaces;
 using NovaNode.Domain.Interfaces;
@@ -40,6 +41,7 @@ public class CategoriesController : BaseApiController
     }
 
     [HttpPost]
+    [RequirePermission("categories.manage")]
     public async Task<IActionResult> Create([FromBody] CreateCategoryRequest request, CancellationToken ct)
     {
         var tenantId = _tenantContext.TenantId!.Value;
@@ -47,6 +49,7 @@ public class CategoriesController : BaseApiController
     }
 
     [HttpPut("{id:guid}")]
+    [RequirePermission("categories.manage")]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateCategoryRequest request, CancellationToken ct)
     {
         var tenantId = _tenantContext.TenantId!.Value;
@@ -54,6 +57,7 @@ public class CategoriesController : BaseApiController
     }
 
     [HttpDelete("{id:guid}")]
+    [RequirePermission("categories.manage")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
     {
         var tenantId = _tenantContext.TenantId!.Value;

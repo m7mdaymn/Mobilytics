@@ -12,6 +12,7 @@ public class ItemTypeDto
     public bool SupportsBatteryHealth { get; set; }
     public bool SupportsWarranty { get; set; }
     public bool IsActive { get; set; }
+    public bool IsVisibleInNav { get; set; }
     public int DisplayOrder { get; set; }
 }
 
@@ -26,6 +27,7 @@ public class CreateItemTypeRequest
     public bool SupportsBatteryHealth { get; set; }
     public bool SupportsWarranty { get; set; }
     public int DisplayOrder { get; set; }
+    public bool IsVisibleInNav { get; set; } = true;
 }
 
 public class UpdateItemTypeRequest
@@ -40,4 +42,5 @@ public class UpdateItemTypeRequest
     public bool SupportsWarranty { get; set; }
     public int DisplayOrder { get; set; }
     public bool IsActive { get; set; } = true;
+    public bool IsVisibleInNav { get; set; } = true;
 }

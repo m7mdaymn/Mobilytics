@@ -16,6 +16,7 @@ public class ItemType : TenantEntity
     public bool SupportsBatteryHealth { get; set; }
     public bool SupportsWarranty { get; set; }
     public bool IsActive { get; set; } = true;
+    public bool IsVisibleInNav { get; set; } = true;
     public int DisplayOrder { get; set; }
 
     public ICollection<Item> Items { get; set; } = [];

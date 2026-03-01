@@ -12,6 +12,7 @@ public class Brand : TenantEntity
     public string? LogoUrl { get; set; }
     public int DisplayOrder { get; set; }
     public bool IsActive { get; set; } = true;
+    public bool IsVisibleInNav { get; set; } = true;
 
     public ICollection<Item> Items { get; set; } = [];
 }

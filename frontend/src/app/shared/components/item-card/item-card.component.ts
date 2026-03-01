@@ -1,27 +1,31 @@
-import { Component, Input, inject } from '@angular/core';
+import { Component, Input, inject, computed } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Item } from '../../../core/models/item.models';
 import { CompareStore } from '../../../core/stores/compare.store';
 import { SettingsStore } from '../../../core/stores/settings.store';
+import { TenantService } from '../../../core/services/tenant.service';
 import { WhatsAppService } from '../../../core/services/whatsapp.service';
+import { I18nService } from '../../../core/services/i18n.service';
 import { CurrencyPipe } from '@angular/common';
+import { resolveImageUrl } from '../../../core/utils/image.utils';
 
 @Component({
   selector: 'app-item-card',
   standalone: true,
   imports: [RouterLink, CurrencyPipe],
   template: `
-    <div class="group relative bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+    <div class="group relative bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 h-full"
+      [class.flex]="large" [class.flex-col]="large">
       <!-- Discount Tag -->
       @if (item.oldPrice && item.oldPrice > item.price) {
-        <span class="absolute top-3 right-3 z-10 bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow">-{{ discountPercent }}%</span>
+        <span class="absolute top-3 end-3 z-10 bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow">-{{ discountPercent }}%</span>
       }
 
       <!-- Image -->
-      <a [routerLink]="['/item', item.slug]" class="block overflow-hidden bg-gray-50 relative aspect-square">
+      <a [routerLink]="[tenantService.storeUrl() + '/item', item.slug]" class="block overflow-hidden bg-gray-50 relative aspect-square">
         @if (item.mainImageUrl) {
           <img
-            [src]="item.mainImageUrl"
+            [src]="resolveImg(item.mainImageUrl)"
             [alt]="item.title"
             loading="lazy"
             class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
@@ -35,7 +39,7 @@ import { CurrencyPipe } from '@angular/common';
         }
 
         <!-- Badges -->
-        <div class="absolute top-2.5 left-2.5 flex flex-col gap-1.5">
+        <div class="absolute top-2.5 start-2.5 flex flex-col gap-1.5">
           @if (item.condition === 'Used') {
             <span class="text-[10px] font-semibold bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">Used</span>
           }
@@ -54,16 +58,31 @@ import { CurrencyPipe } from '@angular/common';
           @if (item.isStockItem && item.quantity === 0) {
             <span class="text-[10px] font-semibold bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full">Out of stock</span>
           }
+          @if (item.installmentAvailable) {
+            <span class="text-[10px] font-semibold bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">Installment</span>
+          }
         </div>
       </a>
 
       <!-- Info -->
       <div class="p-3.5 space-y-1.5">
-        <div class="text-[11px] font-medium text-gray-400 uppercase tracking-wider">{{ item.brandName || item.itemTypeName }}</div>
-        <a [routerLink]="['/item', item.slug]"
+        <div class="text-[11px] font-medium text-gray-400 uppercase tracking-wider">{{ item.brandName || item.categoryName }}</div>
+        <a [routerLink]="[tenantService.storeUrl() + '/item', item.slug]"
            class="block font-semibold text-sm leading-snug text-gray-900 line-clamp-2 hover:text-[color:var(--color-primary)] transition-colors">
           {{ item.title }}
         </a>
+
+        <!-- Device Quick Specs -->
+        @if (item.storage || item.color) {
+          <div class="flex flex-wrap gap-1 pt-0.5">
+            @if (item.storage) {
+              <span class="text-[10px] font-medium bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">{{ item.storage }}</span>
+            }
+            @if (item.color) {
+              <span class="text-[10px] font-medium bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">{{ item.color }}</span>
+            }
+          </div>
+        }
 
         <div class="flex items-baseline gap-2 pt-0.5">
           <span class="text-lg font-bold text-[color:var(--color-primary)]">
@@ -75,6 +94,13 @@ import { CurrencyPipe } from '@angular/common';
             </span>
           }
         </div>
+
+        <!-- Installment Available Badge -->
+        @if (item.installmentAvailable) {
+          <div class="text-[11px] text-purple-600 font-medium">
+            {{ i18n.t('store.askAboutInstallment') }}
+          </div>
+        }
 
         <!-- Actions -->
         <div class="flex items-center gap-2 pt-2">
@@ -100,10 +126,15 @@ import { CurrencyPipe } from '@angular/common';
 })
 export class ItemCardComponent {
   @Input({ required: true }) item!: Item;
+  @Input() large = false;
 
   readonly compareStore = inject(CompareStore);
   readonly settingsStore = inject(SettingsStore);
+  readonly tenantService = inject(TenantService);
+  readonly i18n = inject(I18nService);
   private readonly whatsappService = inject(WhatsAppService);
+
+  readonly resolveImg = resolveImageUrl;
 
   get discountPercent(): number {
     if (!this.item.oldPrice || this.item.oldPrice <= this.item.price) return 0;

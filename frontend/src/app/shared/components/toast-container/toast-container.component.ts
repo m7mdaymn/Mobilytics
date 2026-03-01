@@ -5,13 +5,13 @@ import { ToastService, Toast } from '../../../core/services/toast.service';
   selector: 'app-toast-container',
   standalone: true,
   template: `
-    <div class="fixed top-4 right-4 z-[9999] flex flex-col gap-2 max-w-sm w-full">
+    <div class="fixed top-4 end-4 z-[9999] flex flex-col gap-2 max-w-sm w-full">
       @for (toast of toastService.toasts(); track toast.id) {
         <div
           class="p-4 rounded-lg shadow-lg text-white text-sm font-medium flex items-center justify-between animate-slide-in"
           [class]="getClass(toast)">
           <span>{{ toast.message }}</span>
-          <button (click)="toastService.remove(toast.id)" class="ml-3 opacity-70 hover:opacity-100 text-lg leading-none">&times;</button>
+          <button (click)="toastService.remove(toast.id)" class="ms-3 opacity-70 hover:opacity-100 text-lg leading-none">&times;</button>
         </div>
       }
     </div>

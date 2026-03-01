@@ -1,160 +1,468 @@
-<!-- MOBILYTICS LANDING PAGE — Premium B&W Minimal + Bilingual -->
+<!-- ═══════════════════════════════════════════════════════════
+     MOBILYTICS — Premium Landing Page
+     Ultra-professional · Black & White · Apple-Inspired
+     ═══════════════════════════════════════════════════════════ -->
 
-<!-- NAVIGATION -->
-<nav class="fixed top-0 inset-x-0 z-50 bg-white/90 backdrop-blur border-b border-neutral-200">
-  <div class="max-w-6xl mx-auto flex items-center justify-between h-16 px-5">
-    <a (click)="scrollTo('hero')" class="text-xl font-bold tracking-tight text-black cursor-pointer select-none">
-      {{ i18n.t('app.name') }}
+<!-- ── NAVIGATION ── -->
+<nav class="fixed top-0 inset-x-0 z-50 transition-all duration-500"
+     [class]="navScrolled() ? 'bg-white/95 backdrop-blur-xl shadow-sm border-b border-neutral-100' : 'bg-transparent'">
+  <div class="max-w-7xl mx-auto flex items-center justify-between h-[72px] px-6">
+    <a (click)="scrollTo('hero')" class="flex items-center gap-2.5 cursor-pointer select-none group">
+      <div class="w-8 h-8 bg-black rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M2 20V10L7 4L12 10V20" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M12 20V10L17 4L22 10V20" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <rect x="16" y="14" width="2" height="6" rx="1" fill="white" opacity="0.5"/>
+          <rect x="19" y="11" width="2" height="9" rx="1" fill="white" opacity="0.7"/>
+        </svg>
+      </div>
+      <span class="text-xl font-black tracking-tight" [class]="navScrolled() ? 'text-black' : 'text-black'">{{ i18n.t('app.name') }}</span>
     </a>
-    <div class="hidden md:flex items-center gap-8 text-sm font-medium text-neutral-600">
-      <a (click)="scrollTo('benefits')" class="cursor-pointer hover:text-black transition">{{ i18n.t('landing.nav.features') }}</a>
-      <a (click)="scrollTo('pricing')" class="cursor-pointer hover:text-black transition">{{ i18n.t('landing.nav.pricing') }}</a>
-      <a (click)="scrollTo('faq')" class="cursor-pointer hover:text-black transition">{{ i18n.t('landing.nav.faq') }}</a>
+
+    <div class="hidden lg:flex items-center gap-10 text-[13px] font-medium tracking-wide uppercase" [class]="navScrolled() ? 'text-neutral-500' : 'text-neutral-500'">
+      <a (click)="scrollTo('what-we-serve')" class="cursor-pointer hover:text-black transition-colors duration-300">{{ i18n.lang() === 'ar' ? 'خدماتنا' : 'Services' }}</a>
+      <a (click)="scrollTo('how-it-works')" class="cursor-pointer hover:text-black transition-colors duration-300">{{ i18n.lang() === 'ar' ? 'كيف نعمل' : 'How it works' }}</a>
+      <a (click)="scrollTo('features')" class="cursor-pointer hover:text-black transition-colors duration-300">{{ i18n.t('landing.nav.features') }}</a>
+      <a (click)="scrollTo('pricing')" class="cursor-pointer hover:text-black transition-colors duration-300">{{ i18n.t('landing.nav.pricing') }}</a>
+      <a (click)="scrollTo('faq')" class="cursor-pointer hover:text-black transition-colors duration-300">{{ i18n.t('landing.nav.faq') }}</a>
     </div>
+
     <div class="flex items-center gap-3">
-      <button (click)="toggleLang()" class="px-3 py-1.5 text-xs font-semibold border border-neutral-300 rounded-md hover:bg-neutral-100 transition">
+      <a routerLink="/login" class="hidden sm:inline-flex px-4 py-2 text-[13px] font-semibold text-neutral-600 hover:text-black transition-colors">
+        {{ i18n.lang() === 'ar' ? 'تسجيل الدخول' : 'Login' }}
+      </a>
+      <button (click)="toggleLang()" class="px-3 py-1.5 text-xs font-bold border border-neutral-200 rounded-full hover:bg-neutral-50 transition">
         {{ i18n.t('lang.switch') }}
       </button>
-      <button (click)="navigate('/admin/login')" class="hidden sm:inline-flex px-4 py-2 text-sm font-medium text-neutral-700 hover:text-black transition">
-        {{ i18n.t('auth.login') }}
-      </button>
-      <button (click)="openStoreSignup()" class="px-5 py-2 text-sm font-semibold bg-black text-white rounded-lg hover:bg-neutral-800 transition">
+      <button (click)="openStoreSignup()" class="hidden sm:inline-flex px-5 py-2.5 text-[13px] font-bold bg-black text-white rounded-full hover:bg-neutral-800 transition-all shadow-lg shadow-black/10 hover:shadow-xl hover:-translate-y-px active:scale-95">
         {{ i18n.t('landing.hero.cta') }}
       </button>
-      <button (click)="mobileMenuOpen.set(!mobileMenuOpen())" class="md:hidden p-2 text-neutral-600">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+      <button (click)="mobileMenuOpen.set(!mobileMenuOpen())" class="lg:hidden p-2 text-neutral-600 hover:text-black transition">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 6h16M4 12h16M4 18h16"/></svg>
       </button>
     </div>
   </div>
   @if (mobileMenuOpen()) {
-    <div class="md:hidden border-t border-neutral-200 bg-white px-5 py-4 space-y-3 text-sm font-medium text-neutral-600">
-      <a (click)="scrollTo('benefits')" class="block cursor-pointer hover:text-black">{{ i18n.t('landing.nav.features') }}</a>
-      <a (click)="scrollTo('pricing')" class="block cursor-pointer hover:text-black">{{ i18n.t('landing.nav.pricing') }}</a>
-      <a (click)="scrollTo('faq')" class="block cursor-pointer hover:text-black">{{ i18n.t('landing.nav.faq') }}</a>
-      <a (click)="navigate('/admin/login')" class="block cursor-pointer hover:text-black">{{ i18n.t('auth.login') }}</a>
+    <div class="lg:hidden border-t border-neutral-100 bg-white/98 backdrop-blur-xl px-6 py-5 space-y-4 text-sm font-medium text-neutral-600 animate-slideDown">
+      <a (click)="scrollTo('what-we-serve')" class="block cursor-pointer hover:text-black transition">{{ i18n.lang() === 'ar' ? 'خدماتنا' : 'Services' }}</a>
+      <a (click)="scrollTo('how-it-works')" class="block cursor-pointer hover:text-black transition">{{ i18n.lang() === 'ar' ? 'كيف نعمل' : 'How it works' }}</a>
+      <a (click)="scrollTo('features')" class="block cursor-pointer hover:text-black transition">{{ i18n.t('landing.nav.features') }}</a>
+      <a (click)="scrollTo('pricing')" class="block cursor-pointer hover:text-black transition">{{ i18n.t('landing.nav.pricing') }}</a>
+      <a (click)="scrollTo('faq')" class="block cursor-pointer hover:text-black transition">{{ i18n.t('landing.nav.faq') }}</a>
+      <div class="pt-3 border-t border-neutral-100 flex flex-col gap-3">
+        <a routerLink="/login" class="w-full py-3 text-center border-2 border-neutral-200 text-neutral-700 text-sm font-bold rounded-xl hover:border-black transition">
+          {{ i18n.lang() === 'ar' ? 'تسجيل الدخول' : 'Login' }}
+        </a>
+        <button (click)="openStoreSignup()" class="w-full py-3 bg-black text-white text-sm font-bold rounded-xl">{{ i18n.t('landing.hero.cta') }}</button>
+      </div>
     </div>
   }
 </nav>
 
-<!-- HERO -->
-<section id="hero" class="pt-32 pb-20 px-5">
-  <div class="max-w-3xl mx-auto text-center">
-    <h1 class="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-black leading-tight whitespace-pre-line">
-      {{ i18n.t('landing.hero.title') }}
+<!-- ── HERO ── -->
+<section id="hero" class="relative min-h-screen flex items-center justify-center px-6 overflow-hidden bg-white">
+  <!-- Subtle grid pattern -->
+  <div class="absolute inset-0 opacity-[0.03]" style="background-image: radial-gradient(circle, #000 1px, transparent 1px); background-size: 32px 32px;"></div>
+  <!-- Gradient orbs -->
+  <div class="hero-orb hero-orb-1"></div>
+  <div class="hero-orb hero-orb-2"></div>
+
+  <div class="max-w-5xl mx-auto text-center relative z-10">
+    <!-- Badge -->
+    <div class="reveal-on-scroll inline-flex items-center gap-2.5 px-5 py-2 rounded-full bg-neutral-50 border border-neutral-200 text-xs font-bold text-neutral-500 uppercase tracking-widest mb-10">
+      <span class="relative flex h-2 w-2">
+        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+        <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+      </span>
+      {{ i18n.lang() === 'ar' ? 'منصة ذكية لإدارة المتاجر' : 'Smart Store Management Platform' }}
+    </div>
+
+    <!-- Headline -->
+    <h1 class="reveal-on-scroll text-5xl sm:text-6xl md:text-7xl lg:text-[5.2rem] font-black tracking-tight leading-[1.05] text-gradient">
+      {{ i18n.lang() === 'ar' ? 'كل ما يحتاجه' : 'Everything Your' }}<br>
+      {{ i18n.lang() === 'ar' ? 'محلك للنجاح' : 'Store Needs' }}
     </h1>
-    <p class="mt-6 text-lg text-neutral-500 max-w-xl mx-auto leading-relaxed">
+
+    <p class="reveal-on-scroll mt-8 text-lg sm:text-xl text-neutral-500 max-w-2xl mx-auto leading-relaxed font-light">
       {{ i18n.t('landing.hero.subtitle') }}
     </p>
-    <div class="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-      <button (click)="openStoreSignup()" class="w-full sm:w-auto px-8 py-3.5 text-base font-semibold bg-black text-white rounded-xl hover:bg-neutral-800 transition shadow-lg shadow-black/10">
-        {{ i18n.t('landing.hero.cta') }}
+
+    <!-- CTA Buttons -->
+    <div class="reveal-on-scroll mt-12 flex flex-col sm:flex-row items-center justify-center gap-4">
+      <button (click)="openStoreSignup()" class="group w-full sm:w-auto px-10 py-4.5 text-base font-bold bg-black text-white rounded-2xl hover:bg-neutral-800 transition-all shadow-2xl shadow-black/20 hover:shadow-3xl hover:shadow-black/25 hover:-translate-y-1 active:scale-[0.98]">
+        <span class="flex items-center justify-center gap-2">
+          {{ i18n.t('landing.hero.cta') }}
+          <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+        </span>
       </button>
-      <button (click)="navigate('/admin/login')" class="w-full sm:w-auto px-8 py-3.5 text-base font-semibold border border-neutral-300 rounded-xl hover:bg-neutral-50 transition text-neutral-700">
-        {{ i18n.t('landing.hero.login') }}
+      <button (click)="scrollTo('how-it-works')" class="w-full sm:w-auto px-10 py-4.5 text-base font-semibold border-2 border-neutral-200 rounded-2xl hover:bg-neutral-50 hover:border-neutral-300 transition-all text-neutral-700 active:scale-[0.98]">
+        {{ i18n.lang() === 'ar' ? 'كيف يعمل' : 'See how it works' }}
       </button>
     </div>
-    <p class="mt-4 text-sm text-neutral-400">{{ i18n.t('landing.pricing.trial') }}</p>
+
+    <!-- Trust Badges -->
+    <div class="reveal-on-scroll mt-16 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-xs font-medium text-neutral-400">
+      <span class="flex items-center gap-1.5">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+        {{ i18n.lang() === 'ar' ? 'بيانات مشفرة' : 'Encrypted data' }}
+      </span>
+      <span class="flex items-center gap-1.5">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        {{ i18n.lang() === 'ar' ? 'إعداد فوري' : 'Instant setup' }}
+      </span>
+      <span class="flex items-center gap-1.5">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+        {{ i18n.lang() === 'ar' ? 'بدون بطاقة ائتمان' : 'No credit card needed' }}
+      </span>
+      <span class="flex items-center gap-1.5">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+        {{ i18n.lang() === 'ar' ? 'تجربة شهر مجاناً' : '1 Month free trial' }}
+      </span>
+    </div>
+
+    <!-- Animated Stats -->
+    <div class="mt-20 grid grid-cols-3 gap-6 max-w-lg mx-auto counter-trigger reveal-on-scroll">
+      <div class="stat-card glass-float rounded-2xl p-5 text-center">
+        <div class="text-3xl font-black text-black tabular-nums">{{ counterStores() }}+</div>
+        <div class="text-[11px] text-neutral-400 mt-1 font-medium uppercase tracking-wider">{{ i18n.lang() === 'ar' ? 'متجر' : 'Stores' }}</div>
+      </div>
+      <div class="stat-card glass-float rounded-2xl p-5 text-center">
+        <div class="text-3xl font-black text-black tabular-nums">{{ counterUptime() }}%</div>
+        <div class="text-[11px] text-neutral-400 mt-1 font-medium uppercase tracking-wider">{{ i18n.lang() === 'ar' ? 'وقت التشغيل' : 'Uptime' }}</div>
+      </div>
+      <div class="stat-card glass-float rounded-2xl p-5 text-center">
+        <div class="text-3xl font-black text-black tabular-nums">{{ counterSupport() }}/7</div>
+        <div class="text-[11px] text-neutral-400 mt-1 font-medium uppercase tracking-wider">{{ i18n.lang() === 'ar' ? 'الدعم' : 'Support' }}</div>
+      </div>
+    </div>
   </div>
 </section>
 
-<!-- BENEFITS -->
-<section id="benefits" class="py-20 px-5 bg-neutral-50">
-  <div class="max-w-5xl mx-auto">
-    <h2 class="text-2xl sm:text-3xl font-bold text-center text-black mb-14">{{ i18n.t('landing.benefits.title') }}</h2>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-      <div class="bg-white border border-neutral-200 rounded-xl p-6 hover:shadow-md transition">
-        <div class="w-10 h-10 bg-black rounded-lg flex items-center justify-center mb-4">
-          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+<!-- ── SECTION 1: WHAT WE SERVE ── -->
+<section id="what-we-serve" class="py-28 px-6 bg-neutral-950 text-white overflow-hidden">
+  <div class="max-w-6xl mx-auto">
+    <div class="text-center mb-20 reveal-on-scroll">
+      <span class="text-[11px] font-bold uppercase tracking-[.25em] text-neutral-500 mb-4 block">{{ i18n.lang() === 'ar' ? 'ماذا نقدم' : 'What We Serve' }}</span>
+      <h2 class="text-3xl sm:text-4xl lg:text-5xl font-black">
+        {{ i18n.lang() === 'ar' ? 'مصمّم خصيصاً لمحلات الموبايل' : 'Built Specifically for Phone Stores' }}
+      </h2>
+      <p class="mt-4 text-neutral-400 max-w-xl mx-auto text-lg">
+        {{ i18n.lang() === 'ar' ? 'ليست أداة عامة. إنها منصة متخصصة تفهم طبيعة عملك في عالم الموبايلات.' : 'Not a generic tool. A specialized platform that understands the mobile phone retail business.' }}
+      </p>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-8">
+      <!-- Card 1: Phone Stores -->
+      <div class="card-3d reveal-on-scroll delay-1 group relative p-8 rounded-3xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all duration-500"
+           (mousemove)="onCardMouseMove($event)" (mouseleave)="onCardMouseLeave($event)">
+        <div class="w-14 h-14 bg-white rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+          <svg class="w-7 h-7 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
         </div>
-        <h3 class="font-semibold text-black mb-2">{{ i18n.t('landing.benefits.inventory') }}</h3>
+        <h3 class="text-xl font-bold mb-3">{{ i18n.lang() === 'ar' ? 'محلات الموبايلات' : 'Phone Retail Stores' }}</h3>
+        <p class="text-neutral-400 text-sm leading-relaxed">
+          {{ i18n.lang() === 'ar' ? 'تتبع كل جهاز بالـ IMEI، أدر المخزون بذكاء، وابنِ واجهة أونلاين يشوفها عملاءك. كل شيء من مكان واحد.' : 'Track every device by IMEI, manage inventory intelligently, and build an online storefront your customers can browse. All from one place.' }}
+        </p>
+      </div>
+
+      <!-- Card 2: Accessories & Repair -->
+      <div class="card-3d reveal-on-scroll delay-2 group relative p-8 rounded-3xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all duration-500"
+           (mousemove)="onCardMouseMove($event)" (mouseleave)="onCardMouseLeave($event)">
+        <div class="w-14 h-14 bg-white rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+          <svg class="w-7 h-7 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        </div>
+        <h3 class="text-xl font-bold mb-3">{{ i18n.lang() === 'ar' ? 'إكسسوارات وصيانة' : 'Accessories & Repair' }}</h3>
+        <p class="text-neutral-400 text-sm leading-relaxed">
+          {{ i18n.lang() === 'ar' ? 'سواء إكسسوارات أو مركز صيانة — نوّع أصنافك، تابع ضمانات العملاء، وأدر كل شيء بسهولة.' : 'Whether accessories or a repair center — diversify your categories, track customer warranties, and manage everything effortlessly.' }}
+        </p>
+      </div>
+
+      <!-- Card 3: Multi-Branch -->
+      <div class="card-3d reveal-on-scroll delay-3 group relative p-8 rounded-3xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all duration-500"
+           (mousemove)="onCardMouseMove($event)" (mouseleave)="onCardMouseLeave($event)">
+        <div class="w-14 h-14 bg-white rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+          <svg class="w-7 h-7 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+        </div>
+        <h3 class="text-xl font-bold mb-3">{{ i18n.lang() === 'ar' ? 'متاجر متعددة الفروع' : 'Multi-Location Stores' }}</h3>
+        <p class="text-neutral-400 text-sm leading-relaxed">
+          {{ i18n.lang() === 'ar' ? 'أدر أكثر من فرع لمتجرك، كل فرع بمخزون مستقل، وتقارير موحدة تجمعلك كل شيء في لوحة واحدة.' : 'Manage multiple branches, each with independent inventory, unified reports bringing everything together in one dashboard.' }}
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── SECTION 2: HOW IT WORKS ── -->
+<section id="how-it-works" class="py-28 px-6 bg-white">
+  <div class="max-w-6xl mx-auto">
+    <div class="text-center mb-20 reveal-on-scroll">
+      <span class="text-[11px] font-bold uppercase tracking-[.25em] text-neutral-400 mb-4 block">{{ i18n.lang() === 'ar' ? 'كيف يعمل' : 'How It Works' }}</span>
+      <h2 class="text-3xl sm:text-4xl lg:text-5xl font-black text-black">
+        {{ i18n.lang() === 'ar' ? 'ابدأ في ٣ خطوات بسيطة' : 'Get Started in 3 Simple Steps' }}
+      </h2>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-12 relative">
+      <!-- Connecting line -->
+      <div class="hidden md:block absolute top-24 left-[16%] right-[16%] h-px bg-gradient-to-r from-transparent via-neutral-200 to-transparent"></div>
+
+      <!-- Step 1 -->
+      <div class="reveal-on-scroll delay-1 text-center relative">
+        <div class="w-16 h-16 bg-black rounded-2xl flex items-center justify-center mx-auto mb-6 text-white text-2xl font-black relative z-10">1</div>
+        <h3 class="text-xl font-bold text-black mb-3">{{ i18n.lang() === 'ar' ? 'سجّل متجرك' : 'Register Your Store' }}</h3>
+        <p class="text-neutral-500 text-sm leading-relaxed">
+          {{ i18n.lang() === 'ar' ? 'املأ بيانات متجرك الأساسية — الاسم، النوع، معلومات التواصل. العملية بسيطة وسريعة.' : 'Fill in your basic store info — name, type, contact details. The process is simple and fast.' }}
+        </p>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="reveal-on-scroll delay-2 text-center relative">
+        <div class="w-16 h-16 bg-black rounded-2xl flex items-center justify-center mx-auto mb-6 text-white text-2xl font-black relative z-10">2</div>
+        <h3 class="text-xl font-bold text-black mb-3">{{ i18n.lang() === 'ar' ? 'فعّل وابدأ' : 'Activate & Launch' }}</h3>
+        <p class="text-neutral-500 text-sm leading-relaxed">
+          {{ i18n.lang() === 'ar' ? 'بعد الموافقة، يتم تفعيل متجرك مع فترة تجريبية ١٤ يوم. سجّل دخول وابدأ إعداد منتجاتك.' : 'After approval, your store activates with a 14-day trial. Sign in and start setting up your products.' }}
+        </p>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="reveal-on-scroll delay-3 text-center relative">
+        <div class="w-16 h-16 bg-black rounded-2xl flex items-center justify-center mx-auto mb-6 text-white text-2xl font-black relative z-10">3</div>
+        <h3 class="text-xl font-bold text-black mb-3">{{ i18n.lang() === 'ar' ? 'ازدهر وانمو' : 'Grow & Scale' }}</h3>
+        <p class="text-neutral-500 text-sm leading-relaxed">
+          {{ i18n.lang() === 'ar' ? 'شارك رابط متجرك مع عملائك، تابع المبيعات والمخزون، ووسّع عملك بثقة.' : 'Share your store link with customers, track sales and inventory, and scale your business with confidence.' }}
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── SECTION 3: WHO IT'S FOR ── -->
+<section id="who-its-for" class="py-28 px-6 bg-neutral-50">
+  <div class="max-w-6xl mx-auto">
+    <div class="grid lg:grid-cols-2 gap-16 items-center">
+      <div class="reveal-on-scroll">
+        <span class="text-[11px] font-bold uppercase tracking-[.25em] text-neutral-400 mb-4 block">{{ i18n.lang() === 'ar' ? 'لمن هذه المنصة' : 'Who It\'s For' }}</span>
+        <h2 class="text-3xl sm:text-4xl font-black text-black mb-6">
+          {{ i18n.lang() === 'ar' ? 'منصة مصممة لنجاحك' : 'A Platform Designed for Your Success' }}
+        </h2>
+        <p class="text-neutral-500 text-lg leading-relaxed mb-8">
+          {{ i18n.lang() === 'ar' ? 'سواء كنت صاحب محل صغير أو سلسلة محلات — موبيليتكس تتكيف مع حجم عملك وتنمو معك.' : 'Whether you own a small shop or a chain of stores — Mobilytics adapts to your business size and grows with you.' }}
+        </p>
+        <div class="space-y-5">
+          <div class="flex items-start gap-4">
+            <div class="w-10 h-10 bg-black rounded-xl flex items-center justify-center shrink-0 mt-0.5">
+              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            </div>
+            <div>
+              <h4 class="font-bold text-black">{{ i18n.lang() === 'ar' ? 'أصحاب محلات الموبايل' : 'Phone Store Owners' }}</h4>
+              <p class="text-sm text-neutral-500 mt-1">{{ i18n.lang() === 'ar' ? 'نظّم مخزونك، فواتيرك، وموظفيك — كل شيء في مكان واحد.' : 'Organize your inventory, invoices, and employees — everything in one place.' }}</p>
+            </div>
+          </div>
+          <div class="flex items-start gap-4">
+            <div class="w-10 h-10 bg-black rounded-xl flex items-center justify-center shrink-0 mt-0.5">
+              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            </div>
+            <div>
+              <h4 class="font-bold text-black">{{ i18n.lang() === 'ar' ? 'مراكز الصيانة' : 'Repair Centers' }}</h4>
+              <p class="text-sm text-neutral-500 mt-1">{{ i18n.lang() === 'ar' ? 'تابع طلبات الصيانة والضمانات وقطع الغيار بكفاءة.' : 'Track repair orders, warranties, and spare parts efficiently.' }}</p>
+            </div>
+          </div>
+          <div class="flex items-start gap-4">
+            <div class="w-10 h-10 bg-black rounded-xl flex items-center justify-center shrink-0 mt-0.5">
+              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            </div>
+            <div>
+              <h4 class="font-bold text-black">{{ i18n.lang() === 'ar' ? 'تجار الإكسسوارات' : 'Accessories Vendors' }}</h4>
+              <p class="text-sm text-neutral-500 mt-1">{{ i18n.lang() === 'ar' ? 'اعرض منتجاتك أونلاين وادر التصنيفات والماركات بسهولة.' : 'Showcase products online, manage categories and brands effortlessly.' }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="reveal-on-scroll delay-2">
+        <!-- 3D floating dashboard mockup -->
+        <div class="mockup-3d relative">
+          <div class="bg-white rounded-3xl shadow-2xl border border-neutral-200 p-6 transform perspective-[1200px] rotate-y-[-4deg] rotate-x-[2deg] hover:rotate-y-0 hover:rotate-x-0 transition-transform duration-700">
+            <div class="flex items-center gap-2 mb-4">
+              <div class="w-3 h-3 rounded-full bg-red-400"></div>
+              <div class="w-3 h-3 rounded-full bg-yellow-400"></div>
+              <div class="w-3 h-3 rounded-full bg-green-400"></div>
+              <span class="ms-2 text-xs text-neutral-400 font-mono">dashboard.mobilytics.app</span>
+            </div>
+            <div class="space-y-4">
+              <div class="grid grid-cols-3 gap-3">
+                <div class="bg-neutral-50 rounded-xl p-4">
+                  <div class="text-[10px] text-neutral-400 uppercase">{{ i18n.lang() === 'ar' ? 'المبيعات' : 'Sales' }}</div>
+                  <div class="text-lg font-black text-black mt-1">12,540</div>
+                  <div class="text-[10px] text-emerald-600 font-bold mt-0.5">+18%</div>
+                </div>
+                <div class="bg-neutral-50 rounded-xl p-4">
+                  <div class="text-[10px] text-neutral-400 uppercase">{{ i18n.lang() === 'ar' ? 'المنتجات' : 'Items' }}</div>
+                  <div class="text-lg font-black text-black mt-1">847</div>
+                  <div class="text-[10px] text-neutral-400 font-bold mt-0.5">{{ i18n.lang() === 'ar' ? 'في المخزون' : 'in stock' }}</div>
+                </div>
+                <div class="bg-neutral-50 rounded-xl p-4">
+                  <div class="text-[10px] text-neutral-400 uppercase">{{ i18n.lang() === 'ar' ? 'العملاء' : 'Leads' }}</div>
+                  <div class="text-lg font-black text-black mt-1">234</div>
+                  <div class="text-[10px] text-blue-600 font-bold mt-0.5">{{ i18n.lang() === 'ar' ? 'جديد' : 'new' }}</div>
+                </div>
+              </div>
+              <div class="bg-neutral-50 rounded-xl p-4 h-24 flex items-end gap-1.5">
+                @for(h of [40, 65, 45, 80, 55, 70, 90, 60, 75, 85, 50, 95]; track $index) {
+                  <div class="flex-1 bg-black/80 rounded-t" [style.height.%]="h"></div>
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── FEATURES ── -->
+<section id="features" class="py-28 px-6 bg-white">
+  <div class="max-w-6xl mx-auto">
+    <div class="text-center mb-20 reveal-on-scroll">
+      <span class="text-[11px] font-bold uppercase tracking-[.25em] text-neutral-400 mb-4 block">{{ i18n.lang() === 'ar' ? 'المميزات' : 'Features' }}</span>
+      <h2 class="text-3xl sm:text-4xl lg:text-5xl font-black text-black">{{ i18n.t('landing.benefits.title') }}</h2>
+      <p class="mt-4 text-neutral-500 max-w-lg mx-auto">{{ i18n.lang() === 'ar' ? 'كل ما تحتاجه لإدارة متجرك في مكان واحد' : 'Everything you need to manage your store in one place' }}</p>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div class="card-3d reveal-on-scroll delay-1 group bg-white border border-neutral-200 rounded-3xl p-8 transition-all duration-300 hover:shadow-xl"
+           (mousemove)="onCardMouseMove($event)" (mouseleave)="onCardMouseLeave($event)">
+        <div class="w-14 h-14 bg-black rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+          <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+        </div>
+        <h3 class="font-bold text-lg text-black mb-2">{{ i18n.t('landing.benefits.inventory') }}</h3>
         <p class="text-sm text-neutral-500 leading-relaxed">{{ i18n.t('landing.benefits.inventoryDesc') }}</p>
       </div>
-      <div class="bg-white border border-neutral-200 rounded-xl p-6 hover:shadow-md transition">
-        <div class="w-10 h-10 bg-black rounded-lg flex items-center justify-center mb-4">
-          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z"/></svg>
+      <div class="card-3d reveal-on-scroll delay-2 group bg-white border border-neutral-200 rounded-3xl p-8 transition-all duration-300 hover:shadow-xl"
+           (mousemove)="onCardMouseMove($event)" (mouseleave)="onCardMouseLeave($event)">
+        <div class="w-14 h-14 bg-black rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+          <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z"/></svg>
         </div>
-        <h3 class="font-semibold text-black mb-2">{{ i18n.t('landing.benefits.invoicing') }}</h3>
+        <h3 class="font-bold text-lg text-black mb-2">{{ i18n.t('landing.benefits.invoicing') }}</h3>
         <p class="text-sm text-neutral-500 leading-relaxed">{{ i18n.t('landing.benefits.invoicingDesc') }}</p>
       </div>
-      <div class="bg-white border border-neutral-200 rounded-xl p-6 hover:shadow-md transition">
-        <div class="w-10 h-10 bg-black rounded-lg flex items-center justify-center mb-4">
-          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9"/></svg>
+      <div class="card-3d reveal-on-scroll delay-3 group bg-white border border-neutral-200 rounded-3xl p-8 transition-all duration-300 hover:shadow-xl"
+           (mousemove)="onCardMouseMove($event)" (mouseleave)="onCardMouseLeave($event)">
+        <div class="w-14 h-14 bg-black rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+          <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9"/></svg>
         </div>
-        <h3 class="font-semibold text-black mb-2">{{ i18n.t('landing.benefits.storefront') }}</h3>
+        <h3 class="font-bold text-lg text-black mb-2">{{ i18n.t('landing.benefits.storefront') }}</h3>
         <p class="text-sm text-neutral-500 leading-relaxed">{{ i18n.t('landing.benefits.storefrontDesc') }}</p>
       </div>
-      <div class="bg-white border border-neutral-200 rounded-xl p-6 hover:shadow-md transition">
-        <div class="w-10 h-10 bg-black rounded-lg flex items-center justify-center mb-4">
-          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+      <div class="card-3d reveal-on-scroll delay-4 group bg-white border border-neutral-200 rounded-3xl p-8 transition-all duration-300 hover:shadow-xl"
+           (mousemove)="onCardMouseMove($event)" (mouseleave)="onCardMouseLeave($event)">
+        <div class="w-14 h-14 bg-black rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+          <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
         </div>
-        <h3 class="font-semibold text-black mb-2">{{ i18n.t('landing.benefits.leads') }}</h3>
+        <h3 class="font-bold text-lg text-black mb-2">{{ i18n.t('landing.benefits.leads') }}</h3>
         <p class="text-sm text-neutral-500 leading-relaxed">{{ i18n.t('landing.benefits.leadsDesc') }}</p>
       </div>
-      <div class="bg-white border border-neutral-200 rounded-xl p-6 hover:shadow-md transition">
-        <div class="w-10 h-10 bg-black rounded-lg flex items-center justify-center mb-4">
-          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/></svg>
+      <div class="card-3d reveal-on-scroll delay-5 group bg-white border border-neutral-200 rounded-3xl p-8 transition-all duration-300 hover:shadow-xl"
+           (mousemove)="onCardMouseMove($event)" (mouseleave)="onCardMouseLeave($event)">
+        <div class="w-14 h-14 bg-black rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+          <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/></svg>
         </div>
-        <h3 class="font-semibold text-black mb-2">{{ i18n.t('landing.benefits.employees') }}</h3>
+        <h3 class="font-bold text-lg text-black mb-2">{{ i18n.t('landing.benefits.employees') }}</h3>
         <p class="text-sm text-neutral-500 leading-relaxed">{{ i18n.t('landing.benefits.employeesDesc') }}</p>
       </div>
-      <div class="bg-white border border-neutral-200 rounded-xl p-6 hover:shadow-md transition">
-        <div class="w-10 h-10 bg-black rounded-lg flex items-center justify-center mb-4">
-          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+      <div class="card-3d reveal-on-scroll delay-6 group bg-white border border-neutral-200 rounded-3xl p-8 transition-all duration-300 hover:shadow-xl"
+           (mousemove)="onCardMouseMove($event)" (mouseleave)="onCardMouseLeave($event)">
+        <div class="w-14 h-14 bg-black rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+          <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
         </div>
-        <h3 class="font-semibold text-black mb-2">{{ i18n.t('landing.benefits.reports') }}</h3>
+        <h3 class="font-bold text-lg text-black mb-2">{{ i18n.t('landing.benefits.reports') }}</h3>
         <p class="text-sm text-neutral-500 leading-relaxed">{{ i18n.t('landing.benefits.reportsDesc') }}</p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- PRICING -->
-<section id="pricing" class="py-20 px-5">
-  <div class="max-w-lg mx-auto text-center">
-    <h2 class="text-2xl sm:text-3xl font-bold text-black mb-4">{{ i18n.t('landing.pricing.title') }}</h2>
-    <p class="text-neutral-500 mb-10">{{ i18n.t('landing.pricing.trial') }}</p>
-    <div class="bg-white border-2 border-black rounded-2xl p-8">
-      <div class="text-sm uppercase tracking-wider text-neutral-400 font-semibold mb-4">{{ i18n.t('landing.footer.product') }}</div>
-      <div class="flex items-baseline justify-center gap-1">
-        <span class="text-5xl font-extrabold text-black">500</span>
-        <span class="text-lg text-neutral-500">{{ i18n.t('landing.pricing.currency') }}{{ i18n.t('landing.pricing.monthly') }}</span>
+<!-- ── PRICING — Dynamic from Backend ── -->
+<section id="pricing" class="py-28 px-6 bg-neutral-50">
+  <div class="max-w-6xl mx-auto">
+    <div class="text-center mb-16 reveal-on-scroll">
+      <span class="text-[11px] font-bold uppercase tracking-[.25em] text-neutral-400 mb-4 block">{{ i18n.lang() === 'ar' ? 'الأسعار' : 'Pricing' }}</span>
+      <h2 class="text-3xl sm:text-4xl lg:text-5xl font-black text-black">{{ i18n.t('landing.pricing.title') }}</h2>
+      <p class="text-neutral-500 mt-4 text-lg">{{ i18n.t('landing.pricing.trial') }}</p>
+      <!-- Billing toggle -->
+      <div class="mt-10 inline-flex items-center bg-white border border-neutral-200 rounded-full p-1 shadow-sm">
+        <button (click)="billingAnnual.set(false)"
+          class="px-6 py-2.5 rounded-full text-sm font-bold transition-all duration-300"
+          [class]="!billingAnnual() ? 'bg-black text-white shadow-md' : 'text-neutral-500 hover:text-black'">
+          {{ i18n.lang() === 'ar' ? 'شهري' : 'Monthly' }}
+        </button>
+        <button (click)="billingAnnual.set(true)"
+          class="px-6 py-2.5 rounded-full text-sm font-bold transition-all duration-300 flex items-center gap-2"
+          [class]="billingAnnual() ? 'bg-black text-white shadow-md' : 'text-neutral-500 hover:text-black'">
+          {{ i18n.lang() === 'ar' ? 'سنوي' : 'Annual' }}
+          <span class="text-[10px] bg-emerald-500 text-white px-2 py-0.5 rounded-full font-black">-20%</span>
+        </button>
       </div>
-      <div class="mt-2 text-sm text-neutral-400">{{ i18n.t('landing.pricing.activation') }}: 1,500 {{ i18n.t('landing.pricing.currency') }}</div>
-      <ul class="mt-8 space-y-3 text-sm text-neutral-600">
-        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-black flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>{{ i18n.t('landing.benefits.inventory') }}</li>
-        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-black flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>{{ i18n.t('landing.benefits.invoicing') }}</li>
-        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-black flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>{{ i18n.t('landing.benefits.storefront') }}</li>
-        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-black flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>{{ i18n.t('landing.benefits.leads') }}</li>
-        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-black flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>{{ i18n.t('landing.benefits.employees') }}</li>
-        <li class="flex items-center gap-2"><svg class="w-4 h-4 text-black flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>{{ i18n.t('landing.benefits.reports') }}</li>
-      </ul>
-      <button (click)="openStoreSignup()" class="mt-8 w-full py-3.5 bg-black text-white font-semibold rounded-xl hover:bg-neutral-800 transition text-base">
-        {{ i18n.t('landing.hero.cta') }}
-      </button>
+    </div>
+
+    <div class="max-w-md mx-auto">
+      <div class="relative bg-white border-2 border-black rounded-3xl p-9 shadow-2xl shadow-black/10 reveal-on-scroll">
+        <div class="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-black text-white text-[10px] font-black uppercase tracking-[.2em] px-5 py-1.5 rounded-full">
+          {{ i18n.lang() === 'ar' ? 'باقة مميزة' : 'Premium Plan' }}
+        </div>
+        <div class="text-sm font-bold text-neutral-400 uppercase tracking-wider mb-5">{{ i18n.lang() === 'ar' ? 'الباقة الأساسية' : 'Starter Plan' }}</div>
+        <div class="flex items-baseline gap-1.5 mb-2">
+          <span class="text-5xl font-black text-black tabular-nums">{{ billingAnnual() ? '3,840' : '400' }}</span>
+          <span class="text-lg text-neutral-400 font-medium">{{ i18n.t('landing.pricing.currency') }}</span>
+        </div>
+        <p class="text-sm text-neutral-400 mb-4">
+          {{ billingAnnual() ? (i18n.lang() === 'ar' ? '/سنة' : '/year') : (i18n.t('landing.pricing.monthly')) }}
+          @if (billingAnnual()) {
+            <span class="text-emerald-600 font-bold ms-1.5">{{ i18n.lang() === 'ar' ? 'وفر 20%' : 'Save 20%' }}</span>
+          }
+        </p>
+        <p class="text-xs text-neutral-400 mb-6 font-medium">+ 2,200 {{ i18n.t('landing.pricing.currency') }} {{ i18n.lang() === 'ar' ? 'رسوم تفعيل لمرة واحدة' : 'one-time activation' }}</p>
+        <div class="w-full h-px bg-neutral-100 mb-6"></div>
+        <ul class="space-y-3.5 text-sm text-neutral-600 mb-8">
+          <li class="flex items-center gap-3"><svg class="w-4 h-4 text-black shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>{{ i18n.lang() === 'ar' ? 'منتجات غير محدودة' : 'Unlimited Items' }}</li>
+          <li class="flex items-center gap-3"><svg class="w-4 h-4 text-black shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>{{ i18n.lang() === 'ar' ? 'موظفين غير محدودين' : 'Unlimited Employees' }}</li>
+          <li class="flex items-center gap-3"><svg class="w-4 h-4 text-black shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>{{ i18n.lang() === 'ar' ? 'واجهة متجر أونلاين' : 'Online Storefront' }}</li>
+          <li class="flex items-center gap-3"><svg class="w-4 h-4 text-black shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>{{ i18n.lang() === 'ar' ? 'فواتير وإدارة مخزون' : 'Invoicing & Stock' }}</li>
+          <li class="flex items-center gap-3"><svg class="w-4 h-4 text-black shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>{{ i18n.lang() === 'ar' ? 'تتبع العملاء' : 'Lead Tracking' }}</li>
+          <li class="flex items-center gap-3"><svg class="w-4 h-4 text-black shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>{{ i18n.lang() === 'ar' ? 'تقارير وتحليلات' : 'Reports & Analytics' }}</li>
+        </ul>
+        <button (click)="openStoreSignup()" class="w-full py-4 bg-black text-white font-bold rounded-2xl hover:bg-neutral-800 transition text-base shadow-lg shadow-black/10">
+          {{ i18n.t('landing.hero.cta') }}
+        </button>
+      </div>
     </div>
   </div>
 </section>
 
-<!-- FAQ -->
-<section id="faq" class="py-20 px-5 bg-neutral-50">
-  <div class="max-w-2xl mx-auto">
-    <h2 class="text-2xl sm:text-3xl font-bold text-center text-black mb-12">{{ i18n.t('landing.faq.title') }}</h2>
+<!-- ── FAQ ── -->
+<section id="faq" class="py-28 px-6 bg-white">
+  <div class="max-w-3xl mx-auto">
+    <div class="text-center mb-16 reveal-on-scroll">
+      <span class="text-[11px] font-bold uppercase tracking-[.25em] text-neutral-400 mb-4 block">{{ i18n.lang() === 'ar' ? 'أسئلة شائعة' : 'FAQ' }}</span>
+      <h2 class="text-3xl sm:text-4xl font-black text-black">{{ i18n.t('landing.faq.title') }}</h2>
+    </div>
     <div class="space-y-3">
       @for (faq of [
-        { q: i18n.lang() === 'ar' ? 'ما هي موبيليتكس؟' : 'What is Mobilytics?', a: i18n.lang() === 'ar' ? 'منصة SaaS متكاملة لإدارة محلات الموبايل — مخزون، فواتير، واجهة متجر أونلاين، وتتبع عملاء.' : 'A complete SaaS platform for managing phone stores — inventory, invoicing, online storefront, and lead tracking.' },
-        { q: i18n.lang() === 'ar' ? 'هل يمكنني تجربتها مجاناً؟' : 'Can I try it for free?', a: i18n.lang() === 'ar' ? 'نعم! تجربة مجانية لمدة 14 يوم بدون بطاقة ائتمان.' : 'Yes! 14-day free trial with no credit card required.' },
-        { q: i18n.lang() === 'ar' ? 'هل يعمل على الموبايل؟' : 'Does it work on mobile?', a: i18n.lang() === 'ar' ? 'نعم، تطبيق ويب تقدمي (PWA) يعمل على أي جهاز.' : 'Yes, a Progressive Web App (PWA) that works on any device.' },
-        { q: i18n.lang() === 'ar' ? 'كيف يتم الدفع؟' : 'How does payment work?', a: i18n.lang() === 'ar' ? 'رسوم تفعيل لمرة واحدة + اشتراك شهري.' : 'One-time activation fee + monthly subscription.' },
-        { q: i18n.lang() === 'ar' ? 'هل بياناتي آمنة؟' : 'Is my data secure?', a: i18n.lang() === 'ar' ? 'نعم، كل متجر منفصل تماماً عن الآخر مع تشفير كامل.' : 'Yes, each store is completely isolated with full encryption.' },
-        { q: i18n.lang() === 'ar' ? 'كم يستغرق التفعيل؟' : 'How long does activation take?', a: i18n.lang() === 'ar' ? 'خلال 24 ساعة من التسجيل.' : 'Within 24 hours of registration.' }
+        { q: i18n.lang() === 'ar' ? 'ما هي موبيليتكس؟' : 'What is Mobilytics?', a: i18n.lang() === 'ar' ? 'منصة SaaS متكاملة لإدارة محلات الموبايل — مخزون، فواتير، واجهة متجر أونلاين، وتتبع عملاء. كل أدواتك في تطبيق واحد.' : 'A complete SaaS platform for managing phone stores — inventory, invoicing, online storefront, and lead tracking. All your tools in one app.' },
+        { q: i18n.lang() === 'ar' ? 'هل يمكنني تجربتها مجاناً؟' : 'Can I try it for free?', a: i18n.lang() === 'ar' ? 'نعم! تجربة مجانية لمدة 14 يوم بدون بطاقة ائتمان. سجل الآن وابدأ فوراً.' : 'Absolutely! 14-day free trial with no credit card required. Register now and get started immediately.' },
+        { q: i18n.lang() === 'ar' ? 'هل يعمل على الموبايل؟' : 'Does it work on mobile?', a: i18n.lang() === 'ar' ? 'نعم، تطبيق ويب تقدمي (PWA) يعمل على أي جهاز بدون تحميل من الستور. افتحه من المتصفح وثبّته كتطبيق.' : 'Yes, a Progressive Web App (PWA) that works on any device without downloading from app stores. Open it in your browser and install it as an app.' },
+        { q: i18n.lang() === 'ar' ? 'كيف يتم الدفع؟' : 'How does payment work?', a: i18n.lang() === 'ar' ? 'رسوم تفعيل لمرة واحدة + اشتراك شهري أو سنوي (خصم 20%). الأسعار شفافة بدون رسوم مخفية.' : 'One-time activation fee + monthly or annual subscription (20% discount). Transparent pricing with no hidden fees.' },
+        { q: i18n.lang() === 'ar' ? 'هل بياناتي آمنة؟' : 'Is my data secure?', a: i18n.lang() === 'ar' ? 'نعم، كل متجر منفصل تماماً عن الآخر مع تشفير كامل وعزل تام للبيانات. لا يمكن لأي متجر الوصول لبيانات متجر آخر.' : 'Yes, each store is completely isolated with full encryption and complete data separation. No store can access another store\'s data.' },
+        { q: i18n.lang() === 'ar' ? 'كم يستغرق التفعيل؟' : 'How long does activation take?', a: i18n.lang() === 'ar' ? 'خلال 24 ساعة من التسجيل، يتم مراجعة طلبك وتفعيل متجرك.' : 'Within 24 hours of registration, your request is reviewed and your store is activated.' },
+        { q: i18n.lang() === 'ar' ? 'هل يمكنني إدارة الموظفين بصلاحيات مختلفة؟' : 'Can I manage employees with different permissions?', a: i18n.lang() === 'ar' ? 'بالتأكيد! أنشئ موظفين بأدوار مختلفة (مدير، بائع، محاسب) وتحكّم في صلاحيات كل واحد بدقة.' : 'Absolutely! Create employees with different roles (manager, salesperson, accountant) and control each one\'s permissions precisely.' },
+        { q: i18n.lang() === 'ar' ? 'هل يمكنني عرض منتجاتي أونلاين؟' : 'Can I showcase my products online?', a: i18n.lang() === 'ar' ? 'نعم! كل متجر يحصل على واجهة أونلاين احترافية يمكن لعملائك تصفحها والاستفسار عبر واتساب.' : 'Yes! Every store gets a professional online storefront where customers can browse and inquire via WhatsApp.' },
+        { q: i18n.lang() === 'ar' ? 'هل يدعم تتبع IMEI؟' : 'Does it support IMEI tracking?', a: i18n.lang() === 'ar' ? 'نعم! تتبع كل جهاز بالرقم التسلسلي IMEI مع تاريخ كامل للبيع والشراء والضمان.' : 'Yes! Track every device by IMEI serial number with complete history of sales, purchases, and warranty.' },
+        { q: i18n.lang() === 'ar' ? 'هل يدعم اللغة العربية؟' : 'Does it support Arabic?', a: i18n.lang() === 'ar' ? 'نعم! المنصة بالكامل تدعم العربية والإنجليزية مع دعم كامل لاتجاه RTL.' : 'Yes! The entire platform supports both Arabic and English with full RTL direction support.' }
       ]; track $index) {
-        <div class="border border-neutral-200 rounded-xl bg-white overflow-hidden">
-          <button (click)="toggleFaq($index)" class="w-full flex items-center justify-between p-5 text-left">
-            <span class="font-medium text-black">{{ faq.q }}</span>
-            <svg class="w-5 h-5 text-neutral-400 transition-transform" [class.rotate-180]="expandedFaq() === $index" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+        <div class="border border-neutral-200 rounded-2xl bg-white overflow-hidden hover:shadow-sm transition-shadow reveal-on-scroll">
+          <button (click)="toggleFaq($index)" class="w-full flex items-center justify-between p-6 text-left">
+            <span class="font-bold text-black pe-4">{{ faq.q }}</span>
+            <svg class="w-5 h-5 text-neutral-400 transition-transform duration-300 shrink-0" [class.rotate-180]="expandedFaq() === $index" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
           </button>
           @if (expandedFaq() === $index) {
-            <div class="px-5 pb-5 text-sm text-neutral-500 leading-relaxed">{{ faq.a }}</div>
+            <div class="px-6 pb-6 text-sm text-neutral-500 leading-relaxed animate-fadeIn">{{ faq.a }}</div>
           }
         </div>
       }
@@ -162,102 +470,246 @@
   </div>
 </section>
 
-<!-- CTA -->
-<section class="py-20 px-5 bg-black text-white">
-  <div class="max-w-2xl mx-auto text-center">
-    <h2 class="text-2xl sm:text-3xl font-bold mb-4">{{ i18n.t('landing.cta.title') }}</h2>
-    <p class="text-neutral-400 mb-8">{{ i18n.t('landing.cta.subtitle') }}</p>
-    <button (click)="openStoreSignup()" class="px-8 py-3.5 bg-white text-black font-semibold rounded-xl hover:bg-neutral-100 transition text-base">
-      {{ i18n.t('landing.hero.cta') }}
+<!-- ── TRUSTED STORES — Carousel ── -->
+@if (tenants().length) {
+  <section class="py-16 px-6 bg-gradient-to-br from-neutral-100 via-neutral-50 to-white overflow-hidden">
+    <div class="max-w-6xl mx-auto">
+      <h3 class="text-center text-sm font-bold uppercase tracking-[.25em] mb-10 text-neutral-400">{{ i18n.lang() === 'ar' ? 'يثقون بنا' : 'Trusted by stores everywhere' }}</h3>
+      <!-- Carousel wrapper -->
+      <div class="relative">
+        <!-- Gradient fade edges -->
+        <div class="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-neutral-100 to-transparent z-10 pointer-events-none"></div>
+        <div class="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-neutral-50 to-transparent z-10 pointer-events-none"></div>
+        <!-- Carousel track -->
+        <div class="overflow-hidden" #storesCarousel>
+          <div class="flex gap-4 transition-transform duration-500 ease-out" [style.transform]="'translateX(-' + carouselOffset() + 'px)'">
+            @for (t of carouselTenants(); track t.id + '-' + $index) {
+              <button (click)="visitStore(t.slug)"
+                class="group flex-shrink-0 w-40 flex flex-col items-center gap-3 p-5 rounded-2xl bg-white border border-neutral-200 hover:shadow-lg hover:border-neutral-300 transition-all duration-300 hover:-translate-y-1">
+                @if (t.logoUrl) {
+                  <img [src]="resolveImg(t.logoUrl)" [alt]="t.name" class="w-14 h-14 rounded-2xl object-cover" />
+                } @else {
+                  <div class="w-14 h-14 rounded-2xl bg-neutral-100 flex items-center justify-center text-xl font-black text-neutral-400">{{ t.name.charAt(0) }}</div>
+                }
+                <span class="text-sm font-semibold text-neutral-600 group-hover:text-black transition text-center">{{ t.name }}</span>
+              </button>
+            }
+          </div>
+        </div>
+        <!-- Nav arrows -->
+        @if (tenants().length > 4) {
+          <button (click)="carouselPrev()" class="absolute left-0 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white border border-neutral-200 shadow-lg flex items-center justify-center hover:bg-black hover:text-white transition-all -ml-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+          </button>
+          <button (click)="carouselNext()" class="absolute right-0 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white border border-neutral-200 shadow-lg flex items-center justify-center hover:bg-black hover:text-white transition-all -mr-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+          </button>
+        }
+      </div>
+    </div>
+  </section>
+}
+
+<!-- ── CTA ── -->
+<section class="py-28 px-6 bg-black text-white overflow-hidden relative">
+  <!-- Subtle radial gradient -->
+  <div class="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,0.06)_0%,transparent_60%)]"></div>
+  <div class="max-w-3xl mx-auto text-center relative z-10 reveal-on-scroll">
+    <h2 class="text-4xl sm:text-5xl font-black mb-6">{{ i18n.t('landing.cta.title') }}</h2>
+    <p class="text-white/50 mb-12 text-lg">{{ i18n.t('landing.cta.subtitle') }}</p>
+    <button (click)="openStoreSignup()" class="group px-12 py-5 bg-white text-black font-black rounded-2xl hover:bg-neutral-100 transition-all text-base shadow-2xl shadow-white/10 hover:-translate-y-1 active:scale-[0.98]">
+      <span class="flex items-center gap-2">
+        {{ i18n.t('landing.hero.cta') }}
+        <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+      </span>
     </button>
   </div>
 </section>
 
-<!-- FOOTER -->
-<footer class="py-12 px-5 border-t border-neutral-200 bg-white">
-  <div class="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 text-sm">
-    <div class="col-span-2 md:col-span-1">
-      <div class="text-lg font-bold text-black mb-2">{{ i18n.t('landing.footer.brand') }}</div>
-      <p class="text-neutral-500 text-xs leading-relaxed">{{ i18n.t('landing.footer.tagline') }}</p>
+<!-- ── FOOTER — Nova Node Branding (Black) ── -->
+<footer class="py-20 px-6 bg-black text-white">
+  <div class="max-w-6xl mx-auto">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-12 mb-16">
+      <!-- Brand -->
+      <div class="col-span-2 md:col-span-1">
+        <div class="flex items-center gap-2.5 mb-4">
+          <div class="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M2 20V10L7 4L12 10V20" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M12 20V10L17 4L22 10V20" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <rect x="16" y="14" width="2" height="6" rx="1" fill="black" opacity="0.5"/>
+              <rect x="19" y="11" width="2" height="9" rx="1" fill="black" opacity="0.7"/>
+            </svg>
+          </div>
+          <span class="text-xl font-black text-white">{{ i18n.t('landing.footer.brand') }}</span>
+        </div>
+        <p class="text-white/50 text-sm leading-relaxed mb-4">{{ i18n.t('landing.footer.tagline') }}</p>
+        <p class="text-white/40 text-xs">
+          {{ i18n.lang() === 'ar' ? 'منتج من' : 'A product by' }}
+          <a href="https://novanodee.vercel.app" target="_blank" rel="noopener" class="font-bold text-white hover:underline">Nova Node</a>
+        </p>
+      </div>
+
+      <!-- Product -->
+      <div>
+        <div class="font-bold text-white mb-4 text-sm uppercase tracking-wider">{{ i18n.t('landing.footer.product') }}</div>
+        <ul class="space-y-3 text-sm text-white/50">
+          <li><a (click)="scrollTo('features')" class="cursor-pointer hover:text-white transition">{{ i18n.t('landing.nav.features') }}</a></li>
+          <li><a (click)="scrollTo('pricing')" class="cursor-pointer hover:text-white transition">{{ i18n.t('landing.nav.pricing') }}</a></li>
+          <li><a (click)="scrollTo('faq')" class="cursor-pointer hover:text-white transition">{{ i18n.t('landing.nav.faq') }}</a></li>
+        </ul>
+      </div>
+
+      <!-- Company -->
+      <div>
+        <div class="font-bold text-white mb-4 text-sm uppercase tracking-wider">{{ i18n.lang() === 'ar' ? 'الشركة' : 'Company' }}</div>
+        <ul class="space-y-3 text-sm text-white/50">
+          <li><a href="https://novanodee.vercel.app" target="_blank" rel="noopener" class="hover:text-white transition">Nova Node</a></li>
+          <li><a (click)="scrollTo('what-we-serve')" class="cursor-pointer hover:text-white transition">{{ i18n.lang() === 'ar' ? 'عن المنصة' : 'About' }}</a></li>
+          <li><a (click)="scrollTo('how-it-works')" class="cursor-pointer hover:text-white transition">{{ i18n.lang() === 'ar' ? 'كيف يعمل' : 'How it works' }}</a></li>
+        </ul>
+      </div>
+
+      <!-- Connect -->
+      <div>
+        <div class="font-bold text-white mb-4 text-sm uppercase tracking-wider">{{ i18n.lang() === 'ar' ? 'تواصل معنا' : 'Connect' }}</div>
+        <div class="flex flex-wrap gap-3">
+          <!-- WhatsApp -->
+          <a href="https://wa.me/201226187060" target="_blank" rel="noopener"
+             class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-white/60 hover:bg-white hover:text-black transition-all duration-300">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          </a>
+          <!-- Facebook -->
+          <a href="https://www.facebook.com/profile.php?id=61578250210422" target="_blank" rel="noopener"
+             class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-white/60 hover:bg-white hover:text-black transition-all duration-300">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+          </a>
+          <!-- LinkedIn -->
+          <a href="https://www.linkedin.com/company/nova-nodee" target="_blank" rel="noopener"
+             class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-white/60 hover:bg-white hover:text-black transition-all duration-300">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+          </a>
+          <!-- TikTok -->
+          <a href="https://www.tiktok.com/@nova.node" target="_blank" rel="noopener"
+             class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-white/60 hover:bg-white hover:text-black transition-all duration-300">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></svg>
+          </a>
+          <!-- Instagram -->
+          <a href="https://instagram.com/_novanode_" target="_blank" rel="noopener"
+             class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-white/60 hover:bg-white hover:text-black transition-all duration-300">
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C8.74 0 8.333.015 7.053.072 5.775.132 4.905.333 4.14.63c-.789.306-1.459.717-2.126 1.384S.935 3.35.63 4.14C.333 4.905.131 5.775.072 7.053.012 8.333 0 8.74 0 12s.015 3.667.072 4.947c.06 1.277.261 2.148.558 2.913.306.788.717 1.459 1.384 2.126.667.666 1.336 1.079 2.126 1.384.766.296 1.636.499 2.913.558C8.333 23.988 8.74 24 12 24s3.667-.015 4.947-.072c1.277-.06 2.148-.262 2.913-.558.788-.306 1.459-.718 2.126-1.384.666-.667 1.079-1.335 1.384-2.126.296-.765.499-1.636.558-2.913.06-1.28.072-1.687.072-4.947s-.015-3.667-.072-4.947c-.06-1.277-.262-2.149-.558-2.913-.306-.789-.718-1.459-1.384-2.126C21.319 1.347 20.651.935 19.86.63c-.765-.297-1.636-.499-2.913-.558C15.667.012 15.26 0 12 0zm0 2.16c3.203 0 3.585.016 4.85.071 1.17.055 1.805.249 2.227.415.562.217.96.477 1.382.896.419.42.679.819.896 1.381.164.422.36 1.057.413 2.227.057 1.266.07 1.646.07 4.85s-.015 3.585-.074 4.85c-.061 1.17-.256 1.805-.421 2.227-.224.562-.479.96-.899 1.382-.419.419-.824.679-1.38.896-.42.164-1.065.36-2.235.413-1.274.057-1.649.07-4.859.07-3.211 0-3.586-.015-4.859-.074-1.171-.061-1.816-.256-2.236-.421-.569-.224-.96-.479-1.379-.899-.421-.419-.69-.824-.9-1.38-.165-.42-.359-1.065-.42-2.235-.045-1.26-.061-1.649-.061-4.844 0-3.196.016-3.586.061-4.861.061-1.17.255-1.814.42-2.234.21-.57.479-.96.9-1.381.419-.419.81-.689 1.379-.898.42-.166 1.051-.361 2.221-.421 1.275-.045 1.65-.06 4.859-.06l.045.03zm0 3.678c-3.405 0-6.162 2.76-6.162 6.162 0 3.405 2.76 6.162 6.162 6.162 3.405 0 6.162-2.76 6.162-6.162 0-3.405-2.76-6.162-6.162-6.162zM12 16c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm7.846-10.405c0 .795-.646 1.44-1.44 1.44-.795 0-1.44-.646-1.44-1.44 0-.794.646-1.439 1.44-1.439.793-.001 1.44.645 1.44 1.439z"/></svg>
+          </a>
+        </div>
+      </div>
     </div>
-    <div>
-      <div class="font-semibold text-black mb-3">{{ i18n.t('landing.footer.product') }}</div>
-      <ul class="space-y-2 text-neutral-500">
-        <li><a (click)="scrollTo('benefits')" class="cursor-pointer hover:text-black transition">{{ i18n.t('landing.nav.features') }}</a></li>
-        <li><a (click)="scrollTo('pricing')" class="cursor-pointer hover:text-black transition">{{ i18n.t('landing.nav.pricing') }}</a></li>
-        <li><a (click)="scrollTo('faq')" class="cursor-pointer hover:text-black transition">{{ i18n.t('landing.nav.faq') }}</a></li>
-      </ul>
+
+    <!-- Bottom bar -->
+    <div class="pt-8 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <p class="text-xs text-white/40">
+        &copy; {{ i18n.lang() === 'ar' ? '٢٠٢٥' : '2025' }} {{ i18n.t('landing.footer.brand') }}. {{ i18n.t('landing.footer.rights') }}
+      </p>
+      <p class="text-xs text-white/40">
+        {{ i18n.lang() === 'ar' ? 'مملوك لـ' : 'Owned by' }}
+        <a href="https://novanodee.vercel.app" target="_blank" rel="noopener" class="font-bold text-white hover:underline">Nova Node</a>
+      </p>
     </div>
-    <div>
-      <div class="font-semibold text-black mb-3">{{ i18n.t('landing.footer.account') }}</div>
-      <ul class="space-y-2 text-neutral-500">
-        <li><a (click)="navigate('/admin/login')" class="cursor-pointer hover:text-black transition">{{ i18n.t('auth.login') }}</a></li>
-        <li><a (click)="openStoreSignup()" class="cursor-pointer hover:text-black transition">{{ i18n.t('landing.hero.cta') }}</a></li>
-        <li><a (click)="navigate('/superadmin/login')" class="cursor-pointer hover:text-black transition">{{ i18n.t('auth.platformLoginTitle') }}</a></li>
-      </ul>
-    </div>
-  </div>
-  <div class="max-w-5xl mx-auto mt-10 pt-6 border-t border-neutral-200 text-center text-xs text-neutral-400">
-    &copy; 2025 {{ i18n.t('landing.footer.brand') }}. {{ i18n.t('landing.footer.rights') }}
   </div>
 </footer>
 
-<!-- SIGNUP MODAL -->
+<!-- ── SIGNUP MODAL — Enhanced ── -->
 @if (showSignupModal()) {
   <div class="fixed inset-0 z-[100] flex items-center justify-center p-4">
-    <div (click)="closeSignupModal()" class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
-    <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-modal">
-      <div class="flex items-center justify-between p-6 border-b border-neutral-200">
-        <h3 class="text-lg font-bold text-black">{{ i18n.t('signup.title') }}</h3>
-        <button (click)="closeSignupModal()" class="p-1 text-neutral-400 hover:text-black transition">
+    <div (click)="closeSignupModal()" class="absolute inset-0 bg-black/70 backdrop-blur-sm animate-overlay"></div>
+    <div class="animate-modal relative bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden max-h-[90vh] flex flex-col">
+      <!-- Header -->
+      <div class="flex items-center justify-between p-6 border-b border-neutral-100 shrink-0">
+        <div>
+          <h3 class="text-xl font-black text-black">{{ i18n.t('signup.title') }}</h3>
+          <p class="text-xs text-neutral-400 mt-1">{{ i18n.lang() === 'ar' ? 'سجّل متجرك وابدأ تجربتك المجانية' : 'Register your store and start your free trial' }}</p>
+        </div>
+        <button (click)="closeSignupModal()" class="p-2 text-neutral-400 hover:text-black transition rounded-full hover:bg-neutral-100">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
         </button>
       </div>
-      <div class="p-6">
+
+      <!-- Body -->
+      <div class="p-6 overflow-y-auto flex-1">
         @if (signupSuccess()) {
-          <div class="text-center py-8">
-            <div class="w-16 h-16 bg-black rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+          <div class="text-center py-12">
+            <div class="w-20 h-20 bg-black rounded-full flex items-center justify-center mx-auto mb-6">
+              <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
             </div>
-            <p class="text-black font-semibold">{{ i18n.t('signup.success') }}</p>
+            <p class="text-black font-black text-xl">{{ i18n.t('signup.success') }}</p>
+            <p class="text-neutral-500 text-sm mt-3">{{ i18n.lang() === 'ar' ? 'تم إنشاء حسابك بنجاح! يمكنك تسجيل الدخول الآن. سيتم تفعيل متجرك بالكامل بعد مراجعة الإدارة.' : 'Your account has been created! You can login now. Your store will be fully activated after admin review.' }}</p>
+            <a routerLink="/login" class="inline-block mt-6 px-8 py-3 bg-black text-white font-bold rounded-xl hover:bg-neutral-800 transition">
+              {{ i18n.lang() === 'ar' ? 'تسجيل الدخول' : 'Login Now' }}
+            </a>
           </div>
         } @else {
           @if (signupError()) {
-            <div class="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">{{ signupError() }}</div>
+            <div class="mb-5 p-4 rounded-2xl bg-red-50 border border-red-100 text-red-700 text-sm font-medium">{{ signupError() }}</div>
           }
           <div class="space-y-4">
+            <!-- Store Info Section -->
+            <div class="text-xs font-bold text-neutral-400 uppercase tracking-wider mb-1">{{ i18n.lang() === 'ar' ? 'بيانات المتجر' : 'Store Information' }}</div>
             <div>
-              <label class="block text-sm font-medium text-neutral-700 mb-1">{{ i18n.t('signup.storeName') }} *</label>
-              <input type="text" [(ngModel)]="signupForm.storeName" class="w-full px-4 py-2.5 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition" />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-neutral-700 mb-1">{{ i18n.t('signup.ownerName') }} *</label>
-              <input type="text" [(ngModel)]="signupForm.ownerName" class="w-full px-4 py-2.5 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition" />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-neutral-700 mb-1">{{ i18n.t('signup.phone') }} *</label>
-              <input type="tel" [(ngModel)]="signupForm.phone" class="w-full px-4 py-2.5 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition" />
+              <label class="block text-sm font-semibold text-neutral-700 mb-1.5">{{ i18n.t('signup.storeName') }} <span class="text-red-400">*</span></label>
+              <input type="text" [(ngModel)]="signupForm.storeName" class="modal-input" [placeholder]="i18n.lang() === 'ar' ? 'مثال: محل النجم للموبايلات' : 'e.g. Star Mobile Shop'" />
             </div>
             <div class="grid grid-cols-2 gap-4">
               <div>
-                <label class="block text-sm font-medium text-neutral-700 mb-1">{{ i18n.t('signup.city') }}</label>
-                <input type="text" [(ngModel)]="signupForm.city" class="w-full px-4 py-2.5 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition" />
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-neutral-700 mb-1">{{ i18n.t('signup.storeType') }}</label>
-                <select [(ngModel)]="signupForm.storeType" class="w-full px-4 py-2.5 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition bg-white">
+                <label class="block text-sm font-semibold text-neutral-700 mb-1.5">{{ i18n.t('signup.storeType') }}</label>
+                <select [(ngModel)]="signupForm.storeType" class="modal-input bg-white">
                   <option value="phones">{{ i18n.t('signup.storeType.phones') }}</option>
                   <option value="accessories">{{ i18n.t('signup.storeType.accessories') }}</option>
                   <option value="both">{{ i18n.t('signup.storeType.both') }}</option>
                   <option value="repair">{{ i18n.t('signup.storeType.repair') }}</option>
                 </select>
               </div>
+              <div>
+                <label class="block text-sm font-semibold text-neutral-700 mb-1.5">{{ i18n.t('signup.city') }}</label>
+                <input type="text" [(ngModel)]="signupForm.city" class="modal-input" [placeholder]="i18n.lang() === 'ar' ? 'القاهرة' : 'Cairo'" />
+              </div>
             </div>
-            <label class="flex items-center gap-2 text-sm text-neutral-600 cursor-pointer">
-              <input type="checkbox" [(ngModel)]="signupForm.agreeTerms" class="w-4 h-4 rounded border-neutral-300 text-black focus:ring-black" />
+            <div>
+              <label class="block text-sm font-semibold text-neutral-700 mb-1.5">{{ i18n.lang() === 'ar' ? 'العنوان التفصيلي' : 'Full Address' }}</label>
+              <input type="text" [(ngModel)]="signupForm.address" class="modal-input" [placeholder]="i18n.lang() === 'ar' ? 'الشارع، المنطقة، المحافظة' : 'Street, Area, Governorate'" />
+            </div>
+
+            <!-- Owner Info Section -->
+            <div class="text-xs font-bold text-neutral-400 uppercase tracking-wider mt-6 mb-1">{{ i18n.lang() === 'ar' ? 'بيانات المالك' : 'Owner Information' }}</div>
+            <div>
+              <label class="block text-sm font-semibold text-neutral-700 mb-1.5">{{ i18n.t('signup.ownerName') }} <span class="text-red-400">*</span></label>
+              <input type="text" [(ngModel)]="signupForm.ownerName" class="modal-input" />
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-neutral-700 mb-1.5">{{ i18n.lang() === 'ar' ? 'البريد الإلكتروني' : 'Email' }} <span class="text-red-400">*</span></label>
+              <input type="email" [(ngModel)]="signupForm.email" class="modal-input" placeholder="owner@example.com" />
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-semibold text-neutral-700 mb-1.5">{{ i18n.t('signup.phone') }} <span class="text-red-400">*</span></label>
+                <input type="tel" [(ngModel)]="signupForm.phone" class="modal-input" placeholder="+201xxxxxxxxx" />
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-neutral-700 mb-1.5">{{ i18n.lang() === 'ar' ? 'واتساب' : 'WhatsApp' }}</label>
+                <input type="tel" [(ngModel)]="signupForm.whatsApp" class="modal-input" [placeholder]="i18n.lang() === 'ar' ? 'نفس رقم الهاتف إن لم يختلف' : 'Same as phone if empty'" />
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-neutral-700 mb-1.5">{{ i18n.lang() === 'ar' ? 'كلمة المرور' : 'Password' }} <span class="text-red-400">*</span></label>
+              <input type="password" [(ngModel)]="signupForm.password" class="modal-input" [placeholder]="i18n.lang() === 'ar' ? '6 أحرف على الأقل' : 'At least 6 characters'" />
+            </div>
+
+            <!-- Terms -->
+            <label class="flex items-center gap-3 text-sm text-neutral-600 cursor-pointer mt-2">
+              <input type="checkbox" [(ngModel)]="signupForm.agreeTerms" class="w-4.5 h-4.5 rounded border-neutral-300 text-black focus:ring-black accent-black" />
               {{ i18n.t('signup.agree') }}
             </label>
-            <button (click)="submitStoreSignup()" [disabled]="isSubmittingForm()" class="w-full py-3 bg-black text-white font-semibold rounded-xl hover:bg-neutral-800 transition disabled:opacity-50 disabled:cursor-not-allowed">
+
+            <!-- Submit -->
+            <button (click)="submitStoreSignup()" [disabled]="isSubmittingForm()"
+              class="w-full py-4 bg-black text-white font-black rounded-2xl hover:bg-neutral-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed text-base shadow-lg shadow-black/10 mt-2">
               {{ isSubmittingForm() ? i18n.t('signup.submitting') : i18n.t('signup.submit') }}
             </button>
           </div>

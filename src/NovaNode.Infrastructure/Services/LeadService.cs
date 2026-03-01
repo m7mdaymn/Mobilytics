@@ -47,6 +47,16 @@ public class LeadService : ILeadService
             PageUrl = request.PageUrl, ButtonLocation = request.ButtonLocation
         };
         _db.Leads.Add(lead);
+
+        _db.Notifications.Add(new Notification
+        {
+            TenantId = tenantId,
+            Type = "lead.whatsapp",
+            Title = "New WhatsApp lead",
+            Message = item != null ? $"Customer enquired about {item.Title}" : "A customer clicked WhatsApp",
+            ActionUrl = "/leads"
+        });
+
         await _db.SaveChangesAsync(ct);
         return MapDto(lead);
     }
@@ -66,6 +76,16 @@ public class LeadService : ILeadService
             TargetPriceSnapshot = item?.Price
         };
         _db.Leads.Add(lead);
+
+        _db.Notifications.Add(new Notification
+        {
+            TenantId = tenantId,
+            Type = "lead.followup",
+            Title = "New follow-up request",
+            Message = $"{request.Name} wants to be contacted" + (item != null ? $" about {item.Title}" : ""),
+            ActionUrl = "/leads"
+        });
+
         await _db.SaveChangesAsync(ct);
         return MapDto(lead);
     }

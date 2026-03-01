@@ -1,5 +1,7 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using NovaNode.Api.Middleware;
 using NovaNode.Application.DTOs.Employees;
 using NovaNode.Application.Interfaces;
 using NovaNode.Domain.Interfaces;
@@ -19,7 +21,7 @@ public class EmployeesController : BaseApiController
     }
 
     private Guid GetUserId() =>
-        Guid.Parse(User.FindFirst("userId")?.Value ?? throw new UnauthorizedAccessException());
+        Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? throw new UnauthorizedAccessException());
 
     [HttpGet]
     public async Task<IActionResult> GetAll(CancellationToken ct)
@@ -36,6 +38,7 @@ public class EmployeesController : BaseApiController
     }
 
     [HttpPost]
+    [RequirePermission("employees.manage")]
     public async Task<IActionResult> Create([FromBody] CreateEmployeeRequest request, CancellationToken ct)
     {
         var tenantId = _tenantContext.TenantId!.Value;
@@ -43,6 +46,7 @@ public class EmployeesController : BaseApiController
     }
 
     [HttpPut("{id:guid}")]
+    [RequirePermission("employees.manage")]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateEmployeeRequest request, CancellationToken ct)
     {
         var tenantId = _tenantContext.TenantId!.Value;
@@ -50,6 +54,7 @@ public class EmployeesController : BaseApiController
     }
 
     [HttpDelete("{id:guid}")]
+    [RequirePermission("employees.manage")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
     {
         var tenantId = _tenantContext.TenantId!.Value;

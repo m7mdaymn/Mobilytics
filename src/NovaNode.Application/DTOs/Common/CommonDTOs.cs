@@ -14,9 +14,14 @@ public class PagedResult<T>
     public int TotalCount { get; set; }
     public int Page { get; set; }
     public int PageSize { get; set; }
-    public int TotalPages => (int)Math.Ceiling(TotalCount / (double)PageSize);
+    public int TotalPages => PageSize > 0 ? (int)Math.Ceiling(TotalCount / (double)PageSize) : 0;
     public bool HasNext => Page < TotalPages;
     public bool HasPrevious => Page > 1;
+
+    // Aliases for frontend compatibility (camelCase: pageNumber, hasNextPage, hasPreviousPage)
+    public int PageNumber => Page;
+    public bool HasNextPage => HasNext;
+    public bool HasPreviousPage => HasPrevious;
 }
 
 public class ApiResponse<T>

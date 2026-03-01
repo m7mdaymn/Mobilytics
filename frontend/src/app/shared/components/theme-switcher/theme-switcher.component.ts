@@ -16,7 +16,7 @@ import { THEME_PRESETS } from '../../../core/models/settings.models';
       </button>
 
       @if (showMenu()) {
-        <div class="theme-switcher-menu absolute top-full right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+        <div class="theme-switcher-menu absolute top-full end-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
           <div class="p-4 space-y-3">
             <label class="block text-xs font-semibold text-gray-700 mb-2">Theme Presets</label>
             <div class="grid grid-cols-2 gap-2">

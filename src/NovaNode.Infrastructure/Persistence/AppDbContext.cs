@@ -40,6 +40,10 @@ public class AppDbContext : DbContext
     public DbSet<Employee> Employees => Set<Employee>();
     public DbSet<Permission> Permissions => Set<Permission>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
+    public DbSet<InstallmentProvider> InstallmentProviders => Set<InstallmentProvider>();
+    public DbSet<InstallmentPlan> InstallmentPlans => Set<InstallmentPlan>();
+    public DbSet<TenantSlugHistory> TenantSlugHistories => Set<TenantSlugHistory>();
+    public DbSet<Notification> Notifications => Set<Notification>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -118,7 +122,7 @@ public class AppDbContext : DbContext
         // CustomFieldDefinition - Global Query Filter
         modelBuilder.Entity<CustomFieldDefinition>(b =>
         {
-            b.HasOne(cf => cf.ItemType).WithMany(it => it.CustomFieldDefinitions).HasForeignKey(cf => cf.ItemTypeId).OnDelete(DeleteBehavior.SetNull);
+            b.HasOne(cf => cf.Category).WithMany(c => c.CustomFieldDefinitions).HasForeignKey(cf => cf.CategoryId).OnDelete(DeleteBehavior.SetNull);
             b.HasQueryFilter(cf => _tenantContext.TenantId == null || cf.TenantId == _tenantContext.TenantId);
         });
 
@@ -133,9 +137,9 @@ public class AppDbContext : DbContext
             b.Property(i => i.Price).HasPrecision(18, 2);
             b.Property(i => i.OldPrice).HasPrecision(18, 2);
             b.Property(i => i.VatPercent).HasPrecision(5, 2);
-            b.HasOne(i => i.ItemType).WithMany(it => it.Items).HasForeignKey(i => i.ItemTypeId);
+            b.HasOne(i => i.ItemType).WithMany(it => it.Items).HasForeignKey(i => i.ItemTypeId).OnDelete(DeleteBehavior.SetNull);
             b.HasOne(i => i.Brand).WithMany(br => br.Items).HasForeignKey(i => i.BrandId).OnDelete(DeleteBehavior.SetNull);
-            b.HasOne(i => i.Category).WithMany(c => c.Items).HasForeignKey(i => i.CategoryId).OnDelete(DeleteBehavior.SetNull);
+            b.HasOne(i => i.Category).WithMany(c => c.Items).HasForeignKey(i => i.CategoryId).OnDelete(DeleteBehavior.Restrict);
             b.HasQueryFilter(i => _tenantContext.TenantId == null || i.TenantId == _tenantContext.TenantId);
         });
 
@@ -215,6 +219,34 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<AuditLog>(b =>
         {
             b.HasIndex(a => new { a.TenantId, a.CreatedAt });
+        });
+
+        // InstallmentProvider - Global Query Filter
+        modelBuilder.Entity<InstallmentProvider>(b =>
+        {
+            b.HasQueryFilter(ip => _tenantContext.TenantId == null || ip.TenantId == _tenantContext.TenantId);
+        });
+
+        // InstallmentPlan - Global Query Filter
+        modelBuilder.Entity<InstallmentPlan>(b =>
+        {
+            b.Property(p => p.MonthlyPayment).HasPrecision(18, 2);
+            b.Property(p => p.DownPayment).HasPrecision(18, 2);
+            b.Property(p => p.AdminFees).HasPrecision(18, 2);
+            b.Property(p => p.TotalAmount).HasPrecision(18, 2);
+            b.Property(p => p.DownPaymentPercent).HasPrecision(5, 2);
+            b.Property(p => p.AdminFeesPercent).HasPrecision(5, 2);
+            b.Property(p => p.InterestRate).HasPrecision(5, 2);
+            b.HasOne(p => p.Provider).WithMany(ip => ip.Plans).HasForeignKey(p => p.ProviderId).OnDelete(DeleteBehavior.Cascade);
+            b.HasOne(p => p.Item).WithMany(i => i.InstallmentPlans).HasForeignKey(p => p.ItemId).OnDelete(DeleteBehavior.SetNull);
+            b.HasQueryFilter(p => _tenantContext.TenantId == null || p.TenantId == _tenantContext.TenantId);
+        });
+
+        // TenantSlugHistory
+        modelBuilder.Entity<TenantSlugHistory>(b =>
+        {
+            b.HasIndex(h => h.OldSlug).IsUnique();
+            b.HasOne(h => h.Tenant).WithMany(t => t.SlugHistory).HasForeignKey(h => h.TenantId).OnDelete(DeleteBehavior.Cascade);
         });
     }
 

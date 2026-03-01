@@ -22,13 +22,21 @@ public class InvoiceService : IInvoiceService
         if (!string.IsNullOrEmpty(filter.Search))
             query = query.Where(inv => inv.InvoiceNumber.Contains(filter.Search) ||
                 (inv.CustomerName != null && inv.CustomerName.Contains(filter.Search)));
+        if (!string.IsNullOrEmpty(filter.Status))
+        {
+            if (filter.Status == "Refunded")
+                query = query.Where(inv => inv.IsRefund);
+            else if (filter.Status == "Paid")
+                query = query.Where(inv => !inv.IsRefund);
+        }
 
+        var page = filter.EffectivePage;
         var total = await query.CountAsync(ct);
         var items = await query.OrderByDescending(inv => inv.CreatedAt)
-            .Skip((filter.Page - 1) * filter.PageSize).Take(filter.PageSize)
+            .Skip((page - 1) * filter.PageSize).Take(filter.PageSize)
             .Select(inv => MapDto(inv)).ToListAsync(ct);
 
-        return new PagedResult<InvoiceDto> { Items = items, TotalCount = total, Page = filter.Page, PageSize = filter.PageSize };
+        return new PagedResult<InvoiceDto> { Items = items, TotalCount = total, Page = page, PageSize = filter.PageSize };
     }
 
     public async Task<InvoiceDto> GetByIdAsync(Guid tenantId, Guid id, CancellationToken ct = default)
@@ -51,7 +59,7 @@ public class InvoiceService : IInvoiceService
         {
             Item? catalogItem = null;
             if (lineReq.ItemId.HasValue)
-                catalogItem = await _db.Items.Include(i => i.ItemType).FirstOrDefaultAsync(i => i.Id == lineReq.ItemId.Value && i.TenantId == tenantId, ct);
+                catalogItem = await _db.Items.Include(i => i.Category).FirstOrDefaultAsync(i => i.Id == lineReq.ItemId.Value && i.TenantId == tenantId, ct);
 
             var title = lineReq.ItemTitleOverride ?? catalogItem?.Title ?? "Custom Item";
             var taxStatus = catalogItem?.TaxStatus ?? TaxStatus.Exempt;
@@ -76,12 +84,12 @@ public class InvoiceService : IInvoiceService
             // Update inventory
             if (catalogItem != null)
             {
-                if (catalogItem.ItemType.IsDevice)
+                if (catalogItem.Category.IsDevice)
                 {
                     catalogItem.Status = ItemStatus.Sold;
                     catalogItem.Quantity = 0;
                 }
-                else if (catalogItem.ItemType.IsStockItem)
+                else if (catalogItem.Category.IsStockItem)
                 {
                     catalogItem.Quantity = Math.Max(0, catalogItem.Quantity - lineReq.Quantity);
                     if (catalogItem.Quantity == 0)
@@ -107,13 +115,24 @@ public class InvoiceService : IInvoiceService
         };
 
         _db.Invoices.Add(invoice);
+
+        // Create notification for store admin
+        _db.Notifications.Add(new Notification
+        {
+            TenantId = tenantId,
+            Type = "invoice.created",
+            Title = $"New invoice {invoiceNumber}",
+            Message = $"Invoice for {request.CustomerName ?? "Walk-in"} — {invoice.Total:N0} EGP",
+            ActionUrl = $"/invoices"
+        });
+
         await _db.SaveChangesAsync(ct);
         return await GetByIdAsync(tenantId, invoice.Id, ct);
     }
 
     public async Task<InvoiceDto> RefundAsync(Guid tenantId, Guid invoiceId, RefundInvoiceRequest request, Guid userId, CancellationToken ct = default)
     {
-        var original = await _db.Invoices.Include(i => i.Items).ThenInclude(ii => ii.Item).ThenInclude(i => i!.ItemType)
+        var original = await _db.Invoices.Include(i => i.Items).ThenInclude(ii => ii.Item).ThenInclude(i => i!.Category)
             .FirstOrDefaultAsync(i => i.TenantId == tenantId && i.Id == invoiceId, ct)
             ?? throw new KeyNotFoundException("Invoice not found.");
 
@@ -142,12 +161,12 @@ public class InvoiceService : IInvoiceService
             // Restore inventory
             if (origItem.Item != null)
             {
-                if (origItem.Item.ItemType.IsDevice)
+                if (origItem.Item.ItemType?.IsDevice == true || origItem.Item.Category.IsDevice)
                 {
                     origItem.Item.Status = ItemStatus.Available;
                     origItem.Item.Quantity = 1;
                 }
-                else if (origItem.Item.ItemType.IsStockItem)
+                else if (origItem.Item.ItemType?.IsStockItem == true || origItem.Item.Category.IsStockItem)
                 {
                     origItem.Item.Quantity += ri.Quantity;
                     if (origItem.Item.Status == ItemStatus.Sold)

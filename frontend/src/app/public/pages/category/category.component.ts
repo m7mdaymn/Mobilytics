@@ -1,41 +1,72 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ApiService } from '../../../core/services/api.service';
 import { Item } from '../../../core/models/item.models';
 import { PaginatedList } from '../../../core/models/api.models';
 import { ItemCardComponent } from '../../../shared/components/item-card/item-card.component';
+import { I18nService } from '../../../core/services/i18n.service';
+import { TenantService } from '../../../core/services/tenant.service';
+import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-category',
   standalone: true,
-  imports: [RouterLink, ItemCardComponent],
+  imports: [RouterLink, ItemCardComponent, PaginationComponent, FormsModule],
   template: `
-    <div class="max-w-7xl mx-auto px-4 py-6">
-      <nav class="text-sm text-[color:var(--color-text-muted)] mb-4">
-        <a routerLink="/" class="hover:text-[color:var(--color-primary)]">Home</a>
+    <div class="max-w-7xl mx-auto px-4 py-8">
+      <!-- Breadcrumb -->
+      <nav class="text-sm text-gray-400 mb-6">
+        <a [routerLink]="tenantService.storeUrl()" class="hover:text-[color:var(--color-primary)] transition">{{ i18n.t('common.home') }}</a>
         <span class="mx-2">›</span>
-        <span>{{ categoryName() }}</span>
+        <a [routerLink]="tenantService.storeUrl() + '/catalog'" class="hover:text-[color:var(--color-primary)] transition">{{ i18n.t('store.catalog') }}</a>
+        <span class="mx-2">›</span>
+        <span class="text-gray-700 font-medium">{{ categoryName() }}</span>
       </nav>
 
-      <h1 class="text-2xl font-bold mb-6">{{ categoryName() }}</h1>
+      <!-- Header with count + sort -->
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+        <div>
+          <h1 class="text-3xl font-extrabold text-gray-900">{{ categoryName() }}</h1>
+          @if (!loading() && totalCount() > 0) {
+            <p class="text-sm text-gray-500 mt-1">{{ totalCount() }} {{ i18n.t('store.items') }}</p>
+          }
+        </div>
+        <select [(ngModel)]="sortBy" (ngModelChange)="onSortChange()" class="px-4 py-2 border border-gray-200 rounded-xl text-sm bg-white focus:ring-2 focus:ring-gray-900/10 outline-none">
+          <option value="newest">{{ i18n.t('store.newest') }}</option>
+          <option value="priceAsc">{{ i18n.t('store.priceLowHigh') }}</option>
+          <option value="priceDesc">{{ i18n.t('store.priceHighLow') }}</option>
+        </select>
+      </div>
 
       @if (loading()) {
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-          @for (i of [1,2,3,4]; track i) {
-            <div class="skeleton h-72 rounded-xl"></div>
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+          @for (i of [1,2,3,4,5,6,7,8]; track i) {
+            <div class="skeleton h-72 rounded-2xl"></div>
           }
         </div>
       } @else if (items().length === 0) {
-        <div class="text-center py-16">
-          <p class="text-[color:var(--color-text-muted)]">No items in this category</p>
-          <a routerLink="/catalog" class="btn-primary mt-4">Browse Catalog</a>
+        <div class="text-center py-20">
+          <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+          </div>
+          <p class="text-gray-500 mb-4">{{ i18n.t('store.noItemsCategory') }}</p>
+          <a [routerLink]="tenantService.storeUrl() + '/catalog'" class="inline-flex items-center gap-2 bg-[color:var(--color-primary)] text-white font-semibold px-5 py-2.5 rounded-xl text-sm hover:opacity-90 transition">
+            {{ i18n.t('store.browseCatalog') }}
+          </a>
         </div>
       } @else {
-        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
           @for (item of items(); track item.id) {
             <app-item-card [item]="item" />
           }
         </div>
+
+        @if (totalPages() > 1) {
+          <div class="mt-10">
+            <app-pagination [currentPage]="currentPage" [totalPages]="totalPages()" (pageChange)="goToPage($event)" />
+          </div>
+        }
       }
     </div>
   `,
@@ -43,24 +74,59 @@ import { ItemCardComponent } from '../../../shared/components/item-card/item-car
 export class CategoryComponent implements OnInit {
   private readonly api = inject(ApiService);
   private readonly route = inject(ActivatedRoute);
+  readonly tenantService = inject(TenantService);
+  readonly i18n = inject(I18nService);
 
   readonly items = signal<Item[]>([]);
   readonly loading = signal(true);
   readonly categoryName = signal('Category');
+  readonly totalCount = signal(0);
+  readonly totalPages = signal(1);
+
+  currentPage = 1;
+  sortBy = 'newest';
+  private slug = '';
 
   ngOnInit(): void {
     this.route.params.subscribe(params => {
-      const slug = params['slug'];
-      this.categoryName.set(slug?.replace(/-/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase()) || 'Category');
-      this.loading.set(true);
+      this.slug = params['slug'];
+      this.categoryName.set(this.slug?.replace(/-/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase()) || 'Category');
+      this.currentPage = 1;
+      this.loadItems();
+    });
+  }
 
-      this.api.get<PaginatedList<Item>>('/Public/items', { categorySlug: slug, pageSize: 24, status: 'Available' }).subscribe({
-        next: data => {
-          this.items.set(data.items || []);
-          this.loading.set(false);
-        },
-        error: () => this.loading.set(false),
-      });
+  onSortChange(): void {
+    this.currentPage = 1;
+    this.loadItems();
+  }
+
+  goToPage(page: number): void {
+    this.currentPage = page;
+    this.loadItems();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  private loadItems(): void {
+    this.loading.set(true);
+    const params: Record<string, any> = {
+      categorySlug: this.slug,
+      pageSize: 24,
+      page: this.currentPage,
+      status: 'Available',
+    };
+    if (this.sortBy === 'priceAsc') { params['sortBy'] = 'price'; params['sortDirection'] = 'asc'; }
+    else if (this.sortBy === 'priceDesc') { params['sortBy'] = 'price'; params['sortDirection'] = 'desc'; }
+    else { params['sortBy'] = 'newest'; }
+
+    this.api.get<PaginatedList<Item>>('/Public/items', params).subscribe({
+      next: data => {
+        this.items.set(data.items || []);
+        this.totalCount.set(data.totalCount || 0);
+        this.totalPages.set(data.totalPages || 1);
+        this.loading.set(false);
+      },
+      error: () => this.loading.set(false),
     });
   }
 }

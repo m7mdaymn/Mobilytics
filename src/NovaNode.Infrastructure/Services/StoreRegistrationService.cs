@@ -30,14 +30,24 @@ public class StoreRegistrationService : IStoreRegistrationService
             throw new ValidationException(validationResult.Errors);
         }
 
-        // Check if email already has pending registration
+        // Check if email already registered (pending or approved)
         var existingRegistration = await _db.StoreRegistrations
-            .FirstOrDefaultAsync(x => x.Email == dto.Email && x.Status == RegistrationStatus.PendingApproval);
+            .FirstOrDefaultAsync(x => x.Email == dto.Email &&
+                (x.Status == RegistrationStatus.PendingApproval || x.Status == RegistrationStatus.Approved));
 
         if (existingRegistration is not null)
         {
             throw new InvalidOperationException(
-                "A registration with this email is already pending approval. Please check your email for updates.");
+                existingRegistration.Status == RegistrationStatus.Approved
+                    ? "An account with this email already exists. Please login instead."
+                    : "A registration with this email is already pending approval. Please check your email for updates.");
+        }
+
+        // Also check if an employee with this email already exists
+        var existingEmployee = await _db.Employees.AnyAsync(e => e.Email == dto.Email);
+        if (existingEmployee)
+        {
+            throw new InvalidOperationException("An account with this email already exists. Please login instead.");
         }
 
         // Create registration
@@ -49,6 +59,9 @@ public class StoreRegistrationService : IStoreRegistrationService
             OwnerName = dto.OwnerName,
             Email = dto.Email,
             Phone = dto.Phone,
+            WhatsApp = dto.WhatsApp,
+            Address = dto.Address,
+            PasswordHash = !string.IsNullOrWhiteSpace(dto.Password) ? BCrypt.Net.BCrypt.HashPassword(dto.Password) : null,
             NumberOfStores = dto.NumberOfStores,
             MonthlyRevenue = dto.MonthlyRevenue,
             Source = dto.Source,
@@ -57,7 +70,50 @@ public class StoreRegistrationService : IStoreRegistrationService
         };
 
         _db.StoreRegistrations.Add(registration);
+
+        // ── Immediately create tenant (INACTIVE) + owner employee so user can login ──
+        var slug = registration.StoreName.ToLower()
+            .Replace(" ", "-")
+            .Replace("--", "-");
+        var baseSlug = slug;
+        var counter = 1;
+        while (await _db.Tenants.AnyAsync(t => t.Slug == slug))
+        {
+            slug = $"{baseSlug}-{counter++}";
+        }
+
+        var tenant = new Tenant
+        {
+            Name = registration.StoreName,
+            Slug = slug,
+            SupportPhone = registration.Phone,
+            SupportWhatsApp = registration.WhatsApp,
+            Address = !string.IsNullOrWhiteSpace(registration.Address) ? registration.Address : registration.Location,
+            IsActive = false // INACTIVE until admin approves & sets plan
+        };
+        _db.Tenants.Add(tenant);
+
+        // Create feature toggles
+        _db.TenantFeatureToggles.Add(new TenantFeatureToggle { TenantId = tenant.Id });
+
+        // Create owner employee
+        var passwordHash = registration.PasswordHash ?? BCrypt.Net.BCrypt.HashPassword("Temp@1234");
+        var owner = new Employee
+        {
+            TenantId = tenant.Id,
+            Name = registration.OwnerName,
+            Email = registration.Email,
+            Phone = registration.Phone,
+            PasswordHash = passwordHash,
+            Role = "Owner",
+            IsActive = true
+        };
+        _db.Employees.Add(owner);
+
         await _db.SaveChangesAsync();
+
+        // Seed default content (brands, categories, item types, store settings, etc.)
+        await Seeding.TenantDefaultDataSeeder.SeedAsync(_db, tenant.Id, registration.StoreName);
 
         return MapDto(registration);
     }
@@ -100,6 +156,102 @@ public class StoreRegistrationService : IStoreRegistrationService
         registration.ApprovalNotes = approvalNotes;
         registration.ApprovedAt = DateTime.UtcNow;
         registration.ApprovedByUserId = approvedByUserId;
+
+        // Find the tenant that was created during registration (by owner email)
+        var owner = await _db.Employees.FirstOrDefaultAsync(e => e.Email == registration.Email);
+        Tenant? tenant = null;
+
+        if (owner != null)
+        {
+            tenant = await _db.Tenants.FirstOrDefaultAsync(t => t.Id == owner.TenantId);
+        }
+
+        if (tenant != null)
+        {
+            // Activate the tenant
+            tenant.IsActive = true;
+            _db.Tenants.Update(tenant);
+
+            // Create a 14-day trial subscription if none exists
+            var hasSubscription = await _db.Subscriptions.AnyAsync(s => s.TenantId == tenant.Id);
+            if (!hasSubscription)
+            {
+                var defaultPlan = await _db.Plans.FirstOrDefaultAsync();
+                if (defaultPlan != null)
+                {
+                    var trialEnd = DateTime.UtcNow.AddDays(14);
+                    var subscription = new Subscription
+                    {
+                        TenantId = tenant.Id,
+                        PlanId = defaultPlan.Id,
+                        Status = SubscriptionStatus.Trial,
+                        TrialStart = DateTime.UtcNow,
+                        TrialEnd = trialEnd,
+                        StartDate = DateTime.UtcNow,
+                        EndDate = trialEnd
+                    };
+                    _db.Subscriptions.Add(subscription);
+                }
+            }
+
+            // Ensure default data is seeded (idempotent)
+            await Seeding.TenantDefaultDataSeeder.SeedAsync(_db, tenant.Id, registration.StoreName);
+        }
+        else
+        {
+            // Fallback: create tenant if it doesn't exist (legacy registrations)
+            var slug = registration.StoreName.ToLower().Replace(" ", "-").Replace("--", "-");
+            var baseSlug = slug;
+            var counter = 1;
+            while (await _db.Tenants.AnyAsync(t => t.Slug == slug))
+            {
+                slug = $"{baseSlug}-{counter++}";
+            }
+
+            tenant = new Tenant
+            {
+                Name = registration.StoreName,
+                Slug = slug,
+                SupportPhone = registration.Phone,
+                SupportWhatsApp = registration.WhatsApp,
+                Address = !string.IsNullOrWhiteSpace(registration.Address) ? registration.Address : registration.Location,
+                IsActive = true
+            };
+            _db.Tenants.Add(tenant);
+
+            _db.TenantFeatureToggles.Add(new TenantFeatureToggle { TenantId = tenant.Id });
+
+            var passwordHash = registration.PasswordHash ?? BCrypt.Net.BCrypt.HashPassword("Temp@1234");
+            _db.Employees.Add(new Employee
+            {
+                TenantId = tenant.Id,
+                Name = registration.OwnerName,
+                Email = registration.Email,
+                Phone = registration.Phone,
+                PasswordHash = passwordHash,
+                Role = "Owner",
+                IsActive = true
+            });
+
+            var defaultPlan = await _db.Plans.FirstOrDefaultAsync();
+            if (defaultPlan != null)
+            {
+                var trialEnd = DateTime.UtcNow.AddDays(14);
+                _db.Subscriptions.Add(new Subscription
+                {
+                    TenantId = tenant.Id,
+                    PlanId = defaultPlan.Id,
+                    Status = SubscriptionStatus.Trial,
+                    TrialStart = DateTime.UtcNow,
+                    TrialEnd = trialEnd,
+                    StartDate = DateTime.UtcNow,
+                    EndDate = trialEnd
+                });
+            }
+
+            await _db.SaveChangesAsync();
+            await Seeding.TenantDefaultDataSeeder.SeedAsync(_db, tenant.Id, registration.StoreName);
+        }
 
         _db.StoreRegistrations.Update(registration);
         await _db.SaveChangesAsync();
@@ -150,6 +302,8 @@ public class StoreRegistrationService : IStoreRegistrationService
         OwnerName = registration.OwnerName,
         Email = registration.Email,
         Phone = registration.Phone,
+        WhatsApp = registration.WhatsApp,
+        Address = registration.Address,
         NumberOfStores = registration.NumberOfStores,
         MonthlyRevenue = registration.MonthlyRevenue,
         Source = registration.Source,

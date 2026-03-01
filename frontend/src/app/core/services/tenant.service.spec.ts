@@ -9,62 +9,89 @@ describe('TenantService', () => {
     service = TestBed.inject(TenantService);
   });
 
-  afterEach(() => {
-    localStorage.removeItem('MOBILYTICS_TENANT_OVERRIDE');
-  });
-
   it('should be created', () => {
     expect(service).toBeTruthy();
   });
 
-  it('should expose slug signal', () => {
-    // slug is a signal (readable)
-    expect(service.slug).toBeDefined();
+  it('should start with null slug', () => {
+    expect(service.slug()).toBeNull();
   });
 
-  it('should expose isValid signal', () => {
-    expect(service.isValid).toBeDefined();
+  it('should start as not valid', () => {
+    expect(service.isValid()).toBeFalse();
   });
 
-  it('should expose isReserved signal', () => {
-    expect(service.isReserved).toBeDefined();
+  it('should start as not resolved', () => {
+    expect(service.resolved()).toBeFalse();
   });
 
-  it('should expose resolved computed', () => {
-    expect(service.resolved).toBeDefined();
+  it('should set slug correctly', () => {
+    const result = service.setSlug('my-store');
+    expect(result).toBeTrue();
+    expect(service.slug()).toBe('my-store');
+    expect(service.isValid()).toBeTrue();
+    expect(service.resolved()).toBeTrue();
   });
 
-  it('should have setOverride method', () => {
-    expect(service.setOverride).toBeDefined();
+  it('should normalize slug to lowercase', () => {
+    service.setSlug('My-Store');
+    expect(service.slug()).toBe('my-store');
   });
 
-  it('should have clearOverride method', () => {
-    service.clearOverride();
-    expect(localStorage.getItem('MOBILYTICS_TENANT_OVERRIDE')).toBeNull();
+  it('should reject null slug', () => {
+    const result = service.setSlug(null);
+    expect(result).toBeFalse();
+    expect(service.slug()).toBeNull();
   });
 
-  it('should write to localStorage on setOverride', () => {
-    service.setOverride('test-store');
-    expect(localStorage.getItem('MOBILYTICS_TENANT_OVERRIDE')).toBe('test-store');
+  it('should reject empty slug', () => {
+    const result = service.setSlug('');
+    expect(result).toBeFalse();
+    expect(service.slug()).toBeNull();
   });
 
-  it('should detect fallback domains', () => {
-    // The isFallbackDomain method checks if current hostname is Vercel or localhost
-    expect((service as any).isFallbackDomain).toBeDefined();
+  it('should accept slugs with hyphens and numbers', () => {
+    const result = service.setSlug('store-123');
+    expect(result).toBeTrue();
+    expect(service.slug()).toBe('store-123');
   });
 
-  it('should read slug from localStorage after setOverride', () => {
-    service.setOverride('vercel-store');
-    // Re-resolve to pick up the localStorage value
-    service.resolve();
-    // On localhost (test runner), this should resolve from localStorage
-    const slug = service.slug();
-    expect(slug).toBeTruthy();
+  it('should compute storeUrl correctly', () => {
+    service.setSlug('test-shop');
+    expect(service.storeUrl()).toBe('/store/test-shop');
   });
 
-  it('should clear override and unset slug', () => {
-    service.setOverride('temp-store');
-    service.clearOverride();
-    expect(localStorage.getItem('MOBILYTICS_TENANT_OVERRIDE')).toBeNull();
+  it('should compute adminUrl correctly', () => {
+    service.setSlug('test-shop');
+    expect(service.adminUrl()).toBe('/store/test-shop/admin');
+  });
+
+  it('should return / for storeUrl when no slug', () => {
+    expect(service.storeUrl()).toBe('/');
+  });
+
+  it('should return / for adminUrl when no slug', () => {
+    expect(service.adminUrl()).toBe('/');
+  });
+
+  it('should clear tenant context', () => {
+    service.setSlug('test');
+    service.clear();
+    expect(service.slug()).toBeNull();
+    expect(service.isValid()).toBeFalse();
+    expect(service.resolved()).toBeFalse();
+  });
+
+  it('should allow overwriting slug', () => {
+    service.setSlug('first');
+    service.setSlug('second');
+    expect(service.slug()).toBe('second');
+  });
+
+  it('should skip resolution if same slug already set', () => {
+    service.setSlug('same');
+    const result = service.setSlug('same');
+    expect(result).toBeTrue();
+    expect(service.slug()).toBe('same');
   });
 });

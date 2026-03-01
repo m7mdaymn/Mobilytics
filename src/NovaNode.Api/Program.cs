@@ -111,6 +111,7 @@ app.UseMiddleware<SubscriptionEnforcementMiddleware>();
 app.UseMiddleware<GlobalExceptionMiddleware>();
 
 app.UseAuthentication();
+app.UseMiddleware<TenantClaimValidationMiddleware>();
 app.UseAuthorization();
 
 app.MapControllers();

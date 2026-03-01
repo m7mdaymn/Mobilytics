@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using NovaNode.Api.Middleware;
+using NovaNode.Application.DTOs.Categories;
 using NovaNode.Application.DTOs.ItemTypes;
 using NovaNode.Application.Interfaces;
 using NovaNode.Domain.Interfaces;
@@ -33,6 +35,7 @@ public class ItemTypesController : BaseApiController
     }
 
     [HttpPost]
+    [RequirePermission("itemtypes.manage")]
     public async Task<IActionResult> Create([FromBody] CreateItemTypeRequest request, CancellationToken ct)
     {
         var tenantId = _tenantContext.TenantId!.Value;
@@ -40,6 +43,7 @@ public class ItemTypesController : BaseApiController
     }
 
     [HttpPut("{id:guid}")]
+    [RequirePermission("itemtypes.manage")]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateItemTypeRequest request, CancellationToken ct)
     {
         var tenantId = _tenantContext.TenantId!.Value;
@@ -47,10 +51,19 @@ public class ItemTypesController : BaseApiController
     }
 
     [HttpDelete("{id:guid}")]
+    [RequirePermission("itemtypes.manage")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
     {
         var tenantId = _tenantContext.TenantId!.Value;
         await _svc.DeleteAsync(tenantId, id, ct);
+        return NoContent();
+    }
+
+    [HttpPut("reorder")]
+    public async Task<IActionResult> Reorder([FromBody] ReorderRequest request, CancellationToken ct)
+    {
+        var tenantId = _tenantContext.TenantId!.Value;
+        await _svc.ReorderAsync(tenantId, request, ct);
         return NoContent();
     }
 }

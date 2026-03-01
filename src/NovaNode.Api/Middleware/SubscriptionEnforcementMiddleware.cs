@@ -39,7 +39,7 @@ public class SubscriptionEnforcementMiddleware
         }
 
         var db = context.RequestServices.GetRequiredService<AppDbContext>();
-        var tenant = await db.Tenants.AsNoTracking().FirstOrDefaultAsync(t => t.Id == tenantContext.TenantId);
+        var tenant = await db.Tenants.FirstOrDefaultAsync(t => t.Id == tenantContext.TenantId);
 
         if (tenant != null && !tenant.IsActive)
         {
@@ -49,7 +49,7 @@ public class SubscriptionEnforcementMiddleware
         }
 
         // Check subscription status
-        var sub = await db.Subscriptions.AsNoTracking()
+        var sub = await db.Subscriptions
             .Where(s => s.TenantId == tenantContext.TenantId)
             .OrderByDescending(s => s.CreatedAt)
             .FirstOrDefaultAsync();
@@ -57,19 +57,25 @@ public class SubscriptionEnforcementMiddleware
         if (sub != null)
         {
             var now = DateTime.UtcNow;
+            var changed = false;
+
             // Auto-transition: Trial → Expired
             if (sub.Status == SubscriptionStatus.Trial && sub.TrialEnd.HasValue && sub.TrialEnd.Value < now)
             {
-                sub = null; // treat as expired
+                sub.Status = SubscriptionStatus.Expired;
+                changed = true;
             }
             // Auto-transition: Active → Grace → Expired
             else if (sub.Status == SubscriptionStatus.Active && sub.EndDate.HasValue && sub.EndDate.Value < now)
             {
                 if (sub.GraceEnd.HasValue && sub.GraceEnd.Value >= now)
                 {
+                    sub.Status = SubscriptionStatus.Grace;
+                    changed = true;
                     // In grace period - allow read-only
                     if (!HttpMethods.IsGet(context.Request.Method) && !HttpMethods.IsHead(context.Request.Method))
                     {
+                        if (changed) await db.SaveChangesAsync();
                         context.Response.StatusCode = 403;
                         await context.Response.WriteAsJsonAsync(new { error = "Subscription in grace period. Read-only access." });
                         return;
@@ -77,6 +83,9 @@ public class SubscriptionEnforcementMiddleware
                 }
                 else
                 {
+                    sub.Status = SubscriptionStatus.Expired;
+                    changed = true;
+                    if (changed) await db.SaveChangesAsync();
                     context.Response.StatusCode = 403;
                     await context.Response.WriteAsJsonAsync(new { error = "Subscription expired." });
                     return;
@@ -88,6 +97,8 @@ public class SubscriptionEnforcementMiddleware
                 await context.Response.WriteAsJsonAsync(new { error = $"Subscription {sub.Status.ToString().ToLower()}." });
                 return;
             }
+
+            if (changed) await db.SaveChangesAsync();
         }
 
         await _next(context);

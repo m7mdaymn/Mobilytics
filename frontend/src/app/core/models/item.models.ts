@@ -12,9 +12,9 @@ export interface Item {
   // Relations
   brandId: string | null;
   brandName: string;
-  categoryId: string | null;
+  categoryId: string;
   categoryName: string;
-  itemTypeId: string;
+  itemTypeId: string | null;
   itemTypeName: string;
 
   // Inventory
@@ -27,19 +27,32 @@ export interface Item {
   imei: string | null;
   serialNumber: string | null;
 
+  // Device-specific
+  color: string | null;
+  storage: string | null;
+  ram: string | null;
+  installmentAvailable: boolean;
+  batteryHealth: number | null;
+  warrantyType: string | null;
+  warrantyMonths: number | null;
+
   // Tax
   taxStatus: 'Taxable' | 'Exempt';
   vatPercent: number;
 
+  // Rich content
+  specs: string | null;
+  whatsInTheBox: string | null;
+
   // Images
   mainImageUrl: string | null;
-  galleryImages: ItemImage[];
+  galleryImagesJson: string | null; // JSON array of URL strings
 
   // Custom fields
-  customFieldValues: CustomFieldValue[];
+  customFieldsJson: string | null; // JSON array of {fieldId, value}
 
   // Checklist
-  checklist: ChecklistItem[];
+  checklistJson: string | null; // JSON array of {key, passed, notes}
 
   createdAt: string;
   updatedAt: string;
@@ -72,37 +85,51 @@ export interface ItemCreateDto {
   price: number;
   oldPrice?: number;
   condition: string;
-  status: string;
   isFeatured?: boolean;
   brandId?: string;
-  categoryId?: string;
-  itemTypeId: string;
+  categoryId: string;
+  itemTypeId?: string;
   quantity?: number;
-  lowStockThreshold?: number;
   imei?: string;
   serialNumber?: string;
+  color?: string;
+  storage?: string;
+  ram?: string;
+  installmentAvailable?: boolean;
+  batteryHealth?: number;
+  warrantyType?: string;
+  warrantyMonths?: number;
   taxStatus: string;
   vatPercent?: number;
-  customFieldValues?: { fieldId: string; value: string }[];
-  checklist?: { key: string; passed: boolean; notes?: string }[];
+  specs?: string;
+  whatsInTheBox?: string;
+  customFieldsJson?: string;
+  checklistJson?: string;
 }
 
 export type ItemUpdateDto = Partial<ItemCreateDto>;
 
 export interface ItemQueryParams {
-  pageNumber?: number;
+  page?: number;
   pageSize?: number;
   search?: string;
-  sortBy?: string;
-  sortDescending?: boolean;
+  sort?: string; // price_asc, price_desc, newest, oldest
+  typeId?: string;
+  categoryId?: string;
+  brandId?: string;
   itemTypeSlug?: string;
   categorySlug?: string;
   brandSlug?: string;
   condition?: string;
   status?: string;
-  minPrice?: number;
-  maxPrice?: number;
-  isFeatured?: boolean;
+  priceMin?: number;
+  priceMax?: number;
+  featured?: boolean;
+  color?: string;
+  storage?: string;
+  ram?: string;
+  installmentAvailable?: boolean;
+  warrantyType?: string;
 }
 
 export interface ItemType {
@@ -111,6 +138,13 @@ export interface ItemType {
   slug: string;
   isDevice: boolean;
   isStockItem: boolean;
+  supportsIMEI: boolean;
+  supportsSerial: boolean;
+  supportsBatteryHealth: boolean;
+  supportsWarranty: boolean;
+  isActive: boolean;
+  isVisibleInNav: boolean;
+  displayOrder: number;
   createdAt: string;
 }
 
@@ -119,6 +153,7 @@ export interface Brand {
   name: string;
   slug: string;
   logoUrl: string | null;
+  isVisibleInNav: boolean;
   itemCount: number;
   createdAt: string;
 }
@@ -133,10 +168,18 @@ export interface Category {
   metaTitle: string;
   metaDescription: string;
   isActive: boolean;
+  isVisibleInNav: boolean;
   sortOrder: number;
   children: Category[];
   itemCount: number;
   createdAt: string;
+  // Capability flags (merged from ItemType)
+  isDevice: boolean;
+  isStockItem: boolean;
+  supportsIMEI: boolean;
+  supportsSerial: boolean;
+  supportsBatteryHealth: boolean;
+  supportsWarranty: boolean;
 }
 
 export interface CustomFieldDefinition {
@@ -148,70 +191,49 @@ export interface CustomFieldDefinition {
   sortOrder: number;
 }
 
-export interface HomeSection {
-  id: string;
-  type: 'BannerSlider' | 'FeaturedItems' | 'NewArrivals' | 'CategoriesShowcase' | 'BrandsCarousel' | 'Testimonials' | 'CustomHtml';
-  sectionType: string;
-  title: string;
-  isActive: boolean;
-  isVisible: boolean;
-  sortOrder: number;
-  startDate: string | null;
-  endDate: string | null;
-  htmlContent: string | null;
-  items: HomeSectionItem[];
-}
-
-export interface HomeSectionItem {
-  id: string;
-  title: string;
-  imageUrl: string;
-  linkType: 'Item' | 'Category' | 'Brand' | 'Url';
-  linkValue: string;
-  ctaText: string;
-  sortOrder: number;
-}
+// HomeSection interfaces removed — feature deprecated
 
 export interface Invoice {
   id: string;
   invoiceNumber: string;
   customerName: string;
   customerPhone: string;
-  subtotalAmount: number;
-  discountAmount: number;
-  taxAmount: number;
-  totalAmount: number;
-  netAmount: number;
+  subtotal: number;
+  discount: number;
+  vatAmount: number;
+  total: number;
   paymentMethod: string;
   notes: string;
-  status: 'Paid' | 'Pending' | 'Completed' | 'Refunded' | 'PartialRefund';
-  lines: InvoiceLine[];
+  isRefund: boolean;
+  originalInvoiceId: string | null;
   createdAt: string;
   createdByName: string;
+  items: InvoiceLine[];
 }
 
 export interface InvoiceLine {
   id: string;
   itemId: string;
-  itemTitle: string;
+  itemTitleSnapshot: string;
   quantity: number;
   unitPrice: number;
   lineTotal: number;
+  taxStatusSnapshot: string;
+  vatPercentSnapshot: number | null;
 }
 
 export interface InvoiceCreateDto {
   customerName?: string;
   customerPhone?: string;
-  lines: { itemId: string; quantity: number; unitPrice: number }[];
-  discountAmount?: number;
-  paymentMethod: string;
+  items: { itemId?: string; itemTitleOverride?: string; unitPrice: number; quantity: number }[];
+  discount?: number;
+  paymentMethod?: string;
   notes?: string;
 }
 
 export interface RefundDto {
-  type: 'Full' | 'Partial';
-  reason: string;
-  lineIds?: string[];
+  items: { invoiceItemId: string; quantity: number }[];
+  notes?: string;
 }
 
 export interface ExpenseCategory {
@@ -251,14 +273,15 @@ export interface PermissionEntry {
 
 export interface Lead {
   id: string;
-  phone: string;
-  name: string;
-  message: string;
-  itemTitle: string;
-  source: 'WhatsApp' | 'FollowUp' | 'WalkIn' | 'Referral' | 'WhatsAppClick' | 'FollowUpRequest';
-  status: 'New' | 'Contacted' | 'Qualified' | 'Converted' | 'Lost' | 'Interested' | 'NoResponse' | 'Sold';
+  customerName: string;
+  customerPhone: string;
+  source: 'WhatsAppClick' | 'FollowUpRequest' | 'Inquiry';
+  status: 'New' | 'Interested' | 'NoResponse' | 'Sold';
   targetItemId: string | null;
-  targetItemTitle: string;
+  targetTitleSnapshot: string;
+  targetPriceSnapshot: number | null;
+  pageUrl: string | null;
+  buttonLocation: string | null;
   createdAt: string;
 }
 

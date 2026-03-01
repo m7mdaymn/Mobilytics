@@ -28,7 +28,11 @@ public partial class CategoryService : ICategoryService
         {
             Id = c.Id, Name = c.Name, Slug = c.Slug, ImageUrl = c.ImageUrl,
             ParentId = c.ParentId, DisplayOrder = c.DisplayOrder, IsActive = c.IsActive,
+            IsVisibleInNav = c.IsVisibleInNav,
             MetaTitle = c.MetaTitle, MetaDesc = c.MetaDesc,
+            IsDevice = c.IsDevice, IsStockItem = c.IsStockItem,
+            SupportsIMEI = c.SupportsIMEI, SupportsSerial = c.SupportsSerial,
+            SupportsBatteryHealth = c.SupportsBatteryHealth, SupportsWarranty = c.SupportsWarranty,
             Children = BuildTree(all, c.Id)
         }).ToList();
     }
@@ -47,7 +51,11 @@ public partial class CategoryService : ICategoryService
             TenantId = tenantId, Name = request.Name,
             Slug = string.IsNullOrEmpty(request.Slug) ? Slugify(request.Name) : request.Slug,
             ParentId = request.ParentId, DisplayOrder = request.DisplayOrder,
-            IsActive = request.IsActive, MetaTitle = request.MetaTitle, MetaDesc = request.MetaDesc
+            IsActive = request.IsActive, IsVisibleInNav = request.IsVisibleInNav,
+            MetaTitle = request.MetaTitle, MetaDesc = request.MetaDesc,
+            IsDevice = request.IsDevice, IsStockItem = request.IsStockItem,
+            SupportsIMEI = request.SupportsIMEI, SupportsSerial = request.SupportsSerial,
+            SupportsBatteryHealth = request.SupportsBatteryHealth, SupportsWarranty = request.SupportsWarranty
         };
         _db.Categories.Add(cat);
         await _db.SaveChangesAsync(ct);
@@ -63,8 +71,15 @@ public partial class CategoryService : ICategoryService
         cat.ParentId = request.ParentId;
         cat.DisplayOrder = request.DisplayOrder;
         cat.IsActive = request.IsActive;
+        cat.IsVisibleInNav = request.IsVisibleInNav;
         cat.MetaTitle = request.MetaTitle;
         cat.MetaDesc = request.MetaDesc;
+        cat.IsDevice = request.IsDevice;
+        cat.IsStockItem = request.IsStockItem;
+        cat.SupportsIMEI = request.SupportsIMEI;
+        cat.SupportsSerial = request.SupportsSerial;
+        cat.SupportsBatteryHealth = request.SupportsBatteryHealth;
+        cat.SupportsWarranty = request.SupportsWarranty;
         await _db.SaveChangesAsync(ct);
         return MapDto(cat);
     }
@@ -92,7 +107,11 @@ public partial class CategoryService : ICategoryService
     {
         Id = c.Id, Name = c.Name, Slug = c.Slug, ImageUrl = c.ImageUrl,
         ParentId = c.ParentId, DisplayOrder = c.DisplayOrder, IsActive = c.IsActive,
-        MetaTitle = c.MetaTitle, MetaDesc = c.MetaDesc
+        IsVisibleInNav = c.IsVisibleInNav,
+        MetaTitle = c.MetaTitle, MetaDesc = c.MetaDesc,
+        IsDevice = c.IsDevice, IsStockItem = c.IsStockItem,
+        SupportsIMEI = c.SupportsIMEI, SupportsSerial = c.SupportsSerial,
+        SupportsBatteryHealth = c.SupportsBatteryHealth, SupportsWarranty = c.SupportsWarranty
     };
 
     private static string Slugify(string text) =>

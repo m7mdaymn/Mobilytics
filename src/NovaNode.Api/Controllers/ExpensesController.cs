@@ -1,5 +1,7 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using NovaNode.Api.Middleware;
 using NovaNode.Application.DTOs.Expenses;
 using NovaNode.Application.Interfaces;
 using NovaNode.Domain.Interfaces;
@@ -19,7 +21,7 @@ public class ExpensesController : BaseApiController
     }
 
     private Guid GetUserId() =>
-        Guid.Parse(User.FindFirst("userId")?.Value ?? throw new UnauthorizedAccessException());
+        Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? throw new UnauthorizedAccessException());
 
     [HttpGet("categories")]
     public async Task<IActionResult> GetCategories(CancellationToken ct)
@@ -58,6 +60,7 @@ public class ExpensesController : BaseApiController
     }
 
     [HttpPost]
+    [RequirePermission("expenses.manage")]
     public async Task<IActionResult> Create([FromBody] CreateExpenseRequest request, CancellationToken ct)
     {
         var tenantId = _tenantContext.TenantId!.Value;
@@ -66,6 +69,7 @@ public class ExpensesController : BaseApiController
     }
 
     [HttpPut("{id:guid}")]
+    [RequirePermission("expenses.manage")]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateExpenseRequest request, CancellationToken ct)
     {
         var tenantId = _tenantContext.TenantId!.Value;
@@ -73,6 +77,7 @@ public class ExpensesController : BaseApiController
     }
 
     [HttpDelete("{id:guid}")]
+    [RequirePermission("expenses.manage")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
     {
         var tenantId = _tenantContext.TenantId!.Value;

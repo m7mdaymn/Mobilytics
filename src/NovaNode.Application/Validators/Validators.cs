@@ -4,7 +4,6 @@ using NovaNode.Application.DTOs.Brands;
 using NovaNode.Application.DTOs.Categories;
 using NovaNode.Application.DTOs.Employees;
 using NovaNode.Application.DTOs.Expenses;
-using NovaNode.Application.DTOs.HomeSections;
 using NovaNode.Application.DTOs.Invoices;
 using NovaNode.Application.DTOs.Items;
 using NovaNode.Application.DTOs.ItemTypes;
@@ -85,14 +84,7 @@ public class UpdateItemRequestValidator : AbstractValidator<UpdateItemRequest>
     }
 }
 
-public class CreateHomeSectionRequestValidator : AbstractValidator<CreateHomeSectionRequest>
-{
-    public CreateHomeSectionRequestValidator()
-    {
-        RuleFor(x => x.Title).NotEmpty().MaximumLength(200);
-        RuleFor(x => x.SectionType).IsInEnum();
-    }
-}
+// CreateHomeSectionRequestValidator removed — feature deprecated
 
 public class FollowUpRequestValidator : AbstractValidator<FollowUpRequest>
 {

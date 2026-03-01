@@ -230,6 +230,28 @@ import { environment } from '../../../../environments/environment';
                 <label class="block text-sm font-medium text-slate-700 mb-1">Google Maps URL</label>
                 <input [(ngModel)]="form.mapUrl" class="w-full px-4 py-2.5 border border-slate-300 rounded-lg" placeholder="https://maps.google.com/..." />
               </div>
+              <!-- Theme, Currency, Hours -->
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">Theme</label>
+                <select [(ngModel)]="form.themePresetId" class="w-full px-4 py-2.5 border border-slate-300 rounded-lg bg-white">
+                  <option [ngValue]="1">1 — Midnight Pro</option>
+                  <option [ngValue]="2">2 — Ocean Blue</option>
+                  <option [ngValue]="3">3 — Forest Green</option>
+                  <option [ngValue]="4">4 — Royal Purple</option>
+                  <option [ngValue]="5">5 — Sunset Orange</option>
+                  <option [ngValue]="6">6 — Slate Minimal</option>
+                  <option [ngValue]="7">7 — Rose Gold</option>
+                  <option [ngValue]="8">8 — Arctic Blue</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">Currency</label>
+                <input [(ngModel)]="form.currencyCode" class="w-full px-4 py-2.5 border border-slate-300 rounded-lg" placeholder="EGP" />
+              </div>
+              <div class="md:col-span-2">
+                <label class="block text-sm font-medium text-slate-700 mb-1">Working Hours</label>
+                <input [(ngModel)]="form.workingHours" class="w-full px-4 py-2.5 border border-slate-300 rounded-lg" placeholder="9:00 AM - 10:00 PM" />
+              </div>
               <!-- Social Links -->
               <div class="md:col-span-2 space-y-3">
                 <label class="block text-sm font-medium text-slate-700">Social Links</label>
@@ -387,6 +409,9 @@ import { environment } from '../../../../environments/environment';
                 @if (form.logoUrl) { <div><span class="text-slate-500">Logo:</span> <img [src]="form.logoUrl" class="h-8 inline-block ml-1 rounded" /></div> }
                 @if (form.mapUrl) { <div><span class="text-slate-500">Maps:</span> <span class="text-indigo-600 text-xs break-all">{{ form.mapUrl }}</span></div> }
                 @if (hasSocialLinks()) { <div><span class="text-slate-500">Social:</span> {{ socialLinksSummary() }}</div> }
+                <div><span class="text-slate-500">Theme:</span> Preset #{{ form.themePresetId }}</div>
+                <div><span class="text-slate-500">Currency:</span> {{ form.currencyCode }}</div>
+                @if (form.workingHours) { <div><span class="text-slate-500">Hours:</span> {{ form.workingHours }}</div> }
               </div>
               <div class="space-y-3">
                 <h3 class="font-semibold text-slate-700 uppercase text-xs tracking-wide">Owner</h3>
@@ -471,6 +496,8 @@ export class TenantCreateComponent implements OnInit {
     subscriptionAmountPaid: 0,
     discount: 0,
     paymentMethod: 'Cash',
+    themePresetId: 1,
+    currencyCode: 'EGP',
   };
 
   confirmPassword = '';
@@ -633,51 +660,81 @@ export class TenantCreateComponent implements OnInit {
 <html><head>
   <title>Invoice ${inv.invoiceNumber}</title>
   <style>
-    body { font-family: 'Segoe UI', sans-serif; margin: 40px; color: #1e293b; }
-    .header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 20px; margin-bottom: 30px; }
-    .header h1 { font-size: 24px; margin: 0; }
-    .header p { color: #64748b; margin: 4px 0; }
-    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
-    .section h3 { font-size: 12px; text-transform: uppercase; color: #64748b; letter-spacing: 1px; margin-bottom: 10px; border-bottom: 1px solid #e2e8f0; padding-bottom: 5px; }
-    .section .row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 14px; }
-    .section .row .label { color: #64748b; }
-    .totals { background: #f8fafc; padding: 20px; border-radius: 8px; margin-top: 20px; }
-    .totals .row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 14px; }
-    .totals .total-row { border-top: 2px solid #000; padding-top: 10px; margin-top: 10px; font-size: 18px; font-weight: bold; }
-    .footer { text-align: center; margin-top: 40px; color: #94a3b8; font-size: 12px; }
-    @media print { body { margin: 20px; } }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; margin: 0; color: #1e293b; background: #fff; }
+    .page { max-width: 800px; margin: 0 auto; padding: 40px; }
+    .brand-bar { background: #000; color: #fff; padding: 16px 40px; display: flex; justify-content: space-between; align-items: center; }
+    .brand-bar .logo { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
+    .brand-bar .logo span { color: #818cf8; }
+    .brand-bar .company { text-align: right; font-size: 11px; color: #a1a1aa; line-height: 1.6; }
+    .invoice-header { display: flex; justify-content: space-between; align-items: flex-start; padding: 30px 0; border-bottom: 1px solid #e2e8f0; }
+    .invoice-header .title { font-size: 32px; font-weight: 800; color: #0f172a; letter-spacing: -1px; }
+    .invoice-header .number { font-size: 14px; color: #64748b; margin-top: 4px; }
+    .invoice-header .date-block { text-align: right; }
+    .invoice-header .date-block .date { font-size: 14px; color: #0f172a; font-weight: 600; }
+    .invoice-header .date-block .label { font-size: 11px; text-transform: uppercase; color: #94a3b8; letter-spacing: 1px; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; padding: 30px 0; }
+    .section-label { font-size: 10px; text-transform: uppercase; color: #94a3b8; letter-spacing: 1.5px; font-weight: 700; margin-bottom: 12px; }
+    .info-row { display: flex; justify-content: space-between; padding: 5px 0; font-size: 13px; }
+    .info-row .label { color: #64748b; }
+    .info-row .value { color: #0f172a; font-weight: 500; }
+    .line-items { border-top: 2px solid #0f172a; margin-top: 10px; }
+    .line-item { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f1f5f9; font-size: 14px; }
+    .line-item.discount { color: #dc2626; }
+    .total-row { display: flex; justify-content: space-between; padding: 16px 0; border-top: 2px solid #0f172a; margin-top: 8px; font-size: 20px; font-weight: 800; }
+    .total-row .amount { color: #4f46e5; }
+    .status-badge { display: inline-block; padding: 4px 14px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+    .status-paid { background: #dcfce7; color: #166534; }
+    .status-unpaid { background: #fee2e2; color: #991b1b; }
+    .footer-bar { background: #f8fafc; border-top: 1px solid #e2e8f0; padding: 20px 40px; margin-top: 40px; display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: #94a3b8; }
+    .footer-bar a { color: #6366f1; text-decoration: none; }
+    @media print { body { margin: 0; } .page { padding: 20px; } .brand-bar, .footer-bar { padding-left: 20px; padding-right: 20px; } }
   </style>
 </head><body>
-  <div class="header">
-    <h1>INVOICE</h1>
-    <p>${inv.invoiceNumber}</p>
-    <p>${new Date(inv.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+  <div class="brand-bar">
+    <div class="logo">Mobily<span>tics</span></div>
+    <div class="company">Powered by Nova Node<br>mobilytics.app | novanode.dev</div>
   </div>
-  <div class="grid">
-    <div class="section">
-      <h3>Bill To</h3>
-      <div class="row"><span class="label">Store</span><span>${tenant.name}</span></div>
-      <div class="row"><span class="label">Slug</span><span>${tenant.slug}</span></div>
-      ${tenant.owner ? `<div class="row"><span class="label">Owner</span><span>${tenant.owner.name}</span></div>` : ''}
-      ${tenant.owner ? `<div class="row"><span class="label">Email</span><span>${tenant.owner.email}</span></div>` : ''}
+  <div class="page">
+    <div class="invoice-header">
+      <div>
+        <div class="title">INVOICE</div>
+        <div class="number">${inv.invoiceNumber}</div>
+      </div>
+      <div class="date-block">
+        <div class="label">Issue Date</div>
+        <div class="date">${new Date(inv.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</div>
+      </div>
     </div>
-    <div class="section">
-      <h3>Invoice Details</h3>
-      <div class="row"><span class="label">Type</span><span>${inv.invoiceType}</span></div>
-      <div class="row"><span class="label">Plan</span><span>${inv.planName || '—'}</span></div>
-      <div class="row"><span class="label">Duration</span><span>${inv.months} month(s)</span></div>
-      <div class="row"><span class="label">Payment</span><span>${inv.paymentMethod}</span></div>
-      <div class="row"><span class="label">Status</span><span>${inv.paymentStatus}</span></div>
+    <div class="grid">
+      <div>
+        <div class="section-label">Bill To</div>
+        <div class="info-row"><span class="label">Store</span><span class="value">${tenant.name}</span></div>
+        <div class="info-row"><span class="label">Slug</span><span class="value">${tenant.slug}</span></div>
+        ${tenant.owner ? `<div class="info-row"><span class="label">Owner</span><span class="value">${tenant.owner.name}</span></div>` : ''}
+        ${tenant.owner ? `<div class="info-row"><span class="label">Email</span><span class="value">${tenant.owner.email}</span></div>` : ''}
+        ${tenant.supportPhone ? `<div class="info-row"><span class="label">Phone</span><span class="value">${tenant.supportPhone}</span></div>` : ''}
+      </div>
+      <div>
+        <div class="section-label">Invoice Details</div>
+        <div class="info-row"><span class="label">Type</span><span class="value">${inv.invoiceType}</span></div>
+        <div class="info-row"><span class="label">Plan</span><span class="value">${inv.planName || '\u2014'}</span></div>
+        <div class="info-row"><span class="label">Duration</span><span class="value">${inv.months} month(s)</span></div>
+        <div class="info-row"><span class="label">Payment</span><span class="value">${inv.paymentMethod}</span></div>
+        <div class="info-row"><span class="label">Status</span><span class="status-badge ${inv.paymentStatus === 'Paid' ? 'status-paid' : 'status-unpaid'}">${inv.paymentStatus}</span></div>
+      </div>
     </div>
+    <div class="line-items">
+      <div class="line-item"><span>Activation Fee</span><span>${inv.activationFee.toLocaleString()} EGP</span></div>
+      <div class="line-item"><span>Subscription Amount (${inv.months} mo)</span><span>${inv.subscriptionAmount.toLocaleString()} EGP</span></div>
+      ${inv.discount > 0 ? `<div class="line-item discount"><span>Discount</span><span>-${inv.discount.toLocaleString()} EGP</span></div>` : ''}
+      <div class="total-row"><span>TOTAL DUE</span><span class="amount">${inv.total.toLocaleString()} EGP</span></div>
+    </div>
+    ${inv.notes ? `<div style="margin-top:20px;padding:16px;background:#fffbeb;border-radius:8px;font-size:13px;color:#92400e;"><strong>Notes:</strong> ${inv.notes}</div>` : ''}
   </div>
-  <div class="totals">
-    <div class="row"><span>Activation Fee</span><span>${inv.activationFee.toLocaleString()} EGP</span></div>
-    <div class="row"><span>Subscription Amount</span><span>${inv.subscriptionAmount.toLocaleString()} EGP</span></div>
-    ${inv.discount > 0 ? `<div class="row" style="color: #dc2626;"><span>Discount</span><span>-${inv.discount.toLocaleString()} EGP</span></div>` : ''}
-    <div class="row total-row"><span>TOTAL</span><span>${inv.total.toLocaleString()} EGP</span></div>
-  </div>
-  <div class="footer">
-    <p>Mobilytics Platform &mdash; Generated on ${new Date().toLocaleString()}</p>
+  <div class="footer-bar">
+    <div>Mobilytics &mdash; SaaS Store Management Platform by <strong>Nova Node</strong></div>
+    <div>Generated ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })} &bull; <a href="https://mobilytics.app">mobilytics.app</a></div>
   </div>
 </body></html>`;
 
@@ -739,6 +796,7 @@ export class TenantCreateComponent implements OnInit {
       storeName: '', slug: '', ownerName: '', ownerEmail: '', ownerPassword: '',
       planId: '', durationMonths: 1, isTrial: false,
       activationFeePaid: 0, subscriptionAmountPaid: 0, discount: 0, paymentMethod: 'Cash',
+      themePresetId: 1, currencyCode: 'EGP',
     };
     this.confirmPassword = '';
     this.socialLinks = { facebook: '', instagram: '', tiktok: '', twitter: '' };

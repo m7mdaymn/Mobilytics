@@ -5,7 +5,7 @@ namespace NovaNode.Application.DTOs.CustomFields;
 public class CustomFieldDto
 {
     public Guid Id { get; set; }
-    public Guid? ItemTypeId { get; set; }
+    public Guid? CategoryId { get; set; }
     public string Key { get; set; } = string.Empty;
     public string Label { get; set; } = string.Empty;
     public CustomFieldType FieldType { get; set; }
@@ -17,7 +17,7 @@ public class CustomFieldDto
 
 public class CreateCustomFieldRequest
 {
-    public Guid? ItemTypeId { get; set; }
+    public Guid? CategoryId { get; set; }
     public string Key { get; set; } = string.Empty;
     public string Label { get; set; } = string.Empty;
     public CustomFieldType FieldType { get; set; }
@@ -28,7 +28,7 @@ public class CreateCustomFieldRequest
 
 public class UpdateCustomFieldRequest
 {
-    public Guid? ItemTypeId { get; set; }
+    public Guid? CategoryId { get; set; }
     public string Key { get; set; } = string.Empty;
     public string Label { get; set; } = string.Empty;
     public CustomFieldType FieldType { get; set; }

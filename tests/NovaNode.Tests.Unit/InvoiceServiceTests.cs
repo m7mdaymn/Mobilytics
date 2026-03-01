@@ -31,13 +31,13 @@ public class InvoiceServiceTests
     {
         var (db, tenantId) = CreateDb();
 
-        var itemType = new ItemType { TenantId = tenantId, Name = "Device", Slug = "device", IsDevice = true };
-        db.ItemTypes.Add(itemType);
+        var category = new Category { TenantId = tenantId, Name = "Device", Slug = "device", IsDevice = true };
+        db.Categories.Add(category);
 
         var item = new Item
         {
             TenantId = tenantId, Title = "iPhone 15", Slug = "iphone-15",
-            ItemTypeId = itemType.Id, Price = 1000, Quantity = 1,
+            CategoryId = category.Id, Price = 1000, Quantity = 1,
             Status = ItemStatus.Available
         };
         db.Items.Add(item);
@@ -74,13 +74,13 @@ public class InvoiceServiceTests
     {
         var (db, tenantId) = CreateDb();
 
-        var itemType = new ItemType { TenantId = tenantId, Name = "Accessory", Slug = "acc", IsStockItem = true };
-        db.ItemTypes.Add(itemType);
+        var category = new Category { TenantId = tenantId, Name = "Accessory", Slug = "acc", IsStockItem = true };
+        db.Categories.Add(category);
 
         var item = new Item
         {
             TenantId = tenantId, Title = "Screen Protector", Slug = "screen-protector",
-            ItemTypeId = itemType.Id, Price = 50, Quantity = 10,
+            CategoryId = category.Id, Price = 50, Quantity = 10,
             Status = ItemStatus.Available
         };
         db.Items.Add(item);

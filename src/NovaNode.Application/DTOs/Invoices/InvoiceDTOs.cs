@@ -66,8 +66,13 @@ public class RefundItemRequest
 public class InvoiceFilterRequest
 {
     public int Page { get; set; } = 1;
+    public int PageNumber { get; set; } = 0; // alias
     public int PageSize { get; set; } = 20;
     public DateTime? From { get; set; }
     public DateTime? To { get; set; }
     public string? Search { get; set; }
+    public string? Status { get; set; }
+
+    /// <summary>Resolve page: prefer PageNumber if provided, else Page.</summary>
+    public int EffectivePage => PageNumber > 0 ? PageNumber : Page;
 }

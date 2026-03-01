@@ -55,6 +55,16 @@ export interface TenantStoreSettings {
   socialLinksJson?: string;
   policiesJson?: string;
   mapUrl?: string;
+  headerNoticeText?: string;
+  aboutTitle?: string;
+  aboutDescription?: string;
+  aboutImageUrl?: string;
+  heroBannersJson?: string;
+  testimonialsJson?: string;
+  faqJson?: string;
+  trustBadgesJson?: string;
+  whatsAppTemplatesJson?: string;
+  pwaSettingsJson?: string;
 }
 
 export interface UpdateStoreSettingsRequest {
@@ -70,6 +80,15 @@ export interface UpdateStoreSettingsRequest {
   socialLinksJson?: string;
   policiesJson?: string;
   mapUrl?: string;
+  headerNoticeText?: string;
+  aboutTitle?: string;
+  aboutDescription?: string;
+  aboutImageUrl?: string;
+  heroBannersJson?: string;
+  testimonialsJson?: string;
+  faqJson?: string;
+  trustBadgesJson?: string;
+  whatsAppTemplatesJson?: string;
 }
 
 export interface TenantSubscription {
@@ -110,42 +129,24 @@ export interface Plan {
   priceMonthly: number;
   activationFee: number;
   isActive: boolean;
-  limits: PlanLimits;
-  features: PlanFeatures;
   createdAt: string;
   updatedAt: string;
 }
 
-export interface PlanLimits {
-  maxItems: number;
-  maxEmployees: number;
-  maxImages: number;
-  maxStorageMB: number;
+/** Computed helper — annual = monthly * 12 * 0.8 (20% discount) */
+export function planAnnualPrice(monthly: number): number {
+  return Math.round(monthly * 12 * 0.8);
 }
 
-export interface PlanFeatures {
-  canRemovePoweredBy: boolean;
-  advancedReports: boolean;
-  customDomain: boolean;
-  apiAccess: boolean;
-  prioritySupport: boolean;
-}
-
-/** Form-facing model for plan create/edit — limits & features as objects for easy binding */
+/** Form-facing model for plan create/edit */
 export interface CreatePlanFormData {
   name: string;
   priceMonthly: number;
   activationFee: number;
-  limits: PlanLimits;
-  features: PlanFeatures;
 }
 
 export interface TenantFeatures {
-  canRemovePoweredBy: boolean;
-  advancedReports: boolean;
-  customDomain: boolean;
-  apiAccess: boolean;
-  prioritySupport: boolean;
+  [key: string]: boolean;
 }
 
 export interface StartTrialRequest {
@@ -225,6 +226,9 @@ export interface OnboardTenantRequest {
   logoUrl?: string;
   socialLinksJson?: string;
   mapUrl?: string;
+  themePresetId: number;
+  currencyCode: string;
+  workingHours?: string;
   ownerName: string;
   ownerEmail: string;
   ownerPhone?: string;

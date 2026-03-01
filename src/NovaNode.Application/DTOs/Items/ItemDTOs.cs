@@ -5,11 +5,11 @@ namespace NovaNode.Application.DTOs.Items;
 public class ItemDto
 {
     public Guid Id { get; set; }
-    public Guid ItemTypeId { get; set; }
+    public Guid? ItemTypeId { get; set; }
     public string? ItemTypeName { get; set; }
     public Guid? BrandId { get; set; }
     public string? BrandName { get; set; }
-    public Guid? CategoryId { get; set; }
+    public Guid CategoryId { get; set; }
     public string? CategoryName { get; set; }
     public string Title { get; set; } = string.Empty;
     public string Slug { get; set; } = string.Empty;
@@ -31,15 +31,21 @@ public class ItemDto
     public string? ChecklistJson { get; set; }
     public string? CustomFieldsJson { get; set; }
     public bool IsFeatured { get; set; }
+    public string? Color { get; set; }
+    public string? Storage { get; set; }
+    public string? RAM { get; set; }
+    public bool InstallmentAvailable { get; set; }
+    public string? Specs { get; set; }
+    public string? WhatsInTheBox { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 }
 
 public class CreateItemRequest
 {
-    public Guid ItemTypeId { get; set; }
+    public Guid? ItemTypeId { get; set; }
     public Guid? BrandId { get; set; }
-    public Guid? CategoryId { get; set; }
+    public Guid CategoryId { get; set; }
     public string Title { get; set; } = string.Empty;
     public string? Slug { get; set; }
     public string? Description { get; set; }
@@ -57,13 +63,19 @@ public class CreateItemRequest
     public string? ChecklistJson { get; set; }
     public string? CustomFieldsJson { get; set; }
     public bool IsFeatured { get; set; }
+    public string? Color { get; set; }
+    public string? Storage { get; set; }
+    public string? RAM { get; set; }
+    public bool InstallmentAvailable { get; set; }
+    public string? Specs { get; set; }
+    public string? WhatsInTheBox { get; set; }
 }
 
 public class UpdateItemRequest
 {
-    public Guid ItemTypeId { get; set; }
+    public Guid? ItemTypeId { get; set; }
     public Guid? BrandId { get; set; }
-    public Guid? CategoryId { get; set; }
+    public Guid CategoryId { get; set; }
     public string Title { get; set; } = string.Empty;
     public string? Slug { get; set; }
     public string? Description { get; set; }
@@ -81,6 +93,12 @@ public class UpdateItemRequest
     public string? ChecklistJson { get; set; }
     public string? CustomFieldsJson { get; set; }
     public bool IsFeatured { get; set; }
+    public string? Color { get; set; }
+    public string? Storage { get; set; }
+    public string? RAM { get; set; }
+    public bool InstallmentAvailable { get; set; }
+    public string? Specs { get; set; }
+    public string? WhatsInTheBox { get; set; }
 }
 
 public class UpdateItemStatusRequest
@@ -95,6 +113,9 @@ public class ItemFilterRequest
     public Guid? TypeId { get; set; }
     public Guid? CategoryId { get; set; }
     public Guid? BrandId { get; set; }
+    public string? ItemTypeSlug { get; set; }
+    public string? CategorySlug { get; set; }
+    public string? BrandSlug { get; set; }
     public ItemCondition? Condition { get; set; }
     public decimal? PriceMin { get; set; }
     public decimal? PriceMax { get; set; }
@@ -102,4 +123,9 @@ public class ItemFilterRequest
     public string? Search { get; set; }
     public bool? Featured { get; set; }
     public string? Sort { get; set; }
+    public string? Color { get; set; }
+    public string? Storage { get; set; }
+    public string? RAM { get; set; }
+    public bool? InstallmentAvailable { get; set; }
+    public WarrantyType? WarrantyType { get; set; }
 }

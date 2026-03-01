@@ -1,4 +1,6 @@
-@import "tailwindcss";
+@import "tailwindcss/theme" layer(theme);
+@import "tailwindcss/preflight" layer(base);
+@import "tailwindcss/utilities" layer(utilities);
 
 /* ══════════════════════════════════════════════════════════
    MOBILYTICS DESIGN SYSTEM - CSS Custom Properties
@@ -559,4 +561,322 @@ body {
 .theme-3 .badge {
   border-radius: var(--radius);
   font-weight: 700;
+}
+
+/* ────── Theme 4: Royal Purple ──────
+   Rich, elegant feel. Soft gradients, rounded cards.
+*/
+.theme-4 {
+  --radius: 12px;
+  --radius-lg: 16px;
+  --card-padding: 1rem;
+  --card-gap: 1rem;
+  --card-img-ratio: 1 / 1;
+  --card-title-size: 0.875rem;
+  --card-price-size: 1.125rem;
+  --section-gap: 2.5rem;
+  --header-height: 64px;
+}
+.theme-4 .storefront-header {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+  border-bottom: none;
+  color: #fff;
+}
+.theme-4 .storefront-header .store-name { color: #fff; font-weight: 700; }
+.theme-4 .storefront-nav a { color: rgba(255,255,255,0.85); font-weight: 500; }
+.theme-4 .storefront-nav a:hover { color: #fff; }
+.theme-4 .card { border-radius: var(--radius-lg); }
+.theme-4 .card:hover { border-color: var(--color-accent); }
+.theme-4 .hero-banner { aspect-ratio: 2.5 / 1; border-radius: var(--radius-lg); }
+.theme-4 .storefront-footer { background: var(--color-secondary); color: #fff; }
+.theme-4 .section-title { font-weight: 700; }
+
+/* ────── Theme 5: Sunset Orange ──────
+   Warm, energetic. Bold orange accents, punchy CTAs.
+*/
+.theme-5 {
+  --radius: 10px;
+  --radius-lg: 14px;
+  --card-padding: 0.875rem;
+  --card-gap: 0.75rem;
+  --card-img-ratio: 1 / 1;
+  --card-title-size: 0.875rem;
+  --card-price-size: 1.125rem;
+  --section-gap: 2rem;
+  --header-height: 60px;
+}
+.theme-5 .storefront-header {
+  background: var(--color-primary);
+  border-bottom: none;
+  color: #fff;
+}
+.theme-5 .storefront-header .store-name { color: #fff; font-weight: 800; }
+.theme-5 .storefront-nav a { color: rgba(255,255,255,0.9); font-weight: 600; }
+.theme-5 .card { border-radius: var(--radius-lg); }
+.theme-5 .card:hover { box-shadow: 0 0 0 2px var(--color-accent), var(--shadow-lg); }
+.theme-5 .card .card-price { color: var(--color-primary); font-weight: 800; }
+.theme-5 .hero-banner { aspect-ratio: 2 / 1; border-radius: var(--radius-lg); }
+.theme-5 .storefront-footer { background: var(--color-secondary); color: #fff; }
+.theme-5 .section-title { font-weight: 800; font-size: 1.125rem; }
+
+/* ────── Theme 6: Slate Minimal ──────
+   Ultra-clean slate tones, similar to Apple's approach.
+   Neomorphism-friendly with subtle depth.
+*/
+.theme-6 {
+  --radius: 16px;
+  --radius-lg: 20px;
+  --card-padding: 1rem;
+  --card-gap: 1rem;
+  --card-img-ratio: 1 / 1;
+  --card-title-size: 0.875rem;
+  --card-price-size: 1.125rem;
+  --section-gap: 3rem;
+  --header-height: 68px;
+}
+.theme-6 .storefront-header {
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+}
+.theme-6 .storefront-header .store-name { font-weight: 600; letter-spacing: -0.01em; }
+.theme-6 .storefront-nav a { font-weight: 500; font-size: 0.8125rem; }
+.theme-6 .card {
+  border: none;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04), 0 0 1px rgba(0,0,0,0.06);
+}
+.theme-6 .card:hover {
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08), 0 0 1px rgba(0,0,0,0.06);
+  transform: translateY(-4px);
+}
+.theme-6 .hero-banner { aspect-ratio: 21/9; border-radius: var(--radius-lg); }
+.theme-6 .storefront-footer {
+  background: #f8fafc;
+  color: var(--color-text);
+  border-top: 1px solid rgba(0,0,0,0.06);
+}
+.theme-6 .storefront-footer a { color: var(--color-text-muted); }
+.theme-6 .storefront-footer a:hover { color: var(--color-primary); }
+.theme-6 .section-title { font-weight: 600; font-size: 1.125rem; letter-spacing: -0.01em; }
+
+/* ────── Theme 7: Rose Gold ──────
+   Luxurious, feminine, premium feel. Soft rose tones,
+   refined typography, subtle blush highlights.
+*/
+.theme-7 {
+  --radius: 14px;
+  --radius-lg: 18px;
+  --card-padding: 1rem;
+  --card-gap: 1.25rem;
+  --card-img-ratio: 4 / 5;
+  --card-title-size: 0.875rem;
+  --card-price-size: 1.125rem;
+  --section-gap: 3rem;
+  --header-height: 68px;
+}
+.theme-7 .storefront-header {
+  background: linear-gradient(135deg, #fff1f2, #ffffff);
+  border-bottom: 1px solid rgba(159, 18, 57, 0.08);
+}
+.theme-7 .storefront-header .store-name {
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: #9f1239;
+}
+.theme-7 .storefront-nav a { font-weight: 500; color: #6b2140; }
+.theme-7 .storefront-nav a:hover { color: #9f1239; }
+.theme-7 .card {
+  border: none;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 2px 12px rgba(159, 18, 57, 0.06);
+}
+.theme-7 .card:hover {
+  box-shadow: 0 8px 24px rgba(159, 18, 57, 0.1);
+  transform: translateY(-3px);
+}
+.theme-7 .card .card-price { font-weight: 700; color: #9f1239; }
+.theme-7 .hero-banner { aspect-ratio: 2.5 / 1; border-radius: var(--radius-lg); }
+.theme-7 .storefront-footer {
+  background: #1c1017;
+  color: #e8d0d6;
+}
+.theme-7 .storefront-footer a { color: #dbb8c0; }
+.theme-7 .storefront-footer a:hover { color: #fda4af; }
+.theme-7 .section-title { font-weight: 600; font-size: 1.125rem; color: #4c0519; }
+.theme-7 .badge { border-radius: 9999px; }
+
+/* ────── Theme 8: Arctic Blue ──────
+   Crisp, fresh, modern. Cool blues with light accents.
+   Clean lines, airy spacing.
+*/
+.theme-8 {
+  --radius: 10px;
+  --radius-lg: 14px;
+  --card-padding: 0.875rem;
+  --card-gap: 1rem;
+  --card-img-ratio: 1 / 1;
+  --card-title-size: 0.875rem;
+  --card-price-size: 1.125rem;
+  --section-gap: 2.5rem;
+  --header-height: 64px;
+}
+.theme-8 .storefront-header {
+  background: linear-gradient(180deg, #f0f9ff, #ffffff);
+  border-bottom: 1px solid rgba(3, 105, 161, 0.08);
+}
+.theme-8 .storefront-header .store-name { font-weight: 700; color: #0369a1; }
+.theme-8 .storefront-nav a { font-weight: 500; color: #0c4a6e; }
+.theme-8 .storefront-nav a:hover { color: #0369a1; }
+.theme-8 .card {
+  border: 1px solid #e0f2fe;
+  border-radius: var(--radius-lg);
+}
+.theme-8 .card:hover {
+  border-color: #7dd3fc;
+  box-shadow: 0 0 0 1px #7dd3fc, 0 4px 14px rgba(3, 105, 161, 0.08);
+  transform: translateY(-2px);
+}
+.theme-8 .card .card-price { font-weight: 700; color: #0369a1; }
+.theme-8 .hero-banner { aspect-ratio: 2.5 / 1; border-radius: var(--radius-lg); }
+.theme-8 .storefront-footer { background: #0c4a6e; color: #bae6fd; }
+.theme-8 .storefront-footer a { color: #bae6fd; }
+.theme-8 .storefront-footer a:hover { color: #ffffff; }
+.theme-8 .section-title { font-weight: 700; font-size: 1.125rem; }
+
+/* ══════════════════════════════════════════════════════════
+   NEOMORPHISM & PREMIUM POLISH
+   Soft depth, subtle highlights, Apple-level refinement.
+   ══════════════════════════════════════════════════════════ */
+
+/* Neomorphic card — soft raised surface effect */
+.neo-card {
+  background: #ffffff;
+  border-radius: var(--radius-lg);
+  box-shadow:
+    6px 6px 16px rgba(0, 0, 0, 0.06),
+    -4px -4px 12px rgba(255, 255, 255, 0.8),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  transition: box-shadow 300ms ease, transform 300ms ease;
+}
+.neo-card:hover {
+  box-shadow:
+    8px 8px 24px rgba(0, 0, 0, 0.08),
+    -6px -6px 16px rgba(255, 255, 255, 0.9),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  transform: translateY(-2px);
+}
+
+/* Neomorphic inset — sunken surface */
+.neo-inset {
+  background: #f8fafc;
+  border-radius: var(--radius);
+  box-shadow:
+    inset 2px 2px 6px rgba(0, 0, 0, 0.06),
+    inset -2px -2px 6px rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(0, 0, 0, 0.03);
+}
+
+/* Neomorphic button */
+.neo-btn {
+  background: #ffffff;
+  border-radius: var(--radius-lg);
+  box-shadow:
+    4px 4px 10px rgba(0, 0, 0, 0.06),
+    -3px -3px 8px rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  transition: box-shadow 200ms ease, transform 150ms ease;
+  cursor: pointer;
+}
+.neo-btn:hover {
+  box-shadow:
+    2px 2px 6px rgba(0, 0, 0, 0.08),
+    -1px -1px 4px rgba(255, 255, 255, 0.9);
+}
+.neo-btn:active {
+  box-shadow:
+    inset 2px 2px 6px rgba(0, 0, 0, 0.06),
+    inset -2px -2px 6px rgba(255, 255, 255, 0.7);
+  transform: scale(0.98);
+}
+
+/* Glass morphism overlay */
+.glass {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* Premium section background — subtle gradient */
+.section-premium {
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+}
+.section-premium-alt {
+  background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+}
+
+/* Smooth image zoom on hover */
+.img-zoom {
+  overflow: hidden;
+}
+.img-zoom img {
+  transition: transform 500ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+.img-zoom:hover img {
+  transform: scale(1.06);
+}
+
+/* Hide scrollbar but keep functionality */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Premium text gradient */
+.text-gradient {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Subtle pulse animation for CTAs */
+@keyframes subtle-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(var(--color-primary-rgb, 37, 99, 235), 0.3); }
+  50% { box-shadow: 0 0 0 8px rgba(var(--color-primary-rgb, 37, 99, 235), 0); }
+}
+.pulse-cta {
+  animation: subtle-pulse 2.5s ease-in-out infinite;
+}
+
+/* Fade-in animation for sections */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in-up {
+  animation: fadeInUp 0.5s ease-out forwards;
+}
+
+/* Trust badges row styling */
+.trust-strip {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  padding: 1rem 0;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+  color: #fff;
+}
+.trust-strip .trust-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
 }

@@ -76,6 +76,9 @@ namespace NovaNode.Infrastructure.Persistence.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
+                    b.Property<bool>("IsVisibleInNav")
+                        .HasColumnType("bit");
+
                     b.Property<string>("LogoUrl")
                         .HasColumnType("nvarchar(max)");
 
@@ -119,6 +122,15 @@ namespace NovaNode.Infrastructure.Persistence.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
+                    b.Property<bool>("IsDevice")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsStockItem")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsVisibleInNav")
+                        .HasColumnType("bit");
+
                     b.Property<string>("MetaDesc")
                         .HasColumnType("nvarchar(max)");
 
@@ -135,6 +147,18 @@ namespace NovaNode.Infrastructure.Persistence.Migrations
                     b.Property<string>("Slug")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
+
+                    b.Property<bool>("SupportsBatteryHealth")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("SupportsIMEI")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("SupportsSerial")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("SupportsWarranty")
+                        .HasColumnType("bit");
 
                     b.Property<Guid>("TenantId")
                         .HasColumnType("uniqueidentifier");
@@ -156,6 +180,9 @@ namespace NovaNode.Infrastructure.Persistence.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("CategoryId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAt")
@@ -194,6 +221,8 @@ namespace NovaNode.Infrastructure.Persistence.Migrations
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CategoryId");
 
                     b.HasIndex("ItemTypeId");
 
@@ -397,6 +426,110 @@ namespace NovaNode.Infrastructure.Persistence.Migrations
                     b.ToTable("HomeSectionItems");
                 });
 
+            modelBuilder.Entity("NovaNode.Domain.Entities.InstallmentPlan", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("AdminFees")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("AdminFeesPercent")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("decimal(5,2)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("DownPayment")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("DownPaymentPercent")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("decimal(5,2)");
+
+                    b.Property<decimal?>("InterestRate")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("decimal(5,2)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid?>("ItemId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("MonthlyPayment")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("Months")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("ProviderId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("TotalAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ItemId");
+
+                    b.HasIndex("ProviderId");
+
+                    b.ToTable("InstallmentPlans");
+                });
+
+            modelBuilder.Entity("NovaNode.Domain.Entities.InstallmentProvider", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("LogoUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("InstallmentProviders");
+                });
+
             modelBuilder.Entity("NovaNode.Domain.Entities.Invoice", b =>
                 {
                     b.Property<Guid>("Id")
@@ -519,10 +652,13 @@ namespace NovaNode.Infrastructure.Persistence.Migrations
                     b.Property<Guid?>("BrandId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("CategoryId")
+                    b.Property<Guid>("CategoryId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("ChecklistJson")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Color")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Condition")
@@ -543,14 +679,20 @@ namespace NovaNode.Infrastructure.Persistence.Migrations
                     b.Property<string>("IMEI")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<bool>("InstallmentAvailable")
+                        .HasColumnType("bit");
+
                     b.Property<bool>("IsFeatured")
                         .HasColumnType("bit");
 
-                    b.Property<Guid>("ItemTypeId")
+                    b.Property<Guid?>("ItemTypeId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("MainImageUrl")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal?>("MonthlyPayment")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal?>("OldPrice")
                         .HasPrecision(18, 2)
@@ -563,6 +705,9 @@ namespace NovaNode.Infrastructure.Persistence.Migrations
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
+                    b.Property<string>("RAM")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("SerialNumber")
                         .HasColumnType("nvarchar(max)");
 
@@ -570,8 +715,14 @@ namespace NovaNode.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<string>("Specs")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("Status")
                         .HasColumnType("int");
+
+                    b.Property<string>("Storage")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("TaxStatus")
                         .HasColumnType("int");
@@ -595,6 +746,9 @@ namespace NovaNode.Infrastructure.Persistence.Migrations
 
                     b.Property<int?>("WarrantyType")
                         .HasColumnType("int");
+
+                    b.Property<string>("WhatsInTheBox")
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -637,6 +791,9 @@ namespace NovaNode.Infrastructure.Persistence.Migrations
                         .HasColumnType("bit");
 
                     b.Property<bool>("IsStockItem")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsVisibleInNav")
                         .HasColumnType("bit");
 
                     b.Property<string>("Name")
@@ -723,6 +880,43 @@ namespace NovaNode.Infrastructure.Persistence.Migrations
                     b.HasIndex("TenantId", "CreatedAt");
 
                     b.ToTable("Leads");
+                });
+
+            modelBuilder.Entity("NovaNode.Domain.Entities.Notification", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ActionUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Message")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Notifications");
                 });
 
             modelBuilder.Entity("NovaNode.Domain.Entities.Permission", b =>
@@ -901,6 +1095,9 @@ namespace NovaNode.Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("Address")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("ApprovalNotes")
                         .HasColumnType("nvarchar(max)");
 
@@ -933,6 +1130,9 @@ namespace NovaNode.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("PasswordHash")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Phone")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -953,6 +1153,9 @@ namespace NovaNode.Infrastructure.Persistence.Migrations
                     b.Property<DateTime>("SubmittedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("WhatsApp")
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("Id");
 
                     b.ToTable("StoreRegistrations");
@@ -964,6 +1167,15 @@ namespace NovaNode.Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("AboutDescription")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("AboutImageUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("AboutTitle")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("BannerUrl")
                         .HasColumnType("nvarchar(max)");
 
@@ -971,7 +1183,16 @@ namespace NovaNode.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("FaqJson")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("FooterAddress")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("HeaderNoticeText")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("HeroBannersJson")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("LogoUrl")
@@ -999,8 +1220,14 @@ namespace NovaNode.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("TenantId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("TestimonialsJson")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("ThemePresetId")
                         .HasColumnType("int");
+
+                    b.Property<string>("TrustBadgesJson")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("WhatsAppNumber")
                         .HasColumnType("nvarchar(max)");
@@ -1139,6 +1366,32 @@ namespace NovaNode.Infrastructure.Persistence.Migrations
                     b.ToTable("TenantFeatureToggles");
                 });
 
+            modelBuilder.Entity("NovaNode.Domain.Entities.TenantSlugHistory", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("ChangedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("OldSlug")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OldSlug")
+                        .IsUnique();
+
+                    b.HasIndex("TenantId");
+
+                    b.ToTable("TenantSlugHistories");
+                });
+
             modelBuilder.Entity("NovaNode.Domain.Entities.Category", b =>
                 {
                     b.HasOne("NovaNode.Domain.Entities.Category", "Parent")
@@ -1151,12 +1404,16 @@ namespace NovaNode.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("NovaNode.Domain.Entities.CustomFieldDefinition", b =>
                 {
-                    b.HasOne("NovaNode.Domain.Entities.ItemType", "ItemType")
+                    b.HasOne("NovaNode.Domain.Entities.Category", "Category")
                         .WithMany("CustomFieldDefinitions")
-                        .HasForeignKey("ItemTypeId")
+                        .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.SetNull);
 
-                    b.Navigation("ItemType");
+                    b.HasOne("NovaNode.Domain.Entities.ItemType", null)
+                        .WithMany("CustomFieldDefinitions")
+                        .HasForeignKey("ItemTypeId");
+
+                    b.Navigation("Category");
                 });
 
             modelBuilder.Entity("NovaNode.Domain.Entities.Expense", b =>
@@ -1178,6 +1435,24 @@ namespace NovaNode.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("HomeSection");
+                });
+
+            modelBuilder.Entity("NovaNode.Domain.Entities.InstallmentPlan", b =>
+                {
+                    b.HasOne("NovaNode.Domain.Entities.Item", "Item")
+                        .WithMany("InstallmentPlans")
+                        .HasForeignKey("ItemId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("NovaNode.Domain.Entities.InstallmentProvider", "Provider")
+                        .WithMany("Plans")
+                        .HasForeignKey("ProviderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Item");
+
+                    b.Navigation("Provider");
                 });
 
             modelBuilder.Entity("NovaNode.Domain.Entities.Invoice", b =>
@@ -1225,13 +1500,13 @@ namespace NovaNode.Infrastructure.Persistence.Migrations
                     b.HasOne("NovaNode.Domain.Entities.Category", "Category")
                         .WithMany("Items")
                         .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("NovaNode.Domain.Entities.ItemType", "ItemType")
                         .WithMany("Items")
                         .HasForeignKey("ItemTypeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Brand");
 
@@ -1327,6 +1602,17 @@ namespace NovaNode.Infrastructure.Persistence.Migrations
                     b.Navigation("Tenant");
                 });
 
+            modelBuilder.Entity("NovaNode.Domain.Entities.TenantSlugHistory", b =>
+                {
+                    b.HasOne("NovaNode.Domain.Entities.Tenant", "Tenant")
+                        .WithMany("SlugHistory")
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Tenant");
+                });
+
             modelBuilder.Entity("NovaNode.Domain.Entities.Brand", b =>
                 {
                     b.Navigation("Items");
@@ -1335,6 +1621,8 @@ namespace NovaNode.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("NovaNode.Domain.Entities.Category", b =>
                 {
                     b.Navigation("Children");
+
+                    b.Navigation("CustomFieldDefinitions");
 
                     b.Navigation("Items");
                 });
@@ -1354,6 +1642,11 @@ namespace NovaNode.Infrastructure.Persistence.Migrations
                     b.Navigation("Items");
                 });
 
+            modelBuilder.Entity("NovaNode.Domain.Entities.InstallmentProvider", b =>
+                {
+                    b.Navigation("Plans");
+                });
+
             modelBuilder.Entity("NovaNode.Domain.Entities.Invoice", b =>
                 {
                     b.Navigation("Items");
@@ -1361,6 +1654,8 @@ namespace NovaNode.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("NovaNode.Domain.Entities.Item", b =>
                 {
+                    b.Navigation("InstallmentPlans");
+
                     b.Navigation("InvoiceItems");
 
                     b.Navigation("Leads");
@@ -1381,6 +1676,8 @@ namespace NovaNode.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("NovaNode.Domain.Entities.Tenant", b =>
                 {
                     b.Navigation("FeatureToggle");
+
+                    b.Navigation("SlugHistory");
 
                     b.Navigation("StoreSettings");
 

@@ -54,15 +54,16 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(cloned).pipe(
     catchError((error: HttpErrorResponse) => {
-      const isAdminRoute = router.url.startsWith('/admin');
-      const isSuperAdminRoute = router.url.startsWith('/superadmin');
+      // PATH-BASED route detection: /store/:slug/admin/* is admin, /superadmin/* is superadmin
+      const url = router.url;
+      const isAdminRoute = /^\/store\/[^/]+\/admin/.test(url);
+      const isSuperAdminRoute = url.startsWith('/superadmin');
+      const slug = tenantService.slug();
       const body = error.error;
 
       if (error.status === 400) {
-        // Support both our envelope {message, errors} and ASP.NET ProblemDetails {title, errors}
         let message = body?.message || body?.title || 'Validation error';
         let errors = body?.errors || null;
-        // ProblemDetails errors are Record<string, string[]> — flatten to readable text
         if (errors && typeof errors === 'object' && !Array.isArray(errors)) {
           const flat = Object.entries(errors as Record<string, string[]>)
             .flatMap(([, msgs]) => msgs);
@@ -79,7 +80,6 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
           router.navigate(['/superadmin/login']);
         } else if (isAdminRoute) {
           authService.logout();
-          router.navigate(['/admin/login']);
         }
         return throwError(() => new ApiError(401, 'Unauthorized', null, body));
       }
@@ -88,9 +88,9 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
         if (isSuperAdminRoute) {
           toastService.error('Access denied');
           router.navigate(['/superadmin/login']);
-        } else if (isAdminRoute) {
+        } else if (isAdminRoute && slug) {
           toastService.error('Access blocked / subscription required');
-          router.navigate(['/admin/blocked']);
+          router.navigate(['/store', slug, 'admin', 'blocked']);
         } else {
           router.navigate(['/inactive']);
         }

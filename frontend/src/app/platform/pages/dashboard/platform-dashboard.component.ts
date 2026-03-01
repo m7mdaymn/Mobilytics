@@ -278,7 +278,7 @@ import { I18nService } from '../../../core/services/i18n.service';
                       <td class="px-6 py-4">
                         <div class="flex items-center gap-3">
                           <div class="w-8 h-8 rounded-lg bg-neutral-100 flex items-center justify-center text-xs font-bold text-neutral-600">
-                            {{ inv.tenantName?.charAt(0) || '?' }}
+                            {{ inv.tenantName ? inv.tenantName.charAt(0) : '?' }}
                           </div>
                           <div>
                             <p class="font-medium text-black text-sm">{{ inv.tenantName }}</p>

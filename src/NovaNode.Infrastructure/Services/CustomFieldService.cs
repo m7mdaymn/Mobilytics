@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using NovaNode.Application.DTOs.Categories;
 using NovaNode.Application.DTOs.CustomFields;
 using NovaNode.Application.Interfaces;
 using NovaNode.Domain.Entities;
@@ -11,11 +12,11 @@ public class CustomFieldService : ICustomFieldService
     private readonly AppDbContext _db;
     public CustomFieldService(AppDbContext db) => _db = db;
 
-    public async Task<List<CustomFieldDto>> GetAllAsync(Guid tenantId, Guid? itemTypeId = null, CancellationToken ct = default)
+    public async Task<List<CustomFieldDto>> GetAllAsync(Guid tenantId, Guid? categoryId = null, CancellationToken ct = default)
     {
         var query = _db.CustomFieldDefinitions.Where(cf => cf.TenantId == tenantId);
-        if (itemTypeId.HasValue)
-            query = query.Where(cf => cf.ItemTypeId == null || cf.ItemTypeId == itemTypeId.Value);
+        if (categoryId.HasValue)
+            query = query.Where(cf => cf.CategoryId == null || cf.CategoryId == categoryId.Value);
         return await query.OrderBy(cf => cf.DisplayOrder).Select(cf => MapDto(cf)).ToListAsync(ct);
     }
 
@@ -23,7 +24,7 @@ public class CustomFieldService : ICustomFieldService
     {
         var cf = new CustomFieldDefinition
         {
-            TenantId = tenantId, ItemTypeId = request.ItemTypeId,
+            TenantId = tenantId, CategoryId = request.CategoryId,
             Key = request.Key, Label = request.Label, FieldType = request.FieldType,
             OptionsJson = request.OptionsJson, IsRequired = request.IsRequired,
             DisplayOrder = request.DisplayOrder
@@ -37,7 +38,7 @@ public class CustomFieldService : ICustomFieldService
     {
         var cf = await _db.CustomFieldDefinitions.FirstOrDefaultAsync(x => x.TenantId == tenantId && x.Id == id, ct)
             ?? throw new KeyNotFoundException("CustomField not found.");
-        cf.ItemTypeId = request.ItemTypeId; cf.Key = request.Key; cf.Label = request.Label;
+        cf.CategoryId = request.CategoryId; cf.Key = request.Key; cf.Label = request.Label;
         cf.FieldType = request.FieldType; cf.OptionsJson = request.OptionsJson;
         cf.IsRequired = request.IsRequired; cf.DisplayOrder = request.DisplayOrder; cf.IsActive = request.IsActive;
         await _db.SaveChangesAsync(ct);
@@ -52,9 +53,20 @@ public class CustomFieldService : ICustomFieldService
         await _db.SaveChangesAsync(ct);
     }
 
+    public async Task ReorderAsync(Guid tenantId, ReorderRequest request, CancellationToken ct = default)
+    {
+        var fields = await _db.CustomFieldDefinitions.Where(x => x.TenantId == tenantId).ToListAsync(ct);
+        foreach (var item in request.Items)
+        {
+            var field = fields.FirstOrDefault(x => x.Id == item.Id);
+            if (field != null) field.DisplayOrder = item.DisplayOrder;
+        }
+        await _db.SaveChangesAsync(ct);
+    }
+
     private static CustomFieldDto MapDto(CustomFieldDefinition cf) => new()
     {
-        Id = cf.Id, ItemTypeId = cf.ItemTypeId, Key = cf.Key, Label = cf.Label,
+        Id = cf.Id, CategoryId = cf.CategoryId, Key = cf.Key, Label = cf.Label,
         FieldType = cf.FieldType, OptionsJson = cf.OptionsJson,
         IsRequired = cf.IsRequired, DisplayOrder = cf.DisplayOrder, IsActive = cf.IsActive
     };

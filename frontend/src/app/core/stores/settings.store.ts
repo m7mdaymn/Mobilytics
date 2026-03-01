@@ -4,6 +4,26 @@ import { Inject } from '@angular/core';
 import { Observable, tap, catchError, of } from 'rxjs';
 import { ApiService } from '../services/api.service';
 import { StoreSettings, THEME_PRESETS } from '../models/settings.models';
+import { resolveImageUrl } from '../utils/image.utils';
+
+export interface HeroBanner {
+  imageUrl: string;
+  title: string;
+  subtitle: string;
+  linkUrl: string;
+}
+
+export interface Testimonial {
+  name: string;
+  text: string;
+  rating: number;
+  imageUrl?: string;
+}
+
+export interface FaqItem {
+  question: string;
+  answer: string;
+}
 
 @Injectable({ providedIn: 'root' })
 export class SettingsStore {
@@ -26,6 +46,30 @@ export class SettingsStore {
   readonly mapUrl = computed(() => this._settings()?.mapUrl ?? '');
   readonly socialLinks = computed<Record<string, string>>(() => {
     const json = this._settings()?.socialLinksJson;
+    try { return json ? JSON.parse(json) : {}; } catch { return {}; }
+  });
+  readonly headerNoticeText = computed(() => this._settings()?.headerNoticeText ?? '');
+  readonly aboutTitle = computed(() => this._settings()?.aboutTitle ?? '');
+  readonly aboutDescription = computed(() => this._settings()?.aboutDescription ?? '');
+  readonly aboutImageUrl = computed(() => this._settings()?.aboutImageUrl ?? '');
+  readonly heroBanners = computed<HeroBanner[]>(() => {
+    const json = this._settings()?.heroBannersJson;
+    try { return json ? JSON.parse(json) : []; } catch { return []; }
+  });
+  readonly testimonials = computed<Testimonial[]>(() => {
+    const json = this._settings()?.testimonialsJson;
+    try { return json ? JSON.parse(json) : []; } catch { return []; }
+  });
+  readonly faq = computed<FaqItem[]>(() => {
+    const json = this._settings()?.faqJson;
+    try { return json ? JSON.parse(json) : []; } catch { return []; }
+  });
+  readonly trustBadges = computed<string[]>(() => {
+    const json = this._settings()?.trustBadgesJson;
+    try { return json ? JSON.parse(json) : []; } catch { return []; }
+  });
+  readonly policies = computed<Record<string, string>>(() => {
+    const json = this._settings()?.policiesJson;
     try { return json ? JSON.parse(json) : {}; } catch { return {}; }
   });
 
@@ -68,7 +112,7 @@ export class SettingsStore {
     root.style.setProperty('--color-accent-hover', this.darken(accent, 15));
 
     // Theme wrapper class
-    this.document.body.classList.remove('theme-1', 'theme-2', 'theme-3', 'theme-4', 'theme-5', 'theme-6');
+    this.document.body.classList.remove('theme-1', 'theme-2', 'theme-3', 'theme-4', 'theme-5', 'theme-6', 'theme-7', 'theme-8');
     this.document.body.classList.add(`theme-${settings.themePresetId || 1}`);
 
     // Document title
@@ -83,8 +127,40 @@ export class SettingsStore {
     }
     meta.content = primary;
 
+    // Dynamic favicon from store logo
+    this.updateFavicon(settings.logoUrl);
+
     // Dynamic manifest for PWA
     this.updateManifest(settings, primary);
+  }
+
+  private updateFavicon(logoUrl: string | null): void {
+    // Set favicon to store logo (appears in browser tab)
+    let link = this.document.querySelector('link[rel="icon"]') as HTMLLinkElement;
+    if (!link) {
+      link = this.document.createElement('link');
+      link.rel = 'icon';
+      this.document.head.appendChild(link);
+    }
+
+    // Also set apple-touch-icon for iOS
+    let appleLink = this.document.querySelector('link[rel="apple-touch-icon"]') as HTMLLinkElement;
+    if (!appleLink) {
+      appleLink = this.document.createElement('link');
+      appleLink.rel = 'apple-touch-icon';
+      this.document.head.appendChild(appleLink);
+    }
+
+    if (logoUrl) {
+      const resolvedUrl = resolveImageUrl(logoUrl);
+      link.href = resolvedUrl;
+      link.type = 'image/png';
+      appleLink.href = resolvedUrl;
+    } else {
+      link.href = 'icons/icon-192x192.png';
+      link.type = 'image/png';
+      appleLink.href = 'icons/icon-192x192.png';
+    }
   }
 
   private updateManifest(settings: StoreSettings, primary: string): void {

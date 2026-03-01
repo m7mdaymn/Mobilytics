@@ -8,6 +8,9 @@ public class CreateStoreRegistrationDto
     public required string OwnerName { get; set; }
     public required string Email { get; set; }
     public required string Phone { get; set; }
+    public string? WhatsApp { get; set; }
+    public string? Address { get; set; }
+    public string? Password { get; set; }
     public required string NumberOfStores { get; set; }
     public string? MonthlyRevenue { get; set; }
     public string? Source { get; set; }
@@ -23,6 +26,8 @@ public class StoreRegistrationDto
     public string OwnerName { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public string Phone { get; set; } = string.Empty;
+    public string? WhatsApp { get; set; }
+    public string? Address { get; set; }
     public string NumberOfStores { get; set; } = string.Empty;
     public string? MonthlyRevenue { get; set; }
     public string? Source { get; set; }

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using NovaNode.Api.Middleware;
 using NovaNode.Application.DTOs.Items;
 using NovaNode.Application.Interfaces;
 using NovaNode.Domain.Interfaces;
@@ -40,6 +41,7 @@ public class ItemsController : BaseApiController
     }
 
     [HttpPost]
+    [RequirePermission("items.create")]
     public async Task<IActionResult> Create([FromBody] CreateItemRequest request, CancellationToken ct)
     {
         var tenantId = _tenantContext.TenantId!.Value;
@@ -47,6 +49,7 @@ public class ItemsController : BaseApiController
     }
 
     [HttpPut("{id:guid}")]
+    [RequirePermission("items.edit")]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateItemRequest request, CancellationToken ct)
     {
         var tenantId = _tenantContext.TenantId!.Value;
@@ -62,6 +65,7 @@ public class ItemsController : BaseApiController
     }
 
     [HttpDelete("{id:guid}")]
+    [RequirePermission("items.delete")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
     {
         var tenantId = _tenantContext.TenantId!.Value;

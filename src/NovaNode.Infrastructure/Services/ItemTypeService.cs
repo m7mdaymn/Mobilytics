@@ -1,5 +1,6 @@
 using System.Text.RegularExpressions;
 using Microsoft.EntityFrameworkCore;
+using NovaNode.Application.DTOs.Categories;
 using NovaNode.Application.DTOs.ItemTypes;
 using NovaNode.Application.Interfaces;
 using NovaNode.Domain.Entities;
@@ -32,7 +33,8 @@ public partial class ItemTypeService : IItemTypeService
             IsDevice = request.IsDevice, IsStockItem = request.IsStockItem,
             SupportsIMEI = request.SupportsIMEI, SupportsSerial = request.SupportsSerial,
             SupportsBatteryHealth = request.SupportsBatteryHealth, SupportsWarranty = request.SupportsWarranty,
-            DisplayOrder = request.DisplayOrder
+            DisplayOrder = request.DisplayOrder,
+            IsVisibleInNav = request.IsVisibleInNav
         };
         _db.ItemTypes.Add(it);
         await _db.SaveChangesAsync(ct);
@@ -49,6 +51,7 @@ public partial class ItemTypeService : IItemTypeService
         it.SupportsIMEI = request.SupportsIMEI; it.SupportsSerial = request.SupportsSerial;
         it.SupportsBatteryHealth = request.SupportsBatteryHealth; it.SupportsWarranty = request.SupportsWarranty;
         it.DisplayOrder = request.DisplayOrder; it.IsActive = request.IsActive;
+        it.IsVisibleInNav = request.IsVisibleInNav;
         await _db.SaveChangesAsync(ct);
         return MapDto(it);
     }
@@ -61,12 +64,24 @@ public partial class ItemTypeService : IItemTypeService
         await _db.SaveChangesAsync(ct);
     }
 
+    public async Task ReorderAsync(Guid tenantId, ReorderRequest request, CancellationToken ct = default)
+    {
+        var types = await _db.ItemTypes.Where(it => it.TenantId == tenantId).ToListAsync(ct);
+        foreach (var item in request.Items)
+        {
+            var t = types.FirstOrDefault(x => x.Id == item.Id);
+            if (t != null) t.DisplayOrder = item.DisplayOrder;
+        }
+        await _db.SaveChangesAsync(ct);
+    }
+
     private static ItemTypeDto MapDto(ItemType it) => new()
     {
         Id = it.Id, Name = it.Name, Slug = it.Slug, IsDevice = it.IsDevice,
         IsStockItem = it.IsStockItem, SupportsIMEI = it.SupportsIMEI,
         SupportsSerial = it.SupportsSerial, SupportsBatteryHealth = it.SupportsBatteryHealth,
-        SupportsWarranty = it.SupportsWarranty, IsActive = it.IsActive, DisplayOrder = it.DisplayOrder
+        SupportsWarranty = it.SupportsWarranty, IsActive = it.IsActive,
+        IsVisibleInNav = it.IsVisibleInNav, DisplayOrder = it.DisplayOrder
     };
 
     private static string Slugify(string text) =>

@@ -25,19 +25,27 @@ export class AppComponent implements OnInit {
     // Initialize i18n (applies saved or default language)
     this.i18n.init();
 
-    // Only load tenant settings if a tenant is resolved
-    // Landing page and superadmin routes work without a tenant
-    if (this.tenantService.resolved()) {
-      this.settingsStore.loadSettings().subscribe(settings => {
-        if (settings && !settings.isActive) {
-          const url = this.router.url;
-          const isAdmin = url.startsWith('/admin');
-          const isSuperAdmin = url.startsWith('/superadmin');
-          if (!isAdmin && !isSuperAdmin) {
-            this.router.navigate(['/inactive']);
-          }
+    // Settings are loaded after tenant resolution by the guard + SettingsStore.
+    // Watch for navigation to detect when settings should be loaded.
+    this.router.events.pipe(
+      filter(e => e instanceof NavigationEnd)
+    ).subscribe((e) => {
+      const event = e as NavigationEnd;
+      if (this.tenantService.resolved() && event.urlAfterRedirects.startsWith('/store/')) {
+        // Load settings if not already loaded
+        if (!this.settingsStore.settings()) {
+          this.settingsStore.loadSettings().subscribe(settings => {
+            if (settings && !settings.isActive) {
+              const url = event.urlAfterRedirects;
+              const isAdmin = /\/store\/[^/]+\/admin/.test(url);
+              const isSuperAdmin = url.startsWith('/superadmin');
+              if (!isAdmin && !isSuperAdmin) {
+                this.router.navigate(['/inactive']);
+              }
+            }
+          });
         }
-      });
-    }
+      }
+    });
   }
 }

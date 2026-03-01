@@ -18,7 +18,7 @@ describe('ItemCardComponent', () => {
     status: 'Available',
     mainImageUrl: '/img/phone.jpg',
     brandName: 'Apple',
-    itemTypeName: 'Smartphones',
+    categoryName: 'Smartphones',
     currency: 'USD',
   };
 
