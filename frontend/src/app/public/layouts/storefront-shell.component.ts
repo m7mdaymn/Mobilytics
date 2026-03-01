@@ -8,6 +8,7 @@ import { TenantService } from '../../core/services/tenant.service';
 import { I18nService } from '../../core/services/i18n.service';
 import { PwaInstallService } from '../../core/services/pwa-install.service';
 import { ApiService } from '../../core/services/api.service';
+import { StoreNavService } from '../../core/services/store-nav.service';
 import { Navigation, NavItemType, NavCategory, NavBrand } from '../../core/models/navigation.models';
 import { resolveImageUrl } from '../../core/utils/image.utils';
 
@@ -241,9 +242,9 @@ import { resolveImageUrl } from '../../core/utils/image.utils';
             </a>
           }
           @if (pwaInstall.canInstall()) {
-            <button (click)="pwaInstall.promptInstall()" class="hidden sm:flex items-center gap-1 text-xs font-semibold text-[color:var(--color-primary)] px-2.5 py-2 rounded-full border border-[color:var(--color-primary)]/20 hover:bg-[color:var(--color-primary)]/5 transition">
+            <button (click)="pwaInstall.promptInstall()" class="flex items-center gap-1 text-xs font-semibold text-[color:var(--color-primary)] px-2.5 py-2 rounded-full border border-[color:var(--color-primary)]/20 hover:bg-[color:var(--color-primary)]/5 transition">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
-              {{ i18n.t('store.installApp') }}
+              <span class="hidden sm:inline">{{ i18n.t('store.installApp') }}</span>
             </button>
           }
           <button (click)="mobileMenuOpen = !mobileMenuOpen" class="md:hidden p-2 text-gray-500 rounded-xl hover:bg-gray-50 transition">
@@ -272,38 +273,32 @@ import { resolveImageUrl } from '../../core/utils/image.utils';
               <!-- Mega panel -->
               <div class="absolute start-0 top-full pt-1 w-[560px] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                 <div class="mega-enter bg-white rounded-2xl shadow-xl border border-gray-100 p-6">
-                  <div class="grid grid-cols-2 gap-8">
-                    <div>
-                      <h4 class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-3">{{ i18n.t('store.allCategories') }}</h4>
-                      <div class="space-y-0.5">
-                        @for (cat of getCategoriesForType(type.id); track cat.id) {
-                          <a [routerLink]="tenantService.storeUrl() + '/category/' + cat.slug"
-                            class="flex items-center gap-2 text-[13px] text-gray-600 hover:text-[color:var(--color-primary)] p-1.5 rounded-lg hover:bg-gray-50 transition-all hover:ps-3">
-                            <svg class="w-3 h-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                            {{ cat.name }}
-                          </a>
-                        }
-                        @if (!getCategoriesForType(type.id).length) {
-                          <span class="text-xs text-gray-400 italic">No categories yet</span>
-                        }
-                      </div>
-                    </div>
-                    <div>
-                      <h4 class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-3">{{ i18n.t('store.brands') }}</h4>
-                      <div class="grid grid-cols-2 gap-1.5">
-                        @for (brand of getBrandsForType(type.id); track brand.id) {
-                          <a [routerLink]="tenantService.storeUrl() + '/brand/' + brand.slug"
-                            class="flex items-center gap-2 text-[13px] text-gray-600 hover:text-[color:var(--color-primary)] p-2 rounded-lg hover:bg-gray-50 transition">
-                            @if (brand.logoUrl) {
-                              <img [src]="resolveImg(brand.logoUrl)" [alt]="brand.name" class="w-5 h-5 object-contain rounded" />
-                            } @else {
-                              <span class="w-5 h-5 rounded bg-gray-100 flex items-center justify-center text-[10px] font-bold text-gray-400">{{ brand.name.charAt(0) }}</span>
+                  <div class="space-y-4">
+                    @for (cat of getCategoriesForType(type.id); track cat.id) {
+                      <div>
+                        <a [routerLink]="tenantService.storeUrl() + '/category/' + cat.slug"
+                          class="flex items-center gap-2 text-[13px] font-semibold text-gray-800 hover:text-[color:var(--color-primary)] p-1.5 rounded-lg hover:bg-gray-50 transition-all">
+                          <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                          {{ cat.name }}
+                        </a>
+                        @if (getBrandsForCategory(cat.id).length) {
+                          <div class="flex flex-wrap gap-1.5 ps-7 pt-1">
+                            @for (brand of getBrandsForCategory(cat.id); track brand.id) {
+                              <a [routerLink]="tenantService.storeUrl() + '/brand/' + brand.slug"
+                                class="flex items-center gap-1.5 text-[12px] text-gray-500 hover:text-[color:var(--color-primary)] px-2.5 py-1 rounded-full bg-gray-50 hover:bg-gray-100 transition">
+                                @if (brand.logoUrl) {
+                                  <img [src]="resolveImg(brand.logoUrl)" [alt]="brand.name" class="w-4 h-4 object-contain rounded" />
+                                }
+                                {{ brand.name }}
+                              </a>
                             }
-                            {{ brand.name }}
-                          </a>
+                          </div>
                         }
                       </div>
-                    </div>
+                    }
+                    @if (!getCategoriesForType(type.id).length) {
+                      <span class="text-xs text-gray-400 italic">No categories yet</span>
+                    }
                   </div>
                   <div class="mt-5 pt-4 border-t border-gray-100 flex items-center justify-between">
                     <a [routerLink]="tenantService.storeUrl() + '/type/' + type.slug"
@@ -352,20 +347,17 @@ import { resolveImageUrl } from '../../core/utils/image.utils';
                       class="block py-2 ps-8 text-sm text-[color:var(--color-primary)] font-medium">{{ i18n.t('store.viewAll') || 'View All' }} &rarr;</a>
                     @for (cat of getCategoriesForType(type.id); track cat.id) {
                       <a [routerLink]="tenantService.storeUrl() + '/category/' + cat.slug" (click)="mobileMenuOpen=false"
-                        class="block py-2 ps-8 text-sm text-gray-600 hover:text-gray-900">{{ cat.name }}</a>
-                    }
-                    @if (getBrandsForType(type.id).length) {
-                      <div class="pt-2 pb-1">
-                        <span class="ps-8 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Brands</span>
-                        <div class="flex flex-wrap gap-2 ps-8 pt-1.5">
-                          @for (brand of getBrandsForType(type.id); track brand.id) {
+                        class="block py-2 ps-8 text-sm text-gray-600 hover:text-gray-900 font-medium">{{ cat.name }}</a>
+                      @if (getBrandsForCategory(cat.id).length) {
+                        <div class="flex flex-wrap gap-1.5 ps-10 pb-2">
+                          @for (brand of getBrandsForCategory(cat.id); track brand.id) {
                             <a [routerLink]="tenantService.storeUrl() + '/brand/' + brand.slug" (click)="mobileMenuOpen=false"
                               class="text-xs bg-white px-2.5 py-1 rounded-full border border-gray-200 text-gray-600 hover:border-[color:var(--color-primary)] transition">
                               {{ brand.name }}
                             </a>
                           }
                         </div>
-                      </div>
+                      }
                     }
                   </div>
                 }
@@ -411,23 +403,6 @@ import { resolveImageUrl } from '../../core/utils/image.utils';
 
     <!--  FOOTER — PREMIUM DARK ═══ -->
     <footer class="bg-[#0a0a0a] text-gray-400">
-      <!-- Newsletter -->
-      <div class="border-b border-white/5">
-        <div class="max-w-7xl mx-auto px-4 py-10 flex flex-col md:flex-row items-center justify-between gap-6">
-          <div class="text-center md:text-start">
-            <h3 class="text-white font-bold text-xl tracking-tight">{{ i18n.t('store.stayUpdated') || 'Stay Updated' }}</h3>
-            <p class="text-sm text-gray-500 mt-1">{{ i18n.t('store.newsletterDesc') || 'Get notified about new arrivals and exclusive deals' }}</p>
-          </div>
-          <div class="flex gap-2 w-full md:w-auto">
-            <input [(ngModel)]="newsletterEmail" type="email" [placeholder]="i18n.t('store.emailPlaceholder') || 'Enter your email'"
-              class="flex-1 md:w-72 px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-sm text-white placeholder:text-gray-600 outline-none focus:border-[color:var(--color-primary)] transition" />
-            <button (click)="subscribeNewsletter()" class="bg-[color:var(--color-primary)] text-white px-6 py-3 rounded-xl text-sm font-bold hover:opacity-90 transition shrink-0">
-              {{ i18n.t('store.subscribe') || 'Subscribe' }}
-            </button>
-          </div>
-        </div>
-      </div>
-
       <!-- Footer Grid -->
       <div class="max-w-7xl mx-auto px-4 py-14 grid grid-cols-2 md:grid-cols-12 gap-8">
         <!-- Col 1: Store Info — spans 4 cols -->
@@ -435,8 +410,9 @@ import { resolveImageUrl } from '../../core/utils/image.utils';
           <div class="flex items-center gap-2.5 mb-5">
             @if (settingsStore.settings()?.logoUrl) {
               <img [src]="resolveImg(settingsStore.settings()!.logoUrl!)" [alt]="settingsStore.storeName()"
-                class="h-8 w-auto brightness-0 invert opacity-80"
-                (error)="$any($event.target).style.display='none'" />
+                class="h-8 w-auto max-w-[140px] object-contain"
+                (error)="$any($event.target).style.display='none'; $any($event.target).nextElementSibling?.classList?.remove('hidden')" />
+              <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-[color:var(--color-primary)] to-[color:var(--color-accent)] text-white flex items-center justify-center font-bold text-lg hidden">{{ settingsStore.storeName().charAt(0) }}</div>
             } @else {
               <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-[color:var(--color-primary)] to-[color:var(--color-accent)] text-white flex items-center justify-center font-bold text-lg">{{ settingsStore.storeName().charAt(0) }}</div>
             }
@@ -531,17 +507,34 @@ import { resolveImageUrl } from '../../core/utils/image.utils';
           <h4 class="text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-5">{{ i18n.t('store.policies') || 'Policies' }}</h4>
           <div class="space-y-3 text-sm">
             @if (settingsStore.policies()['return']) {
-              <a [routerLink]="tenantService.storeUrl() + '/policies/return'" class="block hover:text-white transition">{{ i18n.t('store.returnPolicy') || 'Return Policy' }}</a>
+              <a [routerLink]="tenantService.storeUrl() + '/policies/return'" class="flex items-center gap-2.5 hover:text-white transition group">
+                <span class="w-7 h-7 rounded-lg bg-white/5 group-hover:bg-white/10 flex items-center justify-center shrink-0 transition">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/></svg>
+                </span>
+                {{ i18n.t('store.returnPolicy') || 'Return Policy' }}
+              </a>
             }
             @if (settingsStore.policies()['warranty']) {
-              <a [routerLink]="tenantService.storeUrl() + '/policies/warranty'" class="block hover:text-white transition">{{ i18n.t('store.warranty') || 'Warranty' }}</a>
+              <a [routerLink]="tenantService.storeUrl() + '/policies/warranty'" class="flex items-center gap-2.5 hover:text-white transition group">
+                <span class="w-7 h-7 rounded-lg bg-white/5 group-hover:bg-white/10 flex items-center justify-center shrink-0 transition">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                </span>
+                {{ i18n.t('store.warranty') || 'Warranty' }}
+              </a>
             }
             @if (settingsStore.policies()['privacy']) {
-              <a [routerLink]="tenantService.storeUrl() + '/policies/privacy'" class="block hover:text-white transition">{{ i18n.t('store.privacy') || 'Privacy Policy' }}</a>
+              <a [routerLink]="tenantService.storeUrl() + '/policies/privacy'" class="flex items-center gap-2.5 hover:text-white transition group">
+                <span class="w-7 h-7 rounded-lg bg-white/5 group-hover:bg-white/10 flex items-center justify-center shrink-0 transition">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                </span>
+                {{ i18n.t('store.privacy') || 'Privacy Policy' }}
+              </a>
             }
             @if (settingsStore.mapUrl()) {
-              <button (click)="showMap = true" class="flex items-center gap-1.5 hover:text-white transition text-start">
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg>
+              <button (click)="showMap = true" class="flex items-center gap-2.5 hover:text-white transition text-start group">
+                <span class="w-7 h-7 rounded-lg bg-white/5 group-hover:bg-white/10 flex items-center justify-center shrink-0 transition">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                </span>
                 {{ i18n.t('store.showMap') || 'View on Map' }}
               </button>
             }
@@ -550,15 +543,36 @@ import { resolveImageUrl } from '../../core/utils/image.utils';
 
         <!-- Col 5: Install / PWA -->
         <div class="md:col-span-2">
-          <h4 class="text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-5">{{ i18n.t('store.getApp') || 'Get the App' }}</h4>
+          <h4 class="text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-5">{{ i18n.t('store.getApp') }}</h4>
           <div class="space-y-3 text-sm">
-            @if (pwaInstall.canInstall()) {
-              <button (click)="pwaInstall.promptInstall()" class="flex items-center gap-2 bg-white/5 px-4 py-2.5 rounded-lg hover:bg-white/10 transition text-white text-xs font-semibold">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
-                {{ i18n.t('store.installApp') || 'Install App' }}
+            @if (pwaInstall.installed()) {
+              <div class="flex items-center gap-2 text-emerald-400 text-xs font-semibold">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                {{ i18n.t('store.alreadyInstalled') }}
+              </div>
+            } @else if (pwaInstall.canInstall()) {
+              <button (click)="pwaInstall.promptInstall()" class="flex items-center gap-2 bg-white/5 px-4 py-2.5 rounded-lg hover:bg-white/10 transition text-white text-xs font-semibold w-full">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                {{ i18n.t('store.androidInstall') }}
               </button>
+            } @else if (pwaInstall.isIOS()) {
+              <div class="bg-white/5 rounded-lg p-3 space-y-2">
+                <p class="text-xs font-semibold text-white">{{ i18n.t('store.iosInstallTitle') }}</p>
+                <ol class="text-xs text-gray-400 space-y-1.5 list-decimal list-inside">
+                  <li>{{ i18n.t('store.iosInstallStep1') }} <span class="inline-block align-middle">
+                    <svg class="w-4 h-4 inline" fill="currentColor" viewBox="0 0 24 24"><path d="M16 5l-1.42 1.42-1.59-1.59V16h-1.98V4.83L9.42 6.42 8 5l4-4 4 4zm4 5v11c0 1.1-.9 2-2 2H6c-1.11 0-2-.9-2-2V10c0-1.11.89-2 2-2h3v2H6v11h12V10h-3V8h3c1.1 0 2 .89 2 2z"/></svg>
+                  </span></li>
+                  <li>{{ i18n.t('store.iosInstallStep2') }}</li>
+                  <li>{{ i18n.t('store.iosInstallStep3') }}</li>
+                </ol>
+              </div>
+            } @else {
+              <div class="bg-white/5 rounded-lg p-3 space-y-2">
+                <p class="text-xs font-semibold text-white">{{ i18n.t('store.androidInstall') }}</p>
+                <p class="text-xs text-gray-400">{{ i18n.t('store.getAppDesc') }}</p>
+              </div>
             }
-            <p class="text-xs text-gray-600 leading-relaxed">{{ i18n.t('store.installDesc') || 'Install our app for a faster, native-like experience.' }}</p>
+            <p class="text-xs text-gray-600 leading-relaxed">{{ i18n.t('store.installDesc') }}</p>
           </div>
         </div>
       </div>
@@ -568,10 +582,18 @@ import { resolveImageUrl } from '../../core/utils/image.utils';
         <div class="max-w-7xl mx-auto px-4 py-5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-600">
           <span>&copy; {{ currentYear }} {{ settingsStore.storeName() }}. {{ i18n.t('store.allRightsReserved') || 'All rights reserved.' }}</span>
           @if (settingsStore.showPoweredBy()) {
-            <span class="flex items-center gap-1.5">
-              {{ i18n.t('store.poweredBy') }}
-              <svg class="w-3 h-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-            </span>
+            <a href="https://mobilytics.vercel.app" target="_blank" class="flex items-center gap-2 hover:text-gray-400 transition group">
+              <span>{{ i18n.t('store.poweredBy') }}</span>
+              <span class="flex items-center gap-1.5 bg-white/5 group-hover:bg-white/10 px-2.5 py-1 rounded-lg transition">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M2 20V10L7 4L12 10V20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M12 20V10L17 4L22 10V20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <rect x="16" y="14" width="2" height="6" rx="1" fill="currentColor" opacity="0.5"/>
+                  <rect x="19" y="11" width="2" height="9" rx="1" fill="currentColor" opacity="0.7"/>
+                </svg>
+                <span class="font-semibold text-gray-400 group-hover:text-white transition">Mobilytics</span>
+              </span>
+            </a>
           }
         </div>
       </div>
@@ -614,10 +636,12 @@ export class StorefrontShellComponent implements OnInit {
   private readonly api = inject(ApiService);
   private readonly router = inject(Router);
   private readonly sanitizer = inject(DomSanitizer);
+  readonly storeNav = inject(StoreNavService);
 
   readonly navTypes = signal<NavItemType[]>([]);
   private navCategories: Record<string, NavCategory[]> = {};
   private navBrands: Record<string, NavBrand[]> = {};
+  private navBrandsByCategory: Record<string, NavBrand[]> = {};
 
   readonly safeMapUrl = computed(() => {
     const url = this.settingsStore.mapUrl();
@@ -628,7 +652,6 @@ export class StorefrontShellComponent implements OnInit {
   expandedMobileSection: string | null = null;
   showMap = false;
   searchQuery = '';
-  newsletterEmail = '';
   currentYear = new Date().getFullYear();
 
   ngOnInit(): void {
@@ -637,6 +660,8 @@ export class StorefrontShellComponent implements OnInit {
         this.navTypes.set(nav.itemTypes);
         this.navCategories = nav.categoriesByType || {};
         this.navBrands = nav.featuredBrandsByType || {};
+        this.navBrandsByCategory = nav.brandsByCategory || {};
+        this.storeNav.setNavigation(nav);
       },
     });
   }
@@ -647,6 +672,10 @@ export class StorefrontShellComponent implements OnInit {
 
   getBrandsForType(typeId: string): NavBrand[] {
     return this.navBrands[typeId] || [];
+  }
+
+  getBrandsForCategory(categoryId: string): NavBrand[] {
+    return this.navBrandsByCategory[categoryId] || [];
   }
 
   resolveImg(url: string): string {
@@ -666,10 +695,4 @@ export class StorefrontShellComponent implements OnInit {
     }
   }
 
-  subscribeNewsletter(): void {
-    if (this.newsletterEmail.trim()) {
-      // Could integrate with a backend endpoint later
-      this.newsletterEmail = '';
-    }
-  }
 }

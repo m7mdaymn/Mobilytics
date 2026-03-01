@@ -56,6 +56,15 @@ public class InstallmentsController : BaseApiController
         return NoContent();
     }
 
+    [HttpPost("providers/{id:guid}/logo")]
+    public async Task<IActionResult> UploadProviderLogo(Guid id, IFormFile file, CancellationToken ct)
+    {
+        var tenantId = _tenantContext.TenantId!.Value;
+        using var stream = file.OpenReadStream();
+        var url = await _svc.UploadProviderLogoAsync(tenantId, id, stream, file.FileName, file.ContentType, ct);
+        return Ok(url);
+    }
+
     // ── Plans ──
 
     [HttpGet("plans")]

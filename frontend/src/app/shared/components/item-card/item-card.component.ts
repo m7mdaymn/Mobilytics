@@ -93,6 +93,9 @@ import { resolveImageUrl } from '../../../core/utils/image.utils';
               {{ item.oldPrice | currency: settingsStore.currency() : 'symbol-narrow' : '1.0-0' }}
             </span>
           }
+          @if (item.taxStatus === 'Taxable' && item.vatPercent) {
+            <span class="text-[10px] text-amber-600 font-medium">{{ i18n.t('store.exclVat') }}</span>
+          }
         </div>
 
         <!-- Installment Available Badge -->

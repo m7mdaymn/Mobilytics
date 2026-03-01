@@ -22,7 +22,7 @@ interface NavItem {
     <div class="flex min-h-screen bg-neutral-100">
       <!-- Sidebar -->
       <aside
-        class="fixed lg:static inset-y-0 left-0 z-50 w-[260px] bg-black text-white flex flex-col transition-transform duration-200"
+        class="fixed lg:static inset-y-0 start-0 z-50 w-[260px] bg-black text-white flex flex-col transition-transform duration-200"
         [class]="sidebarOpen() ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'">
 
         <!-- Brand -->
@@ -45,10 +45,10 @@ interface NavItem {
         <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-1">
           @for (item of navItems; track item.route) {
             <a [routerLink]="item.route"
-               routerLinkActive="bg-white/15 text-white border-l-2 border-white"
+               routerLinkActive="bg-white/15 text-white border-s-2 border-white"
                [routerLinkActiveOptions]="{ exact: item.route === '/superadmin' }"
                (click)="sidebarOpen.set(false)"
-               class="flex items-center gap-3 px-4 py-2.5 rounded-r-lg text-sm font-medium text-neutral-300 hover:bg-white/5 hover:text-white transition-colors">
+               class="flex items-center gap-3 px-4 py-2.5 rounded-e-lg text-sm font-medium text-neutral-300 hover:bg-white/5 hover:text-white transition-colors">
               <span class="text-lg">{{ item.icon }}</span>
               <span>{{ i18n.t(item.i18nKey) }}</span>
             </a>
@@ -79,7 +79,7 @@ interface NavItem {
       <div class="flex-1 flex flex-col min-w-0">
         <!-- Top Bar -->
         <header class="h-16 bg-white border-b border-neutral-200 flex items-center px-4 gap-4 shrink-0 sticky top-0 z-30">
-          <button (click)="sidebarOpen.set(true)" class="lg:hidden p-2 -ml-2 text-neutral-600 hover:text-black">
+          <button (click)="sidebarOpen.set(true)" class="lg:hidden p-2 -ms-2 text-neutral-600 hover:text-black">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
             </svg>

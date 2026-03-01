@@ -51,12 +51,12 @@ import { Tenant } from '../../../core/models/platform.models';
             <table class="w-full text-sm">
               <thead class="bg-slate-50 border-b border-slate-200">
                 <tr>
-                  <th class="px-6 py-3 text-left font-semibold text-slate-700">Tenant</th>
-                  <th class="px-6 py-3 text-left font-semibold text-slate-700">Slug</th>
+                  <th class="px-6 py-3 text-start font-semibold text-slate-700">Tenant</th>
+                  <th class="px-6 py-3 text-start font-semibold text-slate-700">Slug</th>
                   <th class="px-6 py-3 text-center font-semibold text-slate-700">Status</th>
                   <th class="px-6 py-3 text-center font-semibold text-slate-700">Subscription</th>
-                  <th class="px-6 py-3 text-left font-semibold text-slate-700">Created</th>
-                  <th class="px-6 py-3 text-right font-semibold text-slate-700">Actions</th>
+                  <th class="px-6 py-3 text-start font-semibold text-slate-700">Created</th>
+                  <th class="px-6 py-3 text-end font-semibold text-slate-700">Actions</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-100">
@@ -102,7 +102,7 @@ import { Tenant } from '../../../core/models/platform.models';
                     <td class="px-6 py-4 text-slate-500 text-sm">
                       {{ tenant.createdAt | date:'mediumDate' }}
                     </td>
-                    <td class="px-6 py-4 text-right">
+                    <td class="px-6 py-4 text-end">
                       <div class="flex items-center justify-end gap-2">
                         <a [routerLink]="['/superadmin/tenants', tenant.id]"
                            class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">

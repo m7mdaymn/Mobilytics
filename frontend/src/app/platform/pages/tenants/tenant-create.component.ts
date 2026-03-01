@@ -24,9 +24,9 @@ import { environment } from '../../../../environments/environment';
       </div>
 
       @if (result()) {
-        <!-- ═══════════════════════════════════════════════ -->
+        <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
         <!--  POST-CREATION SUMMARY                         -->
-        <!-- ═══════════════════════════════════════════════ -->
+        <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
         <div class="bg-white rounded-xl p-8 shadow-sm border border-slate-200 space-y-6">
           <!-- Success Header -->
           <div class="text-center space-y-3">
@@ -62,7 +62,7 @@ import { environment } from '../../../../environments/environment';
                 <div class="col-span-2"><span class="text-slate-500">Address:</span> {{ result()!.tenant.address }}</div>
               }
               @if (result()!.tenant.storeSettings?.logoUrl) {
-                <div class="col-span-2"><span class="text-slate-500">Logo:</span> <img [src]="result()!.tenant.storeSettings!.logoUrl" class="h-10 inline-block ml-2 rounded" /></div>
+                <div class="col-span-2"><span class="text-slate-500">Logo:</span> <img [src]="result()!.tenant.storeSettings!.logoUrl" class="h-10 inline-block ms-2 rounded" /></div>
               }
             </div>
           </div>
@@ -174,7 +174,7 @@ import { environment } from '../../../../environments/environment';
           </div>
         </div>
       } @else {
-        <!-- ═══ STEP INDICATORS ═══ -->
+        <!-- â•â•â• STEP INDICATORS â•â•â• -->
         <div class="flex items-center justify-between max-w-md mx-auto">
           @for (s of steps; track s.num) {
             <div class="flex flex-col items-center gap-1">
@@ -191,7 +191,7 @@ import { environment } from '../../../../environments/environment';
         </div>
 
         <div class="bg-white rounded-xl p-6 shadow-sm border border-slate-200 space-y-6">
-          <!-- ═══ STEP 1: STORE INFO ═══ -->
+          <!-- â•â•â• STEP 1: STORE INFO â•â•â• -->
           @if (step() === 1) {
             <h2 class="text-lg font-semibold text-slate-800">Store Information</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -234,14 +234,14 @@ import { environment } from '../../../../environments/environment';
               <div>
                 <label class="block text-sm font-medium text-slate-700 mb-1">Theme</label>
                 <select [(ngModel)]="form.themePresetId" class="w-full px-4 py-2.5 border border-slate-300 rounded-lg bg-white">
-                  <option [ngValue]="1">1 — Midnight Pro</option>
-                  <option [ngValue]="2">2 — Ocean Blue</option>
-                  <option [ngValue]="3">3 — Forest Green</option>
-                  <option [ngValue]="4">4 — Royal Purple</option>
-                  <option [ngValue]="5">5 — Sunset Orange</option>
-                  <option [ngValue]="6">6 — Slate Minimal</option>
-                  <option [ngValue]="7">7 — Rose Gold</option>
-                  <option [ngValue]="8">8 — Arctic Blue</option>
+                  <option [ngValue]="1">1 â€” Midnight Pro</option>
+                  <option [ngValue]="2">2 â€” Ocean Blue</option>
+                  <option [ngValue]="3">3 â€” Forest Green</option>
+                  <option [ngValue]="4">4 â€” Royal Purple</option>
+                  <option [ngValue]="5">5 â€” Sunset Orange</option>
+                  <option [ngValue]="6">6 â€” Slate Minimal</option>
+                  <option [ngValue]="7">7 â€” Rose Gold</option>
+                  <option [ngValue]="8">8 â€” Arctic Blue</option>
                 </select>
               </div>
               <div>
@@ -277,7 +277,7 @@ import { environment } from '../../../../environments/environment';
             </div>
           }
 
-          <!-- ═══ STEP 2: OWNER INFO ═══ -->
+          <!-- â•â•â• STEP 2: OWNER INFO â•â•â• -->
           @if (step() === 2) {
             <h2 class="text-lg font-semibold text-slate-800">Owner Information</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -312,7 +312,7 @@ import { environment } from '../../../../environments/environment';
             </div>
           }
 
-          <!-- ═══ STEP 3: PLAN & PAYMENT ═══ -->
+          <!-- â•â•â• STEP 3: PLAN & PAYMENT â•â•â• -->
           @if (step() === 3) {
             <h2 class="text-lg font-semibold text-slate-800">Plan & Payment</h2>
             @if (loadingPlans()) {
@@ -323,7 +323,7 @@ import { environment } from '../../../../environments/environment';
                 @for (plan of plans(); track plan.id) {
                   <button
                     (click)="selectPlan(plan)"
-                    class="p-4 border-2 rounded-xl text-left transition-all"
+                    class="p-4 border-2 rounded-xl text-start transition-all"
                     [class]="form.planId === plan.id ? 'border-indigo-600 bg-indigo-50' : 'border-slate-200 hover:border-slate-300'"
                   >
                     <div class="font-semibold text-slate-800">{{ plan.name }}</div>
@@ -355,11 +355,11 @@ import { environment } from '../../../../environments/environment';
                 <div>
                   <label class="block text-sm font-medium text-slate-700 mb-1">Subscription Paid
                     @if (calculatedSubscription() !== form.subscriptionAmountPaid) {
-                      <button (click)="resetSubscriptionAmount()" class="text-xs text-indigo-600 hover:text-indigo-800 ml-2">(reset to {{ calculatedSubscription() | number:'1.0-0' }})</button>
+                      <button (click)="resetSubscriptionAmount()" class="text-xs text-indigo-600 hover:text-indigo-800 ms-2">(reset to {{ calculatedSubscription() | number:'1.0-0' }})</button>
                     }
                   </label>
                   <input type="number" [(ngModel)]="form.subscriptionAmountPaid" min="0" class="w-full px-4 py-2.5 border border-slate-300 rounded-lg" />
-                  <p class="text-xs text-slate-400 mt-1">Auto: {{ calculatedSubscription() | number:'1.0-0' }} EGP ({{ selectedPlanPrice() | number:'1.0-0' }} × {{ form.durationMonths }} mo)</p>
+                  <p class="text-xs text-slate-400 mt-1">Auto: {{ calculatedSubscription() | number:'1.0-0' }} EGP ({{ selectedPlanPrice() | number:'1.0-0' }} Ã— {{ form.durationMonths }} mo)</p>
                 </div>
                 <div>
                   <label class="block text-sm font-medium text-slate-700 mb-1">Discount</label>
@@ -395,7 +395,7 @@ import { environment } from '../../../../environments/environment';
             }
           }
 
-          <!-- ═══ STEP 4: REVIEW ═══ -->
+          <!-- â•â•â• STEP 4: REVIEW â•â•â• -->
           @if (step() === 4) {
             <h2 class="text-lg font-semibold text-slate-800">Review & Confirm</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
@@ -406,7 +406,7 @@ import { environment } from '../../../../environments/environment';
                 @if (form.storePhone) { <div><span class="text-slate-500">Phone:</span> {{ form.storePhone }}</div> }
                 @if (form.storeWhatsApp) { <div><span class="text-slate-500">WhatsApp:</span> {{ form.storeWhatsApp }}</div> }
                 @if (form.address) { <div><span class="text-slate-500">Address:</span> {{ form.address }}</div> }
-                @if (form.logoUrl) { <div><span class="text-slate-500">Logo:</span> <img [src]="form.logoUrl" class="h-8 inline-block ml-1 rounded" /></div> }
+                @if (form.logoUrl) { <div><span class="text-slate-500">Logo:</span> <img [src]="form.logoUrl" class="h-8 inline-block ms-1 rounded" /></div> }
                 @if (form.mapUrl) { <div><span class="text-slate-500">Maps:</span> <span class="text-indigo-600 text-xs break-all">{{ form.mapUrl }}</span></div> }
                 @if (hasSocialLinks()) { <div><span class="text-slate-500">Social:</span> {{ socialLinksSummary() }}</div> }
                 <div><span class="text-slate-500">Theme:</span> Preset #{{ form.themePresetId }}</div>
@@ -560,7 +560,7 @@ export class TenantCreateComponent implements OnInit {
   }
 
   selectedPlanName(): string {
-    return this.plans().find(p => p.id === this.form.planId)?.name ?? '—';
+    return this.plans().find(p => p.id === this.form.planId)?.name ?? 'â€”';
   }
 
   normalizeSlug(): void {
@@ -649,7 +649,7 @@ export class TenantCreateComponent implements OnInit {
     });
   }
 
-  // ─── Invoice PDF (print-based) ───────────────────────
+  // â”€â”€â”€ Invoice PDF (print-based) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   printInvoice(): void {
     const inv = this.result()?.invoice;
@@ -747,7 +747,7 @@ export class TenantCreateComponent implements OnInit {
     }
   }
 
-  // ─── WhatsApp Sharing ────────────────────────────────
+  // â”€â”€â”€ WhatsApp Sharing â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   sendInvoiceWhatsApp(): void {
     const inv = this.result()?.invoice;
@@ -759,7 +759,7 @@ export class TenantCreateComponent implements OnInit {
       `🏪 Store: ${tenant.name} (${tenant.slug})\n` +
       `💰 Total: ${inv.total.toLocaleString()} EGP\n` +
       `📋 Type: ${inv.invoiceType}\n` +
-      `💳 Payment: ${inv.paymentMethod} — ${inv.paymentStatus}\n` +
+      `💳 Payment: ${inv.paymentMethod} \u2013 ${inv.paymentStatus}\n` +
       `📅 Date: ${new Date(inv.createdAt).toLocaleDateString()}\n` +
       `\nActivation Fee: ${inv.activationFee.toLocaleString()} EGP\n` +
       `Subscription: ${inv.subscriptionAmount.toLocaleString()} EGP\n` +
@@ -783,7 +783,7 @@ export class TenantCreateComponent implements OnInit {
       `🔗 Store URL: ${storeUrl}\n` +
       `🔑 Admin Panel: ${adminUrl}\n\n` +
       `📧 Email: ${this.form.ownerEmail}\n` +
-      `🔒 Password: ${this.form.ownerPassword}\n\n` +
+      `🔐 Password: ${this.form.ownerPassword}\n\n` +
       `Please change your password after first login.`
     );
     const phone = this.form.ownerWhatsApp || this.form.ownerPhone || '';

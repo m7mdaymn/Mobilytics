@@ -1,9 +1,10 @@
-import { Injectable, signal, inject } from '@angular/core';
+import { Injectable, signal, inject, computed } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
 
 /**
  * Captures the `beforeinstallprompt` event and exposes a method
  * to trigger the native PWA install dialog.
+ * Also provides platform detection for iOS "Add to Home Screen" instructions.
  */
 @Injectable({ providedIn: 'root' })
 export class PwaInstallService {
@@ -17,8 +18,20 @@ export class PwaInstallService {
   /** True after the user accepted the install prompt */
   readonly installed = signal(false);
 
+  /** Platform detection */
+  readonly isIOS = signal(false);
+  readonly isAndroid = signal(false);
+
+  /** True if the section should be shown (always true for PWA-capable pages) */
+  readonly showInstallSection = computed(() => !this.installed());
+
   constructor() {
     if (!this.window) return;
+
+    // Detect platform
+    const ua = this.window.navigator.userAgent.toLowerCase();
+    this.isIOS.set(/iphone|ipad|ipod/.test(ua));
+    this.isAndroid.set(/android/.test(ua));
 
     this.window.addEventListener('beforeinstallprompt', (e: Event) => {
       e.preventDefault();
@@ -34,6 +47,10 @@ export class PwaInstallService {
 
     // Check if already installed (standalone mode)
     if (this.window.matchMedia?.('(display-mode: standalone)').matches) {
+      this.installed.set(true);
+    }
+    // iOS standalone check
+    if ((this.window.navigator as any).standalone === true) {
       this.installed.set(true);
     }
   }

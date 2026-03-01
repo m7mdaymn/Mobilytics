@@ -71,7 +71,7 @@ import { Category } from '../../../core/models/item.models';
               <label class="flex items-center gap-2 p-2 rounded-lg border hover:bg-gray-50 cursor-pointer">
                 <input type="checkbox" [(ngModel)]="form.supportsIMEI" class="w-4 h-4 rounded accent-blue-600" />
                 <div>
-                  <span class="text-sm font-medium">🔢 IMEI</span>
+                  <span class="text-sm font-medium">📢 IMEI</span>
                   <p class="text-xs text-gray-400">Has IMEI number field</p>
                 </div>
               </label>
@@ -85,7 +85,7 @@ import { Category } from '../../../core/models/item.models';
               <label class="flex items-center gap-2 p-2 rounded-lg border hover:bg-gray-50 cursor-pointer">
                 <input type="checkbox" [(ngModel)]="form.supportsBatteryHealth" class="w-4 h-4 rounded accent-blue-600" />
                 <div>
-                  <span class="text-sm font-medium">🔋 Battery</span>
+                  <span class="text-sm font-medium">📋 Battery</span>
                   <p class="text-xs text-gray-400">Battery health tracking</p>
                 </div>
               </label>
@@ -120,21 +120,21 @@ import { Category } from '../../../core/models/item.models';
           </thead>
           <tbody class="divide-y">
             @for (cat of sortedCategories(); track cat.id) {
-              <tr class="hover:bg-gray-50" [class.pl-8]="cat.parentId">
+              <tr class="hover:bg-gray-50" [class.ps-8]="cat.parentId">
                 <td class="px-4 py-3 font-medium">
-                  @if (cat.parentId) { <span class="text-gray-300 me-2">└</span> }
+                  @if (cat.parentId) { <span class="text-gray-300 me-2">â””</span> }
                   {{ cat.name }}
                 </td>
                 <td class="px-4 py-3 text-gray-500">{{ cat.slug }}</td>
                 <td class="px-4 py-3 text-gray-500">{{ getParentName(cat.parentId) }}</td>
                 <td class="px-4 py-3 text-center">{{ cat.sortOrder }}</td>
-                <td class="px-4 py-3 text-center">{{ cat.isVisibleInNav !== false ? '✓' : '—' }}</td>
+                <td class="px-4 py-3 text-center">{{ cat.isVisibleInNav !== false ? 'âœ“' : 'â€”' }}</td>
                 <td class="px-4 py-3 text-center text-xs space-x-1">
                   @if (cat.isDevice) { <span title="Device">📱</span> }
                   @if (cat.isStockItem) { <span title="Stock">📦</span> }
-                  @if (cat.supportsIMEI) { <span title="IMEI">🔢</span> }
+                  @if (cat.supportsIMEI) { <span title="IMEI">📢</span> }
                   @if (cat.supportsSerial) { <span title="Serial">#️⃣</span> }
-                  @if (cat.supportsBatteryHealth) { <span title="Battery">🔋</span> }
+                  @if (cat.supportsBatteryHealth) { <span title="Battery">📋</span> }
                   @if (cat.supportsWarranty) { <span title="Warranty">🛡️</span> }
                 </td>
                 <td class="px-4 py-3 text-end space-x-2">
@@ -192,8 +192,8 @@ export class AdminCategoriesComponent implements OnInit {
   }
 
   getParentName(parentId?: string | null): string {
-    if (!parentId) return '—';
-    return this.categories().find(c => c.id === parentId)?.name || '—';
+    if (!parentId) return 'â€”';
+    return this.categories().find(c => c.id === parentId)?.name || 'â€”';
   }
 
   openForm(): void {

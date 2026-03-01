@@ -101,7 +101,7 @@ import { debounceTime, Subject } from 'rxjs';
                   class="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[color:var(--color-primary)]/20 outline-none" />
               </div>
               <!-- Visual slider -->
-              <input type="range" [min]="0" [max]="50000" [step]="500" [(ngModel)]="maxPriceSlider" (ngModelChange)="onPriceSliderChange()"
+              <input type="range" [min]="0" [max]="100000" [step]="500" [(ngModel)]="maxPriceSlider" (ngModelChange)="onPriceSliderChange()"
                 class="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-[color:var(--color-primary)]" />
               <div class="flex justify-between text-[10px] text-gray-400 mt-1">
                 <span>0</span>

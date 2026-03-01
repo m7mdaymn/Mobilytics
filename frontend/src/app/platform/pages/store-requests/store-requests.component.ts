@@ -57,12 +57,12 @@ import { StoreRequest, RegistrationStatus } from '../../../core/models/platform.
             <table class="w-full text-sm">
               <thead class="bg-slate-50 border-b border-slate-200">
                 <tr>
-                  <th class="px-5 py-3 text-left font-semibold text-slate-700">Store</th>
-                  <th class="px-5 py-3 text-left font-semibold text-slate-700">Owner</th>
-                  <th class="px-5 py-3 text-left font-semibold text-slate-700">Contact</th>
+                  <th class="px-5 py-3 text-start font-semibold text-slate-700">Store</th>
+                  <th class="px-5 py-3 text-start font-semibold text-slate-700">Owner</th>
+                  <th class="px-5 py-3 text-start font-semibold text-slate-700">Contact</th>
                   <th class="px-5 py-3 text-center font-semibold text-slate-700">Status</th>
-                  <th class="px-5 py-3 text-left font-semibold text-slate-700">Submitted</th>
-                  <th class="px-5 py-3 text-right font-semibold text-slate-700">Actions</th>
+                  <th class="px-5 py-3 text-start font-semibold text-slate-700">Submitted</th>
+                  <th class="px-5 py-3 text-end font-semibold text-slate-700">Actions</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-100">
@@ -71,7 +71,7 @@ import { StoreRequest, RegistrationStatus } from '../../../core/models/platform.
                     <td class="px-5 py-4">
                       <div>
                         <p class="font-medium text-slate-800">{{ req.storeName }}</p>
-                        <p class="text-xs text-slate-500">{{ req.category }} · {{ req.location }}</p>
+                        <p class="text-xs text-slate-500">{{ req.category }} Â· {{ req.location }}</p>
                       </div>
                     </td>
                     <td class="px-5 py-4">
@@ -80,7 +80,7 @@ import { StoreRequest, RegistrationStatus } from '../../../core/models/platform.
                     </td>
                     <td class="px-5 py-4">
                       <p class="text-slate-800">{{ req.phone }}</p>
-                      <p class="text-xs text-slate-500">{{ req.numberOfStores }} store(s) · {{ req.source || 'Direct' }}</p>
+                      <p class="text-xs text-slate-500">{{ req.numberOfStores }} store(s) Â· {{ req.source || 'Direct' }}</p>
                     </td>
                     <td class="px-5 py-4 text-center">
                       <span class="text-xs px-2.5 py-1 rounded-full font-medium"
@@ -91,26 +91,26 @@ import { StoreRequest, RegistrationStatus } from '../../../core/models/platform.
                     <td class="px-5 py-4 text-slate-500 text-sm">
                       {{ req.submittedAt | date:'mediumDate' }}
                     </td>
-                    <td class="px-5 py-4 text-right" (click)="$event.stopPropagation()">
+                    <td class="px-5 py-4 text-end" (click)="$event.stopPropagation()">
                       <div class="flex items-center justify-end gap-1">
                         @if (req.status === 'PendingApproval' || req.status === 'OnHold') {
                           <button (click)="openActionModal(req, 'Approved')"
                                   class="text-emerald-600 hover:bg-emerald-50 px-2 py-1 rounded-lg text-xs font-medium transition-colors">
-                            ✓ Approve
+                            âœ“ Approve
                           </button>
                           <button (click)="openActionModal(req, 'Rejected')"
                                   class="text-red-600 hover:bg-red-50 px-2 py-1 rounded-lg text-xs font-medium transition-colors">
-                            ✗ Reject
+                            âœ— Reject
                           </button>
                           @if (req.status !== 'OnHold') {
                             <button (click)="openActionModal(req, 'OnHold')"
                                     class="text-slate-600 hover:bg-slate-100 px-2 py-1 rounded-lg text-xs font-medium transition-colors">
-                              ⏸ Hold
+                              â¸ Hold
                             </button>
                           }
                         }
                         @if (req.status === 'Approved') {
-                          <span class="text-xs text-emerald-600">✓ {{ req.approvedAt | date:'shortDate' }}</span>
+                          <span class="text-xs text-emerald-600">âœ“ {{ req.approvedAt | date:'shortDate' }}</span>
                         }
                         @if (req.status === 'Rejected') {
                           <span class="text-xs text-red-500 max-w-[120px] truncate" [title]="req.rejectionReason || 'Rejected'">{{ req.rejectionReason || 'Rejected' }}</span>
@@ -137,7 +137,7 @@ import { StoreRequest, RegistrationStatus } from '../../../core/models/platform.
             <div class="p-6 space-y-4">
               <h2 class="text-lg font-bold text-slate-800">
                 {{ actionStatus === 'Approved' ? 'Approve' : actionStatus === 'Rejected' ? 'Reject' : 'Put on Hold' }}
-                — {{ actionReq()!.storeName }}
+                â€” {{ actionReq()!.storeName }}
               </h2>
               <p class="text-sm text-slate-500">
                 {{ actionStatus === 'Approved' ? 'Approve this store request. The owner will be notified.' :
@@ -183,7 +183,7 @@ import { StoreRequest, RegistrationStatus } from '../../../core/models/platform.
                   {{ statusLabel(selected()!.status) }}
                 </span>
               </div>
-              <button (click)="selected.set(null)" class="text-slate-400 hover:text-slate-600 text-xl p-1">✕</button>
+              <button (click)="selected.set(null)" class="text-slate-400 hover:text-slate-600 text-xl p-1">âœ•</button>
             </div>
             <div class="p-6 space-y-5">
               <!-- Store Info -->
@@ -216,13 +216,13 @@ import { StoreRequest, RegistrationStatus } from '../../../core/models/platform.
                   <div class="flex items-center gap-2">
                     <span class="w-2 h-2 bg-slate-400 rounded-full"></span>
                     <span class="text-slate-500">Submitted</span>
-                    <span class="ml-auto text-slate-700">{{ selected()!.submittedAt | date:'medium' }}</span>
+                    <span class="ms-auto text-slate-700">{{ selected()!.submittedAt | date:'medium' }}</span>
                   </div>
                   @if (selected()!.approvedAt) {
                     <div class="flex items-center gap-2">
                       <span class="w-2 h-2 bg-emerald-500 rounded-full"></span>
                       <span class="text-slate-500">Approved</span>
-                      <span class="ml-auto text-slate-700">{{ selected()!.approvedAt | date:'medium' }}</span>
+                      <span class="ms-auto text-slate-700">{{ selected()!.approvedAt | date:'medium' }}</span>
                     </div>
                   }
                 </div>
@@ -246,11 +246,11 @@ import { StoreRequest, RegistrationStatus } from '../../../core/models/platform.
                 <div class="border-t border-slate-200 pt-4 flex gap-3">
                   <button (click)="approveFromDrawer()"
                     class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 rounded-lg text-sm font-medium transition-colors">
-                    ✓ Approve
+                    âœ“ Approve
                   </button>
                   <button (click)="rejectFromDrawer()"
                     class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2.5 rounded-lg text-sm font-medium transition-colors">
-                    ✗ Reject
+                    âœ— Reject
                   </button>
                 </div>
               }

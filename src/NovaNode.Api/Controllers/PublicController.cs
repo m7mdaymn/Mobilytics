@@ -225,22 +225,38 @@ public class PublicController : BaseApiController
             Id = c.Id, Slug = c.Slug, Name = c.Name, DisplayOrder = c.DisplayOrder
         }).ToList();
 
-        // CategoriesByType: map each top-level category slug to its children
+        // CategoriesByType: map each top-level category ID to its children
         var categoriesByType = new Dictionary<string, List<NavCategoryDto>>();
         var featuredBrandsByType = new Dictionary<string, List<NavBrandDto>>();
         foreach (var topCat in cats.Where(c => c.ParentId == null))
         {
-            categoriesByType[topCat.Slug] = cats.Where(ch => ch.ParentId == topCat.Id)
+            categoriesByType[topCat.Id.ToString()] = cats.Where(ch => ch.ParentId == topCat.Id)
                 .Select(ch => new NavCategoryDto { Id = ch.Id, Slug = ch.Slug, Name = ch.Name, ImageUrl = ch.ImageUrl })
                 .ToList();
 
             var brandIds = await _db.Items
                 .Where(i => i.TenantId == tenantId && i.CategoryId == topCat.Id && i.BrandId != null)
                 .Select(i => i.BrandId!.Value).Distinct().Take(8).ToListAsync(ct);
-            featuredBrandsByType[topCat.Slug] = brands
+            featuredBrandsByType[topCat.Id.ToString()] = brands
                 .Where(b => brandIds.Contains(b.Id))
                 .Select(b => new NavBrandDto { Id = b.Id, Slug = b.Slug, Name = b.Name, LogoUrl = b.LogoUrl })
                 .ToList();
+        }
+
+        // BrandsByCategory: for each category (all levels), find brands that have items in it
+        var brandsByCategory = new Dictionary<string, List<NavBrandDto>>();
+        foreach (var cat in cats)
+        {
+            var catBrandIds = await _db.Items
+                .Where(i => i.TenantId == tenantId && i.CategoryId == cat.Id && i.BrandId != null)
+                .Select(i => i.BrandId!.Value).Distinct().ToListAsync(ct);
+            if (catBrandIds.Any())
+            {
+                brandsByCategory[cat.Id.ToString()] = brands
+                    .Where(b => catBrandIds.Contains(b.Id))
+                    .Select(b => new NavBrandDto { Id = b.Id, Slug = b.Slug, Name = b.Name, LogoUrl = b.LogoUrl })
+                    .ToList();
+            }
         }
 
         return new NavigationDto
@@ -250,6 +266,7 @@ public class PublicController : BaseApiController
             Brands = brandList,
             CategoriesByType = categoriesByType,
             FeaturedBrandsByType = featuredBrandsByType,
+            BrandsByCategory = brandsByCategory,
             Flags = new NavigationFlags { ShowLastPiece = await _db.Items.AnyAsync(i => i.TenantId == tenantId && i.Quantity == 1 && i.Status == Domain.Enums.ItemStatus.Available, ct) }
         };
     }

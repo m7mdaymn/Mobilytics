@@ -7,6 +7,7 @@ import { SettingsStore } from '../../../core/stores/settings.store';
 import { TenantService } from '../../../core/services/tenant.service';
 import { DashboardData } from '../../../core/models/item.models';
 import { I18nService } from '../../../core/services/i18n.service';
+import { AuthService } from '../../../core/services/auth.service';
 
 interface SubscriptionInfo {
   planName?: string;
@@ -51,20 +52,22 @@ interface SubscriptionInfo {
 
         <!-- KPI Hero Cards -->
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <!-- Total Sales -->
+          <!-- Total Sales (restricted) -->
+          @if (authService.hasPermission('reports.view')) {
           <div class="relative overflow-hidden bg-gradient-to-br from-gray-900 to-gray-700 rounded-2xl p-5 text-white">
             <div class="absolute top-0 end-0 opacity-10 text-7xl font-black pe-2 pt-1">$</div>
             <p class="text-xs font-medium text-gray-300 uppercase tracking-wider">{{ i18n.t('dashboard.salesToday') }}</p>
             <p class="text-2xl font-bold mt-1">{{ data()?.totalSales | currency: settingsStore.currency() : 'symbol-narrow' : '1.0-0' }}</p>
           </div>
 
-          <!-- Net Profit -->
+          <!-- Net Profit (restricted) -->
           <div class="relative overflow-hidden rounded-2xl p-5 border border-gray-200 bg-white">
             <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ i18n.t('dashboard.netProfit') }}</p>
             <p class="text-2xl font-bold mt-1" [class]="(data()?.netAfterExpenses || 0) >= 0 ? 'text-emerald-600' : 'text-red-600'">
               {{ data()?.netAfterExpenses | currency: settingsStore.currency() : 'symbol-narrow' : '1.0-0' }}
             </p>
           </div>
+          }
 
           <!-- Invoices -->
           <div class="relative overflow-hidden rounded-2xl p-5 border border-gray-200 bg-white">
@@ -75,7 +78,8 @@ interface SubscriptionInfo {
             <p class="text-2xl font-bold text-gray-900 mt-1">{{ data()?.invoicesCount || 0 }}</p>
           </div>
 
-          <!-- Expenses -->
+          <!-- Expenses (restricted) -->
+          @if (authService.hasPermission('reports.view')) {
           <div class="relative overflow-hidden rounded-2xl p-5 border border-gray-200 bg-white">
             <div class="absolute top-3 end-4 w-10 h-10 bg-red-50 rounded-xl flex items-center justify-center">
               <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2z"/></svg>
@@ -83,6 +87,7 @@ interface SubscriptionInfo {
             <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ i18n.t('dashboard.expenses') }}</p>
             <p class="text-2xl font-bold text-red-600 mt-1">{{ data()?.totalExpenses | currency: settingsStore.currency() : 'symbol-narrow' : '1.0-0' }}</p>
           </div>
+          }
 
           <!-- Devices Sold -->
           <div class="rounded-2xl p-5 border border-gray-200 bg-white">
@@ -154,11 +159,12 @@ interface SubscriptionInfo {
 
         <!-- Charts Row -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <!-- Sales Trend -->
+          <!-- Sales Trend (restricted) -->
+          @if (authService.hasPermission('reports.view')) {
           <div class="bg-white rounded-2xl p-5 border border-gray-200">
             <h3 class="font-semibold text-gray-900 mb-4">{{ i18n.t('dashboard.salesTrend') }}</h3>
             <div class="h-48 flex items-end gap-1">
-              @if (data()?.salesTrend?.length) {
+              @if (data()?.salesTrend?.some(p => p.value > 0)) {
                 @for (point of data()!.salesTrend; track point.date) {
                   <div class="flex-1 flex flex-col items-center gap-1 group relative">
                     <div class="absolute -top-8 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap z-10">
@@ -166,7 +172,7 @@ interface SubscriptionInfo {
                     </div>
                     <div
                       class="w-full bg-gradient-to-t from-gray-900 to-gray-600 rounded-t transition-all hover:from-black hover:to-gray-500"
-                      [style.height.%]="getBarHeight(point.value, maxSales())">
+                      [style.height.px]="getBarHeight(point.value, maxSales())">
                     </div>
                     <span class="text-[10px] text-gray-400">{{ formatDate(point.date) }}</span>
                   </div>
@@ -176,12 +182,13 @@ interface SubscriptionInfo {
               }
             </div>
           </div>
+          }
 
           <!-- Leads Trend -->
           <div class="bg-white rounded-2xl p-5 border border-gray-200">
             <h3 class="font-semibold text-gray-900 mb-4">{{ i18n.t('dashboard.leadsTrend') }}</h3>
             <div class="h-48 flex items-end gap-1">
-              @if (data()?.leadsTrend?.length) {
+              @if (data()?.leadsTrend?.some(p => p.value > 0)) {
                 @for (point of data()!.leadsTrend; track point.date) {
                   <div class="flex-1 flex flex-col items-center gap-1 group relative">
                     <div class="absolute -top-8 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap z-10">
@@ -189,7 +196,7 @@ interface SubscriptionInfo {
                     </div>
                     <div
                       class="w-full bg-gradient-to-t from-blue-500 to-blue-300 rounded-t transition-all hover:from-blue-600 hover:to-blue-400"
-                      [style.height.%]="getBarHeight(point.value, maxLeads())">
+                      [style.height.px]="getBarHeight(point.value, maxLeads())">
                     </div>
                     <span class="text-[10px] text-gray-400">{{ formatDate(point.date) }}</span>
                   </div>
@@ -201,8 +208,8 @@ interface SubscriptionInfo {
           </div>
         </div>
 
-        <!-- Recent Invoices -->
-        @if (data()?.recentInvoices?.length) {
+        <!-- Recent Invoices (restricted) -->
+        @if (authService.hasPermission('reports.view') && data()?.recentInvoices?.length) {
           <div class="bg-white rounded-2xl border border-gray-200 overflow-hidden">
             <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
               <h3 class="font-semibold text-gray-900">{{ i18n.t('dashboard.recentInvoices') }}</h3>
@@ -314,6 +321,7 @@ export class DashboardComponent implements OnInit {
   readonly settingsStore = inject(SettingsStore);
   readonly tenantService = inject(TenantService);
   readonly i18n = inject(I18nService);
+  readonly authService = inject(AuthService);
 
   readonly data = signal<DashboardData | null>(null);
   readonly subscription = signal<SubscriptionInfo | null>(null);
@@ -332,9 +340,29 @@ export class DashboardComponent implements OnInit {
     this.api.get<DashboardData>('/Reports/dashboard', {
       range: this.dateRange,
     }).subscribe({
-      next: d => { this.data.set(d); this.loading.set(false); },
+      next: d => {
+        const days = this.dateRange === 'today' ? 1 : this.dateRange === '7d' ? 7 : 30;
+        if (d.salesTrend) d.salesTrend = this.fillDateGaps(d.salesTrend, days);
+        if (d.leadsTrend) d.leadsTrend = this.fillDateGaps(d.leadsTrend, days);
+        this.data.set(d);
+        this.loading.set(false);
+      },
       error: () => this.loading.set(false),
     });
+  }
+
+  private fillDateGaps(trend: { date: string; value: number }[], days: number): { date: string; value: number }[] {
+    const map = new Map(trend.map(p => [p.date, p.value]));
+    const result: { date: string; value: number }[] = [];
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    for (let i = days - 1; i >= 0; i--) {
+      const d = new Date(today);
+      d.setDate(today.getDate() - i);
+      const key = d.toISOString().split('T')[0];
+      result.push({ date: key, value: map.get(key) ?? 0 });
+    }
+    return result;
   }
 
   maxSales(): number {
@@ -350,7 +378,7 @@ export class DashboardComponent implements OnInit {
   }
 
   getBarHeight(value: number, max: number): number {
-    return Math.max(5, (value / max) * 100);
+    return Math.max(4, Math.round((value / max) * 148));
   }
 
   formatDate(dateStr: string): string {

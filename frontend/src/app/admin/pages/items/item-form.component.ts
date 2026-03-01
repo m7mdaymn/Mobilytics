@@ -10,7 +10,8 @@ import { I18nService } from '../../../core/services/i18n.service';
 import { Brand, Category, CustomFieldDefinition, ItemImage } from '../../../core/models/item.models';
 import { resolveImageUrl } from '../../../core/utils/image.utils';
 
-interface InstallmentProviderRef { id: string; name: string; }
+interface InstallmentProviderRef { id: string; name: string; logoUrl: string | null; }
+interface InstallmentPlanRef { id: string; providerId: string; months: number; downPaymentPercent: number | null; adminFeesPercent: number | null; interestRate: number | null; downPayment: number; adminFees: number; isActive: boolean; }
 interface ChecklistEntry { key: string; label: string; passed: boolean; notes: string; }
 
 const STORAGE_OPTIONS = ['32GB', '64GB', '128GB', '256GB', '512GB', '1TB', '2TB'];
@@ -119,7 +120,7 @@ const COLOR_OPTIONS = [
             <label class="block text-sm font-medium text-gray-700 mb-1">{{ i18n.t('items.color') }}</label>
             <div class="flex flex-wrap gap-1.5">
               @for (c of colorOptions; track c.name) {
-                <button type="button" (click)="form.color = form.color === c.name ? '' : c.name"
+                <button type="button" (click)="selectColor(c.name)"
                   class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border transition-all"
                   [class]="form.color === c.name
                     ? 'border-gray-900 bg-gray-900 text-white ring-1 ring-gray-900/20'
@@ -129,7 +130,7 @@ const COLOR_OPTIONS = [
                 </button>
               }
             </div>
-            <input [(ngModel)]="form.color" class="mt-2 w-full max-w-xs px-3 py-1.5 border border-gray-200 rounded-lg text-xs bg-gray-50 outline-none" [placeholder]="i18n.t('items.customColor')" />
+            <input [(ngModel)]="form.color" (ngModelChange)="syncSpecEntry('Color', $event)" class="mt-2 w-full max-w-xs px-3 py-1.5 border border-gray-200 rounded-lg text-xs bg-gray-50 outline-none" [placeholder]="i18n.t('items.customColor')" />
           </div>
 
           <!-- Storage -->
@@ -137,7 +138,7 @@ const COLOR_OPTIONS = [
             <label class="block text-sm font-medium text-gray-700 mb-1">{{ i18n.t('items.storage') }}</label>
             <div class="flex flex-wrap gap-2">
               @for (s of storageOptions; track s) {
-                <button type="button" (click)="form.storage = form.storage === s ? '' : s"
+                <button type="button" (click)="selectStorage(s)"
                   class="px-3.5 py-1.5 rounded-xl text-sm font-medium border transition-all"
                   [class]="form.storage === s
                     ? 'border-indigo-500 bg-indigo-50 text-indigo-700 ring-1 ring-indigo-500/20'
@@ -146,7 +147,7 @@ const COLOR_OPTIONS = [
                 </button>
               }
             </div>
-            <input [(ngModel)]="form.storage" class="mt-2 w-full max-w-xs px-3 py-1.5 border border-gray-200 rounded-lg text-xs bg-gray-50 outline-none" [placeholder]="i18n.t('items.customStorage')" />
+            <input [(ngModel)]="form.storage" (ngModelChange)="syncSpecEntry('Storage', $event)" class="mt-2 w-full max-w-xs px-3 py-1.5 border border-gray-200 rounded-lg text-xs bg-gray-50 outline-none" [placeholder]="i18n.t('items.customStorage')" />
           </div>
 
           <!-- RAM -->
@@ -154,7 +155,7 @@ const COLOR_OPTIONS = [
             <label class="block text-sm font-medium text-gray-700 mb-1">{{ i18n.t('items.ram') }}</label>
             <div class="flex flex-wrap gap-2">
               @for (r of ramOptions; track r) {
-                <button type="button" (click)="form.ram = form.ram === r ? '' : r"
+                <button type="button" (click)="selectRam(r)"
                   class="px-3.5 py-1.5 rounded-xl text-sm font-medium border transition-all"
                   [class]="form.ram === r
                     ? 'border-emerald-500 bg-emerald-50 text-emerald-700 ring-1 ring-emerald-500/20'
@@ -163,7 +164,7 @@ const COLOR_OPTIONS = [
                 </button>
               }
             </div>
-            <input [(ngModel)]="form.ram" class="mt-2 w-full max-w-xs px-3 py-1.5 border border-gray-200 rounded-lg text-xs bg-gray-50 outline-none" [placeholder]="i18n.t('items.customRam')" />
+            <input [(ngModel)]="form.ram" (ngModelChange)="syncSpecEntry('RAM', $event)" class="mt-2 w-full max-w-xs px-3 py-1.5 border border-gray-200 rounded-lg text-xs bg-gray-50 outline-none" [placeholder]="i18n.t('items.customRam')" />
           </div>
         </section>
 
@@ -307,15 +308,53 @@ const COLOR_OPTIONS = [
               <div class="flex flex-wrap gap-2 mt-1">
                 @for (pv of installmentProviders(); track pv.id) {
                   <button type="button" (click)="toggleProvider(pv.id)"
-                    class="px-3 py-1.5 rounded-lg text-xs font-medium border transition-all"
+                    class="px-3 py-1.5 rounded-lg text-xs font-medium border transition-all flex items-center gap-1.5"
                     [class]="selectedProviderIds.has(pv.id)
                       ? 'border-indigo-500 bg-indigo-50 text-indigo-700 ring-1 ring-indigo-500/20'
                       : 'border-gray-200 bg-white text-gray-600 hover:border-gray-400'">
+                    @if (pv.logoUrl) {
+                      <img [src]="resolveImg(pv.logoUrl)" [alt]="pv.name" class="w-4 h-4 object-contain" />
+                    }
                     {{ pv.name }}
                   </button>
                 }
               </div>
             </div>
+
+            <!-- Auto-calc installment preview -->
+            @if (form.price > 0 && selectedProviderIds.size > 0 && getInstallmentPreview().length > 0) {
+              <div class="mt-4 bg-gray-50 rounded-xl p-4 space-y-3">
+                <h3 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                  <svg class="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+                  {{ i18n.t('items.installmentPreview') || 'Installment Preview' }}
+                </h3>
+                <div class="overflow-x-auto">
+                  <table class="w-full text-xs">
+                    <thead>
+                      <tr class="text-gray-500 border-b border-gray-200">
+                        <th class="text-start py-2 font-medium">{{ i18n.t('installments.providerCol') || 'Provider' }}</th>
+                        <th class="text-center py-2 font-medium">{{ i18n.t('installments.monthsCol') || 'Months' }}</th>
+                        <th class="text-end py-2 font-medium">{{ i18n.t('installments.downPaymentCol') || 'Down Payment' }}</th>
+                        <th class="text-end py-2 font-medium">{{ i18n.t('installments.monthlyCol') || 'Monthly' }}</th>
+                        <th class="text-end py-2 font-medium">{{ i18n.t('installments.totalCol') || 'Total' }}</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                      @for (row of getInstallmentPreview(); track row.planId) {
+                        <tr>
+                          <td class="py-2 font-medium text-gray-800">{{ row.providerName }}</td>
+                          <td class="py-2 text-center text-gray-600">{{ row.months }}</td>
+                          <td class="py-2 text-end text-gray-600">{{ row.downPayment | number:'1.0-0' }}</td>
+                          <td class="py-2 text-end font-semibold text-indigo-600">{{ row.monthly | number:'1.0-0' }}</td>
+                          <td class="py-2 text-end text-gray-600">{{ row.total | number:'1.0-0' }}</td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+                <p class="text-[10px] text-gray-400">{{ i18n.t('items.installmentNote') || 'Calculated based on item price. Actual amounts may vary.' }}</p>
+              </div>
+            }
           }
         </section>
       }
@@ -330,14 +369,59 @@ const COLOR_OPTIONS = [
           <label class="block text-sm font-medium text-gray-700 mb-1">{{ i18n.t('items.description') }}</label>
           <textarea [(ngModel)]="form.description" rows="3" class="w-full px-3.5 py-2 border border-gray-300 rounded-xl text-sm outline-none resize-none transition" [placeholder]="i18n.t('items.descriptionPlaceholder')"></textarea>
         </div>
+
+        <!-- Structured Specs -->
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">{{ i18n.t('items.specs') }}</label>
-          <textarea [(ngModel)]="form.specs" rows="4" class="w-full px-3.5 py-2 border border-gray-300 rounded-xl text-sm outline-none resize-none font-mono text-xs transition" placeholder="Display: 6.7 inch OLED&#10;Processor: A17 Pro&#10;Camera: 48MP Triple"></textarea>
+          <div class="flex items-center justify-between mb-2">
+            <label class="block text-sm font-medium text-gray-700">{{ i18n.t('items.specs') }}</label>
+            <div class="flex items-center gap-2">
+              <button type="button" (click)="loadPresetSpecs()" class="text-xs text-indigo-600 hover:text-indigo-800 font-medium transition">
+                {{ i18n.t('items.loadPreset') || 'Load Presets' }}
+              </button>
+              <button type="button" (click)="addSpecEntry()" class="text-xs text-gray-500 hover:text-gray-700 font-medium transition flex items-center gap-1">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                {{ i18n.t('common.add') }}
+              </button>
+            </div>
+          </div>
+          <div class="space-y-2">
+            @for (spec of specsEntries; track $index; let i = $index) {
+              <div class="flex items-center gap-2">
+                <input [(ngModel)]="spec.label" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none transition" placeholder="e.g. Display, Processor, Camera" />
+                <input [(ngModel)]="spec.value" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none transition" placeholder="e.g. 6.7 inch OLED" />
+                <button type="button" (click)="removeSpecEntry(i)" class="text-red-400 hover:text-red-600 p-1 transition shrink-0">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                </button>
+              </div>
+            }
+          </div>
           <p class="text-xs text-gray-400 mt-1">{{ i18n.t('items.specsHint') }}</p>
         </div>
+
+        <!-- Structured What's in the Box -->
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">{{ i18n.t('items.whatsInTheBox') }}</label>
-          <textarea [(ngModel)]="form.whatsInTheBox" rows="2" class="w-full px-3.5 py-2 border border-gray-300 rounded-xl text-sm outline-none resize-none transition" placeholder="1x Phone, 1x USB-C Cable, 1x Charger"></textarea>
+          <div class="flex items-center justify-between mb-2">
+            <label class="block text-sm font-medium text-gray-700">{{ i18n.t('items.whatsInTheBox') }}</label>
+            <div class="flex items-center gap-2">
+              @if (boxItems.length === 0) {
+                <button type="button" (click)="loadPresetBoxItems()" class="text-xs text-indigo-600 hover:text-indigo-800 font-medium transition">{{ i18n.t('items.loadPreset') || 'Load Presets' }}</button>
+              }
+              <button type="button" (click)="addBoxItem()" class="text-xs text-gray-500 hover:text-gray-700 font-medium transition flex items-center gap-1">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                {{ i18n.t('common.add') }}
+              </button>
+            </div>
+          </div>
+          <div class="space-y-2">
+            @for (boxItem of boxItems; track $index; let i = $index) {
+              <div class="flex items-center gap-2">
+                <input [(ngModel)]="boxItems[i]" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none transition" placeholder="e.g. 1x Phone, 1x USB-C Cable" />
+                <button type="button" (click)="removeBoxItem(i)" class="text-red-400 hover:text-red-600 p-1 transition shrink-0">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+              </div>
+            }
+          </div>
         </div>
       </section>
 
@@ -527,6 +611,7 @@ export class ItemFormComponent implements OnInit {
   readonly categories = signal<Category[]>([]);
   readonly customFields = signal<CustomFieldDefinition[]>([]);
   readonly installmentProviders = signal<InstallmentProviderRef[]>([]);
+  readonly installmentPlans = signal<InstallmentPlanRef[]>([]);
   readonly mainImagePreview = signal<string | null>(null);
   readonly galleryPreviews = signal<string[]>([]);
   readonly existingMainImage = signal<string | null>(null);
@@ -545,6 +630,8 @@ export class ItemFormComponent implements OnInit {
   selectedProviderIds = new Set<string>();
   checklist: ChecklistEntry[] = [];
   customFieldValues: Record<string, string> = {};
+  specsEntries: { label: string; value: string }[] = [];
+  boxItems: string[] = [];
 
   private editId = '';
   private mainImageFile: File | null = null;
@@ -582,12 +669,14 @@ export class ItemFormComponent implements OnInit {
       categories: this.api.get<Category[]>('/Categories'),
       customFields: this.api.get<CustomFieldDefinition[]>('/CustomFields'),
       providers: this.api.get<InstallmentProviderRef[]>('/Installments/providers'),
+      plans: this.api.get<InstallmentPlanRef[]>('/Installments/plans'),
     }).subscribe({
       next: (data) => {
         this.brands.set(data.brands || []);
         this.categories.set(data.categories || []);
         this.customFields.set(data.customFields || []);
         this.installmentProviders.set(data.providers || []);
+        this.installmentPlans.set((data.plans || []).filter(p => p.isActive));
 
         const id = this.route.snapshot.params['id'];
         if (id) {
@@ -634,6 +723,39 @@ export class ItemFormComponent implements OnInit {
         this.form.specs = item.specs || '';
         this.form.whatsInTheBox = item.whatsInTheBox || '';
 
+        // Parse structured specs (JSON array of {label, value} or legacy "key: value" text)
+        if (item.specs) {
+          try {
+            const parsed = JSON.parse(item.specs);
+            if (Array.isArray(parsed)) {
+              this.specsEntries = parsed.map((s: any) => ({ label: s.label || '', value: s.value || '' }));
+            } else {
+              this.specsEntries = this.parseTextSpecs(item.specs);
+            }
+          } catch {
+            this.specsEntries = this.parseTextSpecs(item.specs);
+          }
+        }
+
+        // Make sure Color/Storage/RAM from device details are reflected in specs entries
+        if (item.color) this.syncSpecEntry('Color', item.color);
+        if (item.storage) this.syncSpecEntry('Storage', item.storage);
+        if (item.ram) this.syncSpecEntry('RAM', item.ram);
+
+        // Parse structured what's in the box (JSON array of strings or comma-separated text)
+        if (item.whatsInTheBox) {
+          try {
+            const parsed = JSON.parse(item.whatsInTheBox);
+            if (Array.isArray(parsed)) {
+              this.boxItems = parsed.filter((s: string) => s.trim());
+            } else {
+              this.boxItems = item.whatsInTheBox.split(',').map((s: string) => s.trim()).filter((s: string) => s);
+            }
+          } catch {
+            this.boxItems = item.whatsInTheBox.split(',').map((s: string) => s.trim()).filter((s: string) => s);
+          }
+        }
+
         if (item.mainImageUrl) this.existingMainImage.set(item.mainImageUrl);
         if (item.galleryImagesJson) {
           try {
@@ -678,6 +800,119 @@ export class ItemFormComponent implements OnInit {
   toggleProvider(id: string): void {
     if (this.selectedProviderIds.has(id)) this.selectedProviderIds.delete(id);
     else this.selectedProviderIds.add(id);
+  }
+
+  getInstallmentPreview(): { planId: string; providerName: string; months: number; downPayment: number; monthly: number; total: number }[] {
+    const price = this.form.price;
+    if (!price || price <= 0) return [];
+
+    const rows: { planId: string; providerName: string; months: number; downPayment: number; monthly: number; total: number }[] = [];
+    const providers = this.installmentProviders();
+
+    for (const plan of this.installmentPlans()) {
+      if (!this.selectedProviderIds.has(plan.providerId)) continue;
+      const provider = providers.find(p => p.id === plan.providerId);
+      if (!provider) continue;
+
+      const dp = plan.downPaymentPercent ? (price * plan.downPaymentPercent / 100) : plan.downPayment;
+      const fees = plan.adminFeesPercent ? (price * plan.adminFeesPercent / 100) : plan.adminFees;
+      const interest = plan.interestRate ? (price * plan.interestRate / 100) : 0;
+      const remaining = price - dp + fees + interest;
+      const monthly = remaining / plan.months;
+      const total = dp + remaining;
+
+      rows.push({ planId: plan.id, providerName: provider.name, months: plan.months, downPayment: Math.round(dp), monthly: Math.round(monthly), total: Math.round(total) });
+    }
+
+    return rows.sort((a, b) => a.months - b.months);
+  }
+
+  addSpecEntry(): void { this.specsEntries.push({ label: '', value: '' }); }
+  removeSpecEntry(idx: number): void { this.specsEntries.splice(idx, 1); }
+
+  syncSpecEntry(label: string, value: string): void {
+    const existing = this.specsEntries.find(s => s.label.trim().toLowerCase() === label.toLowerCase());
+    if (value) {
+      if (existing) {
+        existing.value = value;
+      } else {
+        // Insert near the top
+        this.specsEntries.unshift({ label, value });
+      }
+    } else if (existing) {
+      // Clear value but keep the row so user can fill it manually
+      existing.value = '';
+    }
+  }
+
+  selectColor(name: string): void {
+    this.form.color = this.form.color === name ? '' : name;
+    this.syncSpecEntry('Color', this.form.color);
+  }
+
+  selectStorage(s: string): void {
+    this.form.storage = this.form.storage === s ? '' : s;
+    this.syncSpecEntry('Storage', this.form.storage);
+  }
+
+  selectRam(r: string): void {
+    this.form.ram = this.form.ram === r ? '' : r;
+    this.syncSpecEntry('RAM', this.form.ram);
+  }
+  loadPresetSpecs(): void {
+    const hasVal = (label: string) => this.specsEntries.some(s => s.label.trim().toLowerCase() === label.toLowerCase());
+    const base: { label: string; value: string }[] = [
+      { label: 'Color', value: this.form.color || '' },
+      { label: 'Storage', value: this.form.storage || '' },
+      { label: 'RAM', value: this.form.ram || '' },
+      { label: 'Display', value: '' },
+      { label: 'Processor', value: '' },
+      { label: 'Camera', value: '' },
+      { label: 'Front Camera', value: '' },
+      { label: 'Battery', value: '' },
+      { label: 'OS', value: '' },
+      { label: 'SIM', value: '' },
+      { label: 'Connectivity', value: '' },
+      { label: 'Sensors', value: '' },
+      { label: 'Dimensions', value: '' },
+      { label: 'Weight', value: '' },
+    ];
+    // Preserve existing entries and merge presets
+    this.specsEntries = base.filter((b, idx, arr) => arr.findIndex(x => x.label === b.label) === idx);
+  }
+
+  loadPresetBoxItems(): void {
+    this.boxItems = [
+      '1x Phone',
+      '1x USB-C Cable',
+      '1x Power Adapter',
+      '1x Documentation',
+    ];
+  }
+
+  addBoxItem(): void { this.boxItems.push(''); }
+  removeBoxItem(idx: number): void { this.boxItems.splice(idx, 1); }
+
+  private parseTextSpecs(text: string): { label: string; value: string }[] {
+    return text.split('\n')
+      .filter(line => line.trim())
+      .map(line => {
+        const colonIdx = line.indexOf(':');
+        if (colonIdx > 0) {
+          return { label: line.substring(0, colonIdx).trim(), value: line.substring(colonIdx + 1).trim() };
+        }
+        return { label: line.trim(), value: '' };
+      });
+  }
+
+  private serializeSpecs(): string | undefined {
+    const filtered = this.specsEntries.filter(s => s.label.trim());
+    return filtered.length ? JSON.stringify(filtered) : undefined;
+  }
+
+  private serializeBoxItems(): string | undefined {
+    const filtered = this.boxItems.filter(s => s.trim());
+    return filtered.length ? JSON.stringify(filtered) : undefined;
   }
 
   addChecklistItem(): void {
@@ -796,8 +1031,8 @@ export class ItemFormComponent implements OnInit {
       warrantyType: this.form.warrantyType || undefined,
       warrantyMonths: this.form.warrantyMonths ?? undefined,
       installmentAvailable: this.form.installmentAvailable || false,
-      specs: this.form.specs?.trim() || undefined,
-      whatsInTheBox: this.form.whatsInTheBox?.trim() || undefined,
+      specs: this.serializeSpecs(),
+      whatsInTheBox: this.serializeBoxItems(),
       customFieldsJson: cfValues.length ? JSON.stringify(cfValues) : undefined,
       checklistJson: clItems.length ? JSON.stringify(clItems) : undefined,
     };

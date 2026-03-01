@@ -195,6 +195,7 @@ public interface IInstallmentService
     Task<InstallmentProviderDto> CreateProviderAsync(Guid tenantId, CreateProviderRequest request, CancellationToken ct = default);
     Task<InstallmentProviderDto> UpdateProviderAsync(Guid tenantId, Guid id, UpdateProviderRequest request, CancellationToken ct = default);
     Task DeleteProviderAsync(Guid tenantId, Guid id, CancellationToken ct = default);
+    Task<string> UploadProviderLogoAsync(Guid tenantId, Guid providerId, Stream fileStream, string fileName, string contentType, CancellationToken ct = default);
 
     // Plans
     Task<List<InstallmentPlanDto>> GetPlansAsync(Guid tenantId, Guid? providerId = null, Guid? itemId = null, CancellationToken ct = default);

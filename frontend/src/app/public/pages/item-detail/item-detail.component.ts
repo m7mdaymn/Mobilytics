@@ -78,7 +78,7 @@ interface InstallmentPlan {
                 <span class="text-xs font-semibold bg-blue-100 text-blue-800 px-3 py-1 rounded-full">{{ i18n.t('store.refurbished') }}</span>
               }
               @if (item()!.status === 'Reserved') {
-                <span class="text-xs font-semibold bg-amber-100 text-amber-800 px-3 py-1 rounded-full">Reserved</span>
+                <span class="text-xs font-semibold bg-amber-100 text-amber-800 px-3 py-1 rounded-full">{{ i18n.t('store.reserved') }}</span>
               }
               @if (item()!.status === 'Sold') {
                 <span class="text-xs font-semibold bg-gray-200 text-gray-600 px-3 py-1 rounded-full">{{ i18n.t('store.sold') }}</span>
@@ -104,13 +104,33 @@ interface InstallmentPlan {
                   <span class="text-sm font-bold text-red-500 bg-red-50 px-2 py-0.5 rounded-lg">-{{ discountPercent() }}%</span>
                 }
               </div>
+              <!-- Tax status indicator -->
+              @if (item()!.taxStatus === 'Taxable' && item()!.vatPercent) {
+                <div class="mt-3 pt-3 border-t border-gray-200 space-y-1.5">
+                  <div class="flex items-center gap-2">
+                    <span class="text-xs font-medium text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md">{{ i18n.t('store.exclVat') }} {{ item()!.vatPercent }}%</span>
+                  </div>
+                  <div class="flex justify-between text-xs text-gray-500">
+                    <span>{{ i18n.t('store.estimatedTax') }}</span>
+                    <span class="font-semibold text-gray-700">{{ taxAmount() | currency: settingsStore.currency() : 'symbol-narrow' : '1.0-0' }}</span>
+                  </div>
+                  <div class="flex justify-between text-sm font-semibold text-gray-800">
+                    <span>{{ i18n.t('store.totalWithTax') }}</span>
+                    <span>{{ priceWithTax() | currency: settingsStore.currency() : 'symbol-narrow' : '1.0-0' }}</span>
+                  </div>
+                </div>
+              } @else {
+                <div class="mt-2">
+                  <span class="text-xs text-emerald-600 font-medium">{{ i18n.t('store.taxExempt') }}</span>
+                </div>
+              }
               @if (item()!.installmentAvailable && installmentPlans().length) {
                 <div class="flex items-center gap-2 mt-3 pt-3 border-t border-gray-200">
                   <svg class="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
                   <p class="text-sm text-gray-600">
                     {{ i18n.t('store.installmentAvailable') || 'Installment plans available' }}
                   </p>
-                  <button (click)="showInstallmentModal = true" class="text-xs font-semibold text-purple-600 hover:text-purple-800 underline transition ml-auto">{{ i18n.t('store.viewPlans') }}</button>
+                  <button (click)="showInstallmentModal = true" class="text-xs font-semibold text-purple-600 hover:text-purple-800 underline transition ms-auto">{{ i18n.t('store.viewPlans') }}</button>
                 </div>
               }
             </div>
@@ -119,25 +139,25 @@ interface InstallmentPlan {
             <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
               @if (item()!.storage) {
                 <div class="bg-gray-50 rounded-xl p-3 text-center">
-                  <div class="text-[10px] text-gray-400 uppercase tracking-wider mb-0.5">Storage</div>
+                  <div class="text-[10px] text-gray-400 uppercase tracking-wider mb-0.5">{{ i18n.t('store.storage') }}</div>
                   <div class="text-sm font-bold text-gray-900">{{ item()!.storage }}</div>
                 </div>
               }
               @if (item()!.ram) {
                 <div class="bg-gray-50 rounded-xl p-3 text-center">
-                  <div class="text-[10px] text-gray-400 uppercase tracking-wider mb-0.5">RAM</div>
+                  <div class="text-[10px] text-gray-400 uppercase tracking-wider mb-0.5">{{ i18n.t('store.ram') }}</div>
                   <div class="text-sm font-bold text-gray-900">{{ item()!.ram }}</div>
                 </div>
               }
               @if (item()!.color) {
                 <div class="bg-gray-50 rounded-xl p-3 text-center">
-                  <div class="text-[10px] text-gray-400 uppercase tracking-wider mb-0.5">Color</div>
+                  <div class="text-[10px] text-gray-400 uppercase tracking-wider mb-0.5">{{ i18n.t('store.color') }}</div>
                   <div class="text-sm font-bold text-gray-900">{{ item()!.color }}</div>
                 </div>
               }
               @if (item()!.batteryHealth) {
                 <div class="bg-gray-50 rounded-xl p-3 text-center">
-                  <div class="text-[10px] text-gray-400 uppercase tracking-wider mb-0.5">Battery</div>
+                  <div class="text-[10px] text-gray-400 uppercase tracking-wider mb-0.5">{{ i18n.t('store.batteryHealth') }}</div>
                   <div class="text-sm font-bold text-gray-900">{{ item()!.batteryHealth }}%</div>
                 </div>
               }
@@ -178,7 +198,7 @@ interface InstallmentPlan {
           </div>
         </div>
 
-        <!-- ─── Tabbed Content Section ─── -->
+        <!-- â”€â”€â”€ Tabbed Content Section â”€â”€â”€ -->
         <div class="mt-12">
           <!-- Tab Buttons -->
           <div class="flex gap-1 border-b border-gray-200 overflow-x-auto">
@@ -216,7 +236,7 @@ interface InstallmentPlan {
                 @if (item()!.description) {
                   <p class="text-gray-700 leading-relaxed whitespace-pre-line text-base">{{ item()!.description }}</p>
                 } @else {
-                  <p class="text-gray-400 italic text-sm">No description available.</p>
+                  <p class="text-gray-400 italic text-sm">{{ i18n.t('store.noDescription') }}</p>
                 }
               </div>
             }
@@ -227,13 +247,13 @@ interface InstallmentPlan {
                 <div class="divide-y divide-gray-50">
                   @if (item()!.categoryName) {
                     <div class="flex px-5 py-3 text-sm bg-gray-50/50">
-                      <span class="w-44 shrink-0 text-gray-500 font-medium">Category</span>
+                      <span class="w-44 shrink-0 text-gray-500 font-medium">{{ i18n.t('store.category') }}</span>
                       <span class="font-semibold text-gray-900">{{ item()!.categoryName }}</span>
                     </div>
                   }
                   @if (item()!.brandName) {
                     <div class="flex px-5 py-3 text-sm bg-gray-50/50">
-                      <span class="w-44 shrink-0 text-gray-500 font-medium">Brand</span>
+                      <span class="w-44 shrink-0 text-gray-500 font-medium">{{ i18n.t('store.brand') }}</span>
                       <span class="font-semibold text-gray-900">{{ item()!.brandName }}</span>
                     </div>
                   }
@@ -243,25 +263,25 @@ interface InstallmentPlan {
                   </div>
                   @if (item()!.color) {
                     <div class="flex px-5 py-3 text-sm bg-gray-50/50">
-                      <span class="w-44 shrink-0 text-gray-500 font-medium">Color</span>
+                      <span class="w-44 shrink-0 text-gray-500 font-medium">{{ i18n.t('store.color') }}</span>
                       <span class="font-semibold text-gray-900">{{ item()!.color }}</span>
                     </div>
                   }
                   @if (item()!.storage) {
                     <div class="flex px-5 py-3 text-sm">
-                      <span class="w-44 shrink-0 text-gray-500 font-medium">Storage</span>
+                      <span class="w-44 shrink-0 text-gray-500 font-medium">{{ i18n.t('store.storage') }}</span>
                       <span class="font-semibold text-gray-900">{{ item()!.storage }}</span>
                     </div>
                   }
                   @if (item()!.ram) {
                     <div class="flex px-5 py-3 text-sm bg-gray-50/50">
-                      <span class="w-44 shrink-0 text-gray-500 font-medium">RAM</span>
+                      <span class="w-44 shrink-0 text-gray-500 font-medium">{{ i18n.t('store.ram') }}</span>
                       <span class="font-semibold text-gray-900">{{ item()!.ram }}</span>
                     </div>
                   }
                   @if (item()!.batteryHealth) {
                     <div class="flex px-5 py-3 text-sm">
-                      <span class="w-44 shrink-0 text-gray-500 font-medium">Battery Health</span>
+                      <span class="w-44 shrink-0 text-gray-500 font-medium">{{ i18n.t('store.batteryHealth') }}</span>
                       <span class="font-semibold text-gray-900">{{ item()!.batteryHealth }}%</span>
                     </div>
                   }
@@ -273,8 +293,8 @@ interface InstallmentPlan {
                   }
                   @if (item()!.taxStatus === 'Taxable') {
                     <div class="flex px-5 py-3 text-sm">
-                      <span class="w-44 shrink-0 text-gray-500 font-medium">Tax</span>
-                      <span class="font-semibold text-gray-900">VAT {{ item()!.vatPercent }}%</span>
+                      <span class="w-44 shrink-0 text-gray-500 font-medium">{{ i18n.t('store.tax') }}</span>
+                      <span class="font-semibold text-gray-900">{{ i18n.t('store.vat') }} {{ item()!.vatPercent }}%</span>
                     </div>
                   }
                   @for (field of parsedCustomFields(); track field.fieldId; let odd = $odd) {
@@ -283,8 +303,28 @@ interface InstallmentPlan {
                       <span class="font-semibold text-gray-900">{{ field.value }}</span>
                     </div>
                   }
+                  @for (spec of parsedSpecs(); track $index; let odd = $odd) {
+                    <div class="flex px-5 py-3 text-sm" [class.bg-gray-50]="odd">
+                      <span class="w-44 shrink-0 text-gray-500 font-medium">{{ spec.label }}</span>
+                      <span class="font-semibold text-gray-900">{{ spec.value }}</span>
+                    </div>
+                  }
                 </div>
               </div>
+              <!-- What's in the Box -->
+              @if (parsedBoxItems().length) {
+                <div class="max-w-2xl mt-6">
+                  <h4 class="text-sm font-bold text-gray-900 mb-3">{{ i18n.t('store.whatsInBox') }}</h4>
+                  <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden divide-y divide-gray-50">
+                    @for (boxItem of parsedBoxItems(); track $index; let odd = $odd) {
+                      <div class="flex items-center gap-3 px-5 py-3 text-sm" [class.bg-gray-50]="odd">
+                        <span class="w-5 h-5 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-xs font-bold shrink-0">&#10003;</span>
+                        <span class="font-medium text-gray-800">{{ boxItem }}</span>
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
             }
 
             <!-- Checklist Tab -->
@@ -347,7 +387,7 @@ interface InstallmentPlan {
                   </div>
                 }
                 @if (!installmentPlans().length) {
-                  <p class="text-gray-400 text-sm italic">No installment plans available for this item.</p>
+                  <p class="text-gray-400 text-sm italic">{{ i18n.t('store.noInstallments') }}</p>
                 }
               </div>
             }
@@ -451,6 +491,18 @@ export class ItemDetailComponent implements OnInit {
     return Math.round(((i.oldPrice - i.price) / i.oldPrice) * 100);
   });
 
+  readonly taxAmount = computed(() => {
+    const i = this.item();
+    if (!i || i.taxStatus !== 'Taxable' || !i.vatPercent) return 0;
+    return Math.round(i.price * i.vatPercent / 100);
+  });
+
+  readonly priceWithTax = computed(() => {
+    const i = this.item();
+    if (!i) return 0;
+    return i.price + this.taxAmount();
+  });
+
   readonly lowestMonthly = computed(() => {
     return null; // Removed - monthly payment no longer tracked
   });
@@ -489,6 +541,33 @@ export class ItemDetailComponent implements OnInit {
     const i = this.item();
     if (!i?.checklistJson) return [];
     try { return JSON.parse(i.checklistJson); } catch { return []; }
+  });
+
+  readonly parsedSpecs = computed<{ label: string; value: string }[]>(() => {
+    const i = this.item();
+    if (!i?.specs) return [];
+    try {
+      const parsed = JSON.parse(i.specs);
+      if (Array.isArray(parsed) && parsed.length && parsed[0].label !== undefined) {
+        return parsed;
+      }
+    } catch {}
+    // Legacy: parse "key: value" lines
+    return i.specs!.split('\n').filter((l: string) => l.trim()).map((l: string) => {
+      const colonIdx = l.indexOf(':');
+      if (colonIdx > 0) return { label: l.substring(0, colonIdx).trim(), value: l.substring(colonIdx + 1).trim() };
+      return { label: l.trim(), value: '' };
+    });
+  });
+
+  readonly parsedBoxItems = computed<string[]>(() => {
+    const i = this.item();
+    if (!i?.whatsInTheBox) return [];
+    try {
+      const parsed = JSON.parse(i.whatsInTheBox);
+      if (Array.isArray(parsed)) return parsed.filter((s: string) => s.trim());
+    } catch {}
+    return i.whatsInTheBox!.split(',').map((s: string) => s.trim()).filter((s: string) => s);
   });
 
   resolveImg = resolveImageUrl;

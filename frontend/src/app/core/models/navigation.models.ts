@@ -5,6 +5,7 @@ export interface Navigation {
   brands: NavBrand[];
   categoriesByType: Record<string, NavCategory[]>;
   featuredBrandsByType: Record<string, NavBrand[]>;
+  brandsByCategory: Record<string, NavBrand[]>;
   flags: NavigationFlags;
 }
 

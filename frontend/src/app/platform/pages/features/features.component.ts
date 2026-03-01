@@ -21,14 +21,14 @@ import { Tenant, TenantFeatures, Plan } from '../../../core/models/platform.mode
               class="w-full px-4 py-2.5 border border-slate-300 rounded-lg bg-white focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400">
               <option value="">-- Choose a tenant --</option>
               @for (tenant of tenants(); track tenant.id) {
-                <option [value]="tenant.id">{{ tenant.name }} ({{ tenant.slug }}) — {{ tenant.status }}</option>
+                <option [value]="tenant.id">{{ tenant.name }} ({{ tenant.slug }}) â€” {{ tenant.status }}</option>
               }
             </select>
           </div>
           @if (selectedTenant()?.subscription) {
             <div class="text-sm">
               <span class="text-slate-500">Plan:</span>
-              <span class="font-semibold text-indigo-600 ml-1">{{ selectedTenant()!.subscription!.planName }}</span>
+              <span class="font-semibold text-indigo-600 ms-1">{{ selectedTenant()!.subscription!.planName }}</span>
             </div>
           }
         </div>
@@ -70,8 +70,8 @@ import { Tenant, TenantFeatures, Plan } from '../../../core/models/platform.mode
                 <button (click)="toggleFeature(feat.key)"
                   class="relative w-14 h-8 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:ring-offset-2"
                   [class]="getFeatureValue(feat.key) ? 'bg-indigo-600' : 'bg-slate-300'">
-                  <span class="absolute top-1 left-1 w-6 h-6 bg-white rounded-full shadow transition-transform"
-                    [class]="getFeatureValue(feat.key) ? 'translate-x-6' : 'translate-x-0'"></span>
+                  <span class="absolute top-1 start-1 w-6 h-6 bg-white rounded-full shadow transition-transform"
+                    [class]="getFeatureValue(feat.key) ? 'ltr:translate-x-6 rtl:-translate-x-6' : 'translate-x-0'"></span>
                 </button>
               </div>
             }

@@ -45,10 +45,10 @@ import { resolveImageUrl } from '../../../core/utils/image.utils';
     <!-- Lightbox -->
     @if (lightboxOpen()) {
       <div class="fixed inset-0 z-[9999] bg-black/90 flex items-center justify-center p-4" (click)="closeLightbox()">
-        <button class="absolute top-4 right-4 text-white text-3xl hover:text-gray-300 z-10">&times;</button>
+        <button class="absolute top-4 end-4 text-white text-3xl hover:text-gray-300 z-10">&times;</button>
         @if (allImages().length > 1) {
-          <button class="absolute left-4 top-1/2 -translate-y-1/2 text-white text-4xl hover:text-gray-300 z-10" (click)="prev($event)">&#8249;</button>
-          <button class="absolute right-4 top-1/2 -translate-y-1/2 text-white text-4xl hover:text-gray-300 z-10" (click)="next($event)">&#8250;</button>
+          <button class="absolute start-4 top-1/2 -translate-y-1/2 text-white text-4xl hover:text-gray-300 z-10" (click)="prev($event)">&#8249;</button>
+          <button class="absolute end-4 top-1/2 -translate-y-1/2 text-white text-4xl hover:text-gray-300 z-10" (click)="next($event)">&#8250;</button>
         }
         <img
           [src]="currentImage()"

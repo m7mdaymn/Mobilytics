@@ -30,7 +30,7 @@ describe('permissionGuard', () => {
 
   it('should redirect unauthenticated user to /login', () => {
     const spy = spyOn(router, 'navigate');
-    const guard = permissionGuard('ManageProducts');
+    const guard = permissionGuard('items.create');
     TestBed.runInInjectionContext(() => guard({} as any, {} as any));
     expect(spy).toHaveBeenCalledWith(['/login']);
   });
@@ -39,7 +39,7 @@ describe('permissionGuard', () => {
     spyOn(authService, 'isAuthenticated').and.returnValue(true);
     spyOn(authService, 'hasAnyPermission').and.returnValue(true);
 
-    const guard = permissionGuard('ManageProducts');
+    const guard = permissionGuard('items.create');
     const result = TestBed.runInInjectionContext(() => guard({} as any, {} as any));
     expect(result).toBeTrue();
   });
@@ -50,7 +50,7 @@ describe('permissionGuard', () => {
     tenantService.setSlug('my-store');
     const spy = spyOn(router, 'navigate');
 
-    const guard = permissionGuard('ManageProducts');
+    const guard = permissionGuard('items.create');
     const result = TestBed.runInInjectionContext(() => guard({} as any, {} as any));
     expect(result).toBeFalse();
     expect(spy).toHaveBeenCalledWith(['/store', 'my-store', 'admin']);
@@ -61,7 +61,7 @@ describe('permissionGuard', () => {
     spyOn(authService, 'hasAnyPermission').and.returnValue(false);
     const spy = spyOn(router, 'navigate');
 
-    const guard = permissionGuard('ManageProducts');
+    const guard = permissionGuard('items.create');
     const result = TestBed.runInInjectionContext(() => guard({} as any, {} as any));
     expect(result).toBeFalse();
     expect(spy).toHaveBeenCalledWith(['/']);
@@ -71,8 +71,8 @@ describe('permissionGuard', () => {
     spyOn(authService, 'isAuthenticated').and.returnValue(true);
     const hasAnySpy = spyOn(authService, 'hasAnyPermission').and.returnValue(true);
 
-    const guard = permissionGuard('ManageProducts', 'ManageCategories');
+    const guard = permissionGuard('items.create', 'categories.manage');
     TestBed.runInInjectionContext(() => guard({} as any, {} as any));
-    expect(hasAnySpy).toHaveBeenCalledWith('ManageProducts', 'ManageCategories');
+    expect(hasAnySpy).toHaveBeenCalledWith('items.create', 'categories.manage');
   });
 });

@@ -79,7 +79,7 @@ interface StoreRegistration {
 
         <!-- Empty State -->
         <div *ngIf="!isLoading() && registrations().length === 0" class="text-center py-12">
-          <div class="text-6xl mb-4">📭</div>
+          <div class="text-6xl mb-4">ðŸ“­</div>
           <p class="text-gray-600 text-lg">No {{ activeTab() }} registrations</p>
         </div>
 
@@ -95,9 +95,9 @@ interface StoreRegistration {
                     {{ getStatusLabel(reg.status) }}
                   </span>
                 </div>
-                <p class="text-sm text-gray-600">{{ reg.category }} • {{ reg.location }}</p>
+                <p class="text-sm text-gray-600">{{ reg.category }} â€¢ {{ reg.location }}</p>
               </div>
-              <div class="text-right text-sm text-gray-600">
+              <div class="text-end text-sm text-gray-600">
                 <p class="font-semibold">{{ reg.ownerName }}</p>
                 <p>{{ reg.email }}</p>
                 <p>{{ reg.phone }}</p>
@@ -135,17 +135,17 @@ interface StoreRegistration {
               <button
                 (click)="openApprovalModal(reg)"
                 class="flex-1 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-semibold transition">
-                ✓ Approve
+                âœ“ Approve
               </button>
               <button
                 (click)="openRejectionModal(reg)"
                 class="flex-1 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold transition">
-                ✕ Reject
+                âœ• Reject
               </button>
               <button
                 (click)="openHoldModal(reg)"
                 class="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg font-semibold transition">
-                ⏸ Hold
+                â¸ Hold
               </button>
             </div>
           </div>

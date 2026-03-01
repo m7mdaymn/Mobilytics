@@ -6,6 +6,7 @@ public class NavigationDto
     public List<NavCategoryDto> Categories { get; set; } = [];
     public Dictionary<string, List<NavCategoryDto>> CategoriesByType { get; set; } = [];
     public Dictionary<string, List<NavBrandDto>> FeaturedBrandsByType { get; set; } = [];
+    public Dictionary<string, List<NavBrandDto>> BrandsByCategory { get; set; } = [];
     public List<NavBrandDto> Brands { get; set; } = [];
     public NavigationFlags Flags { get; set; } = new();
 }

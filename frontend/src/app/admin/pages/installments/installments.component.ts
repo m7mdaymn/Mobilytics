@@ -5,6 +5,7 @@ import { ApiService } from '../../../core/services/api.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { SettingsStore } from '../../../core/stores/settings.store';
 import { I18nService } from '../../../core/services/i18n.service';
+import { resolveImageUrl } from '../../../core/utils/image.utils';
 
 interface InstallmentProvider {
   id: string;
@@ -64,9 +65,18 @@ interface InstallmentPlan {
           @for (provider of providers(); track provider.id) {
             <div class="bg-white rounded-xl border border-gray-200 p-5 flex items-center justify-between gap-4">
               <div class="flex items-center gap-4">
-                <div class="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center text-xl font-bold text-gray-400 shrink-0">
-                  {{ provider.name.charAt(0) }}
-                </div>
+                @if (provider.logoUrl) {
+                  <img [src]="resolveImg(provider.logoUrl)" [alt]="provider.name"
+                    class="w-12 h-12 rounded-xl object-contain bg-gray-50 p-1 shrink-0"
+                    (error)="$any($event.target).style.display='none'; $any($event.target).nextElementSibling?.classList?.remove('hidden')" />
+                  <div class="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center text-xl font-bold text-gray-400 shrink-0 hidden">
+                    {{ provider.name.charAt(0) }}
+                  </div>
+                } @else {
+                  <div class="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center text-xl font-bold text-gray-400 shrink-0">
+                    {{ provider.name.charAt(0) }}
+                  </div>
+                }
                 <div>
                   <h3 class="font-semibold text-gray-900">{{ provider.name }}</h3>
                   <div class="flex items-center gap-2 mt-0.5">
@@ -112,11 +122,11 @@ interface InstallmentPlan {
           <table class="w-full text-sm">
             <thead class="bg-gray-50">
               <tr>
-                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">{{ i18n.t('installments.providerCol') }}</th>
-                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">{{ i18n.t('installments.monthsCol') }}</th>
-                <th class="text-right px-4 py-3 text-xs font-semibold text-gray-500 uppercase">{{ i18n.t('installments.downPaymentCol') }}</th>
-                <th class="text-right px-4 py-3 text-xs font-semibold text-gray-500 uppercase">{{ i18n.t('installments.feesCol') }}</th>
-                <th class="text-right px-4 py-3 text-xs font-semibold text-gray-500 uppercase">{{ i18n.t('installments.interestCol') }}</th>
+                <th class="text-start px-4 py-3 text-xs font-semibold text-gray-500 uppercase">{{ i18n.t('installments.providerCol') }}</th>
+                <th class="text-start px-4 py-3 text-xs font-semibold text-gray-500 uppercase">{{ i18n.t('installments.monthsCol') }}</th>
+                <th class="text-end px-4 py-3 text-xs font-semibold text-gray-500 uppercase">{{ i18n.t('installments.downPaymentCol') }}</th>
+                <th class="text-end px-4 py-3 text-xs font-semibold text-gray-500 uppercase">{{ i18n.t('installments.feesCol') }}</th>
+                <th class="text-end px-4 py-3 text-xs font-semibold text-gray-500 uppercase">{{ i18n.t('installments.interestCol') }}</th>
                 <th class="text-center px-4 py-3 text-xs font-semibold text-gray-500 uppercase">{{ i18n.t('common.status') }}</th>
                 <th class="px-4 py-3"></th>
               </tr>
@@ -126,21 +136,21 @@ interface InstallmentPlan {
                 <tr class="hover:bg-gray-50">
                   <td class="px-4 py-3 font-medium text-gray-900">{{ plan.providerName }}</td>
                   <td class="px-4 py-3 text-gray-600">{{ plan.months }} {{ i18n.t('installments.monthsSuffix') }}</td>
-                  <td class="px-4 py-3 text-right text-gray-600">
+                  <td class="px-4 py-3 text-end text-gray-600">
                     @if (plan.downPaymentPercent) {
                       <span class="text-xs font-semibold text-blue-600">{{ plan.downPaymentPercent }}%</span>
                     } @else {
                       {{ plan.downPayment | currency: settingsStore.currency() : 'symbol-narrow' : '1.0-0' }}
                     }
                   </td>
-                  <td class="px-4 py-3 text-right text-gray-600">
+                  <td class="px-4 py-3 text-end text-gray-600">
                     @if (plan.adminFeesPercent) {
                       <span class="text-xs font-semibold text-blue-600">{{ plan.adminFeesPercent }}%</span>
                     } @else {
                       {{ plan.adminFees | currency: settingsStore.currency() : 'symbol-narrow' : '1.0-0' }}
                     }
                   </td>
-                  <td class="px-4 py-3 text-right text-gray-600">
+                  <td class="px-4 py-3 text-end text-gray-600">
                     @if (plan.interestRate) {
                       <span class="text-xs font-semibold">{{ plan.interestRate }}%</span>
                     } @else {
@@ -153,9 +163,9 @@ interface InstallmentPlan {
                       {{ plan.isActive ? i18n.t('common.active') : i18n.t('common.inactive') }}
                     </span>
                   </td>
-                  <td class="px-4 py-3 text-right">
+                  <td class="px-4 py-3 text-end">
                     <button (click)="editPlan(plan)" class="text-gray-500 hover:text-gray-900 text-xs">{{ i18n.t('common.edit') }}</button>
-                    <button (click)="deletePlan(plan.id)" class="text-red-500 hover:text-red-700 text-xs ml-2">{{ i18n.t('common.delete') }}</button>
+                    <button (click)="deletePlan(plan.id)" class="text-red-500 hover:text-red-700 text-xs ms-2">{{ i18n.t('common.delete') }}</button>
                   </td>
                 </tr>
               }
@@ -182,8 +192,27 @@ interface InstallmentPlan {
                 </select>
               </div>
               <div>
-                <label class="block text-sm font-medium mb-1">Logo URL</label>
-                <input [(ngModel)]="providerForm.logoUrl" class="input-field" placeholder="https://..." />
+                <label class="block text-sm font-medium mb-1">{{ i18n.t('installments.providerLogo') || 'Provider Logo' }}</label>
+                @if (providerForm.logoUrl) {
+                  <div class="flex items-center gap-3 mb-2">
+                    <img [src]="resolveImg(providerForm.logoUrl)" alt="Logo" class="h-12 w-12 object-contain rounded-lg bg-gray-50 p-1 border" />
+                    <button type="button" (click)="providerForm.logoUrl = ''" class="text-xs text-red-500 hover:text-red-700">{{ i18n.t('common.delete') }}</button>
+                  </div>
+                }
+                @if (uploadingLogo()) {
+                  <div class="flex items-center gap-2 text-sm text-gray-500">
+                    <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                    {{ i18n.t('common.saving') }}...
+                  </div>
+                } @else {
+                  <label class="block cursor-pointer">
+                    <div class="flex items-center gap-2 px-4 py-2.5 border-2 border-dashed border-gray-300 rounded-xl text-sm text-gray-500 hover:border-gray-400 hover:text-gray-700 transition">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                      {{ providerForm.logoUrl ? i18n.t('common.edit') : 'Upload Logo' }}
+                    </div>
+                    <input type="file" accept="image/*" class="hidden" (change)="onLogoFileSelected($event)" />
+                  </label>
+                }
               </div>
               <div class="flex items-center gap-2">
                 <input type="checkbox" [(ngModel)]="providerForm.isActive" id="providerActive" class="rounded" />
@@ -301,6 +330,7 @@ export class InstallmentsComponent implements OnInit {
   readonly loadingPlans = signal(true);
   readonly savingProvider = signal(false);
   readonly savingPlan = signal(false);
+  readonly uploadingLogo = signal(false);
 
   showProviderForm = false;
   showPlanForm = false;
@@ -313,6 +343,34 @@ export class InstallmentsComponent implements OnInit {
   ngOnInit(): void {
     this.loadProviders();
     this.loadPlans();
+  }
+
+  resolveImg(url: string | null): string {
+    return url ? resolveImageUrl(url) : '';
+  }
+
+  onLogoFileSelected(event: Event): void {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    if (!this.editingProvider) {
+      this.toast.error('Save the provider first, then upload a logo');
+      return;
+    }
+    this.uploadingLogo.set(true);
+    const fd = new FormData();
+    fd.append('file', file);
+    this.api.upload<string>(`/Installments/providers/${this.editingProvider.id}/logo`, fd).subscribe({
+      next: (url) => {
+        this.providerForm.logoUrl = url;
+        this.uploadingLogo.set(false);
+        this.toast.success('Logo uploaded');
+        this.loadProviders();
+      },
+      error: (err: any) => {
+        this.toast.error(err.message || 'Upload failed');
+        this.uploadingLogo.set(false);
+      },
+    });
   }
 
   loadProviders(): void {

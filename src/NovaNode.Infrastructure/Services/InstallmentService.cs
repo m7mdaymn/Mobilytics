@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using NovaNode.Application.DTOs.Installments;
 using NovaNode.Application.Interfaces;
 using NovaNode.Domain.Entities;
+using NovaNode.Domain.Interfaces;
 using NovaNode.Infrastructure.Persistence;
 
 namespace NovaNode.Infrastructure.Services;
@@ -9,7 +10,12 @@ namespace NovaNode.Infrastructure.Services;
 public class InstallmentService : IInstallmentService
 {
     private readonly AppDbContext _db;
-    public InstallmentService(AppDbContext db) => _db = db;
+    private readonly IFileStorage _fileStorage;
+    public InstallmentService(AppDbContext db, IFileStorage fileStorage)
+    {
+        _db = db;
+        _fileStorage = fileStorage;
+    }
 
     // ── Providers ──
 
@@ -69,8 +75,24 @@ public class InstallmentService : IInstallmentService
     {
         var p = await _db.InstallmentProviders.FirstOrDefaultAsync(x => x.TenantId == tenantId && x.Id == id, ct)
             ?? throw new KeyNotFoundException("Provider not found.");
+        if (!string.IsNullOrEmpty(p.LogoUrl))
+            await _fileStorage.DeleteFileAsync(p.LogoUrl, ct);
         _db.InstallmentProviders.Remove(p);
         await _db.SaveChangesAsync(ct);
+    }
+
+    public async Task<string> UploadProviderLogoAsync(Guid tenantId, Guid providerId, Stream fileStream, string fileName, string contentType, CancellationToken ct = default)
+    {
+        var provider = await _db.InstallmentProviders.FirstOrDefaultAsync(x => x.TenantId == tenantId && x.Id == providerId, ct)
+            ?? throw new KeyNotFoundException("Provider not found.");
+
+        if (!string.IsNullOrEmpty(provider.LogoUrl))
+            await _fileStorage.DeleteFileAsync(provider.LogoUrl, ct);
+
+        var url = await _fileStorage.SaveFileAsync(tenantId, "providers", fileStream, fileName, contentType, ct);
+        provider.LogoUrl = url;
+        await _db.SaveChangesAsync(ct);
+        return url;
     }
 
     // ── Plans ──

@@ -8,6 +8,9 @@ import { I18nService } from '../../../core/services/i18n.service';
 import { TenantService } from '../../../core/services/tenant.service';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
 import { FormsModule } from '@angular/forms';
+import { StoreNavService } from '../../../core/services/store-nav.service';
+import { NavBrand } from '../../../core/models/navigation.models';
+import { resolveImageUrl } from '../../../core/utils/image.utils';
 
 @Component({
   selector: 'app-category',
@@ -25,7 +28,7 @@ import { FormsModule } from '@angular/forms';
       </nav>
 
       <!-- Header with count + sort -->
-      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
           <h1 class="text-3xl font-extrabold text-gray-900">{{ categoryName() }}</h1>
           @if (!loading() && totalCount() > 0) {
@@ -38,6 +41,31 @@ import { FormsModule } from '@angular/forms';
           <option value="priceDesc">{{ i18n.t('store.priceHighLow') }}</option>
         </select>
       </div>
+
+      <!-- Brand filter chips -->
+      @if (brands().length > 0) {
+        <div class="flex flex-wrap gap-2 mb-6">
+          <button (click)="filterBrand(null)"
+            class="px-3.5 py-1.5 rounded-full text-xs font-semibold border transition-all"
+            [class]="selectedBrandSlug === null
+              ? 'bg-gray-900 text-white border-gray-900'
+              : 'bg-white text-gray-600 border-gray-200 hover:border-gray-400'">
+            {{ i18n.t('store.viewAll') || 'All' }}
+          </button>
+          @for (brand of brands(); track brand.id) {
+            <button (click)="filterBrand(brand.slug)"
+              class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold border transition-all"
+              [class]="selectedBrandSlug === brand.slug
+                ? 'bg-[color:var(--color-primary)] text-white border-[color:var(--color-primary)]'
+                : 'bg-white text-gray-600 border-gray-200 hover:border-[color:var(--color-primary)]'">
+              @if (brand.logoUrl) {
+                <img [src]="resolveImg(brand.logoUrl)" [alt]="brand.name" class="w-4 h-4 object-contain rounded" />
+              }
+              {{ brand.name }}
+            </button>
+          }
+        </div>
+      }
 
       @if (loading()) {
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
@@ -76,15 +104,18 @@ export class CategoryComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   readonly tenantService = inject(TenantService);
   readonly i18n = inject(I18nService);
+  private readonly storeNav = inject(StoreNavService);
 
   readonly items = signal<Item[]>([]);
   readonly loading = signal(true);
   readonly categoryName = signal('Category');
   readonly totalCount = signal(0);
   readonly totalPages = signal(1);
+  readonly brands = signal<NavBrand[]>([]);
 
   currentPage = 1;
   sortBy = 'newest';
+  selectedBrandSlug: string | null = null;
   private slug = '';
 
   ngOnInit(): void {
@@ -92,8 +123,32 @@ export class CategoryComponent implements OnInit {
       this.slug = params['slug'];
       this.categoryName.set(this.slug?.replace(/-/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase()) || 'Category');
       this.currentPage = 1;
+      this.selectedBrandSlug = null;
+      this.loadBrands();
       this.loadItems();
     });
+  }
+
+  private loadBrands(): void {
+    const brandsForSlug = this.storeNav.getBrandsByCategorySlug(this.slug);
+    this.brands.set(brandsForSlug);
+    // Also listen for when nav data arrives (if page is refreshed directly)
+    if (brandsForSlug.length === 0) {
+      const interval = setInterval(() => {
+        if (this.storeNav.navigationLoaded()) {
+          this.brands.set(this.storeNav.getBrandsByCategorySlug(this.slug));
+          clearInterval(interval);
+        }
+      }, 250);
+      // Clear after 5s to avoid memory leaks
+      setTimeout(() => clearInterval(interval), 5000);
+    }
+  }
+
+  filterBrand(brandSlug: string | null): void {
+    this.selectedBrandSlug = brandSlug;
+    this.currentPage = 1;
+    this.loadItems();
   }
 
   onSortChange(): void {
@@ -107,6 +162,10 @@ export class CategoryComponent implements OnInit {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
+  resolveImg(url: string): string {
+    return resolveImageUrl(url);
+  }
+
   private loadItems(): void {
     this.loading.set(true);
     const params: Record<string, any> = {
@@ -115,6 +174,7 @@ export class CategoryComponent implements OnInit {
       page: this.currentPage,
       status: 'Available',
     };
+    if (this.selectedBrandSlug) params['brandSlug'] = this.selectedBrandSlug;
     if (this.sortBy === 'priceAsc') { params['sortBy'] = 'price'; params['sortDirection'] = 'asc'; }
     else if (this.sortBy === 'priceDesc') { params['sortBy'] = 'price'; params['sortDirection'] = 'desc'; }
     else { params['sortBy'] = 'newest'; }

@@ -14,7 +14,7 @@ import { Plan, CreatePlanFormData, planAnnualPrice } from '../../../core/models/
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 class="text-2xl font-bold text-slate-800">Subscription Plans</h1>
-          <p class="text-sm text-slate-500 mt-1">Manage pricing plans — monthly & annual (20% discount)</p>
+          <p class="text-sm text-slate-500 mt-1">Manage pricing plans â€” monthly & annual (20% discount)</p>
         </div>
         <button (click)="openForm()"
            class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition-colors inline-flex items-center gap-2">
@@ -51,7 +51,7 @@ import { Plan, CreatePlanFormData, planAnnualPrice } from '../../../core/models/
                   <p class="text-xs font-semibold text-indigo-500 uppercase tracking-wider">Annual Price (20% off)</p>
                   <p class="text-2xl font-bold text-indigo-700 mt-1">{{ getAnnual(form.priceMonthly) | number:'1.0-0' }} EGP</p>
                 </div>
-                <div class="text-right text-xs text-indigo-500">
+                <div class="text-end text-xs text-indigo-500">
                   <p>{{ form.priceMonthly | number:'1.0-0' }} &times; 12 = {{ form.priceMonthly * 12 | number:'1.0-0' }}</p>
                   <p class="font-bold">- 20% discount</p>
                 </div>

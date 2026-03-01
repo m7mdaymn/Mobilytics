@@ -87,8 +87,8 @@ interface PagedExpenses {
         </div>
       }
 
-      <!-- Salary Generation -->
-      @if (authService.hasPermission('expenses.manage')) {
+      <!-- Salary Generation (Owner only) -->
+      @if (authService.isOwner()) {
         <div class="card p-4 flex items-center gap-4">
           <span class="text-sm font-medium">{{ i18n.t('expenses.generateSalaries') }}</span>
           <select [(ngModel)]="salaryMonth" class="input-field w-40">
@@ -123,10 +123,12 @@ interface PagedExpenses {
       </div>
 
       <!-- Summary -->
+      @if (authService.hasPermission('reports.view')) {
       <div class="card p-4 flex items-center justify-between">
         <span class="text-sm text-gray-500">{{ i18n.t('expenses.totalFiltered') }}</span>
         <span class="text-xl font-bold text-red-600">{{ totalExpenses() | currency: settingsStore.currency() : 'symbol-narrow' : '1.0-0' }}</span>
       </div>
+      }
 
       <!-- Table -->
       <div class="card overflow-hidden">
@@ -146,7 +148,11 @@ interface PagedExpenses {
                 <td class="px-4 py-3">{{ exp.occurredAt | date:'mediumDate' }}</td>
                 <td class="px-4 py-3">{{ exp.categoryName }}</td>
                 <td class="px-4 py-3 text-gray-600">{{ exp.title || '—' }}</td>
-                <td class="px-4 py-3 text-end font-medium">{{ exp.amount | currency: settingsStore.currency() : 'symbol-narrow' : '1.0-0' }}</td>
+                <td class="px-4 py-3 text-end font-medium">
+                  @if (authService.hasPermission('reports.view')) {
+                    {{ exp.amount | currency: settingsStore.currency() : 'symbol-narrow' : '1.0-0' }}
+                  } @else { — }
+                </td>
                 <td class="px-4 py-3 text-end space-x-2">
                   <button (click)="editExpense(exp)" class="text-blue-600 hover:underline">{{ i18n.t('common.edit') }}</button>
                   <button (click)="deleteExpense(exp)" class="text-red-600 hover:underline">{{ i18n.t('common.delete') }}</button>

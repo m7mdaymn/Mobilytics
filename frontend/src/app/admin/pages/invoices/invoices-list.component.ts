@@ -8,6 +8,7 @@ import { PaginatedList } from '../../../core/models/api.models';
 import { SettingsStore } from '../../../core/stores/settings.store';
 import { TenantService } from '../../../core/services/tenant.service';
 import { I18nService } from '../../../core/services/i18n.service';
+import { AuthService } from '../../../core/services/auth.service';
 import { PaginationComponent } from '../../../shared/components/pagination/pagination.component';
 
 @Component({
@@ -42,6 +43,7 @@ import { PaginationComponent } from '../../../shared/components/pagination/pagin
             </div>
           </div>
         </div>
+        @if (authService.hasPermission('reports.view')) {
         <div class="bg-white rounded-2xl border border-gray-200 p-4">
           <div class="flex items-center gap-3">
             <div class="w-10 h-10 rounded-xl bg-green-50 text-green-600 flex items-center justify-center">
@@ -53,6 +55,7 @@ import { PaginationComponent } from '../../../shared/components/pagination/pagin
             </div>
           </div>
         </div>
+        }
         <div class="bg-white rounded-2xl border border-gray-200 p-4">
           <div class="flex items-center gap-3">
             <div class="w-10 h-10 rounded-xl bg-yellow-50 text-yellow-600 flex items-center justify-center">
@@ -141,7 +144,11 @@ import { PaginationComponent } from '../../../shared/components/pagination/pagin
                     }
                   </div>
                 </td>
-                <td class="px-5 py-3.5 text-end font-semibold text-gray-900">{{ inv.total | currency: settingsStore.currency() : 'symbol-narrow' : '1.0-0' }}</td>
+                <td class="px-5 py-3.5 text-end font-semibold text-gray-900">
+                  @if (authService.hasPermission('reports.view')) {
+                    {{ inv.total | currency: settingsStore.currency() : 'symbol-narrow' : '1.0-0' }}
+                  } @else { — }
+                </td>
                 <td class="px-5 py-3.5 text-center">
                   <span class="inline-flex items-center text-xs px-2.5 py-1 rounded-full font-medium"
                     [class]="inv.isRefund ? 'bg-red-50 text-red-700 ring-1 ring-red-600/20' : 'bg-green-50 text-green-700 ring-1 ring-green-600/20'">
@@ -184,6 +191,7 @@ export class InvoicesListComponent implements OnInit {
   readonly settingsStore = inject(SettingsStore);
   readonly tenantService = inject(TenantService);
   readonly i18n = inject(I18nService);
+  readonly authService = inject(AuthService);
 
   readonly invoices = signal<Invoice[]>([]);
   readonly paginated = signal<PaginatedList<Invoice> | null>(null);
