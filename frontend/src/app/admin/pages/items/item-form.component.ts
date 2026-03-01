@@ -278,14 +278,9 @@ const COLOR_OPTIONS = [
             </div>
             @if (form.taxStatus === 'Taxable') {
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">{{ i18n.t('items.vatPercent') }}</label>
-                <input [(ngModel)]="form.vatPercent" type="number" min="0" max="100" class="w-full px-3.5 py-2 border border-gray-300 rounded-xl text-sm outline-none bg-white transition" />
+                <label class="block text-sm font-medium text-gray-700 mb-1">{{ i18n.t('items.vatAmount') || 'VAT Amount' }}</label>
+                <input [(ngModel)]="form.vatPercent" type="number" min="0" class="w-full px-3.5 py-2 border border-gray-300 rounded-xl text-sm outline-none bg-white transition" placeholder="0.00" />
               </div>
-              @if (form.price && form.vatPercent) {
-                <div class="flex items-end pb-1">
-                  <span class="text-sm text-gray-500">{{ i18n.t('items.taxAmount') }}: <strong class="text-gray-900">{{ (form.price * form.vatPercent / 100) | number:'1.2-2' }}</strong></span>
-                </div>
-              }
             }
           </div>
         </div>
@@ -372,9 +367,9 @@ const COLOR_OPTIONS = [
 
         <!-- Structured Specs -->
         <div>
-          <div class="flex items-center justify-between mb-2">
+          <div class="flex items-center justify-between mb-3">
             <label class="block text-sm font-medium text-gray-700">{{ i18n.t('items.specs') }}</label>
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-3">
               <button type="button" (click)="loadPresetSpecs()" class="text-xs text-indigo-600 hover:text-indigo-800 font-medium transition">
                 {{ i18n.t('items.loadPreset') || 'Load Presets' }}
               </button>
@@ -384,17 +379,35 @@ const COLOR_OPTIONS = [
               </button>
             </div>
           </div>
-          <div class="space-y-2">
-            @for (spec of specsEntries; track $index; let i = $index) {
-              <div class="flex items-center gap-2">
-                <input [(ngModel)]="spec.label" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none transition" placeholder="e.g. Display, Processor, Camera" />
-                <input [(ngModel)]="spec.value" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none transition" placeholder="e.g. 6.7 inch OLED" />
-                <button type="button" (click)="removeSpecEntry(i)" class="text-red-400 hover:text-red-600 p-1 transition shrink-0">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                </button>
+          <!-- Preset spec fields grid -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3 mb-3">
+            @for (field of PRESET_SPEC_FIELDS; track field) {
+              <div>
+                <label class="block text-xs font-medium text-gray-500 mb-1">{{ field }}</label>
+                <input
+                  [ngModel]="getSpecValue(field)"
+                  (ngModelChange)="setSpecValue(field, $event)"
+                  class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm outline-none transition focus:border-gray-400"
+                  placeholder="e.g. 6.7 inch OLED" />
               </div>
             }
           </div>
+          <!-- Custom spec entries (non-preset labels) -->
+          @if (hasCustomSpecs()) {
+            <div class="space-y-2 mb-3 pt-3 border-t border-gray-100">
+              @for (spec of specsEntries; track $index; let i = $index) {
+                @if (!isPresetSpec(spec.label)) {
+                  <div class="flex items-center gap-2">
+                    <input [(ngModel)]="spec.label" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none transition" placeholder="Label" />
+                    <input [(ngModel)]="spec.value" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none transition" placeholder="e.g. 6.7 inch OLED" />
+                    <button type="button" (click)="removeSpecEntry(i)" class="text-red-400 hover:text-red-600 p-1 transition shrink-0">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                    </button>
+                  </div>
+                }
+              }
+            </div>
+          }
           <p class="text-xs text-gray-400 mt-1">{{ i18n.t('items.specsHint') }}</p>
         </div>
 
@@ -626,6 +639,7 @@ export class ItemFormComponent implements OnInit {
   readonly ramOptions = RAM_OPTIONS;
   readonly colorOptions = COLOR_OPTIONS;
   readonly conditionOptions = ['New', 'Used', 'Refurbished'];
+  readonly PRESET_SPEC_FIELDS = ['Color', 'Storage', 'RAM', 'Display', 'Processor', 'Camera', 'Front Camera', 'Battery', 'OS', 'SIM', 'Connectivity', 'Sensors', 'Dimensions', 'Weight'];
 
   selectedProviderIds = new Set<string>();
   checklist: ChecklistEntry[] = [];
@@ -655,7 +669,7 @@ export class ItemFormComponent implements OnInit {
     brandId: '', categoryId: '',
     quantity: 1, lowStockThreshold: 2,
     imei: '', serialNumber: '',
-    taxStatus: 'Taxable', vatPercent: 14,
+    taxStatus: 'Taxable', vatPercent: 0,
     color: '', storage: '', ram: '',
     batteryHealth: null, warrantyType: '', warrantyMonths: null,
     installmentAvailable: false,
@@ -785,7 +799,7 @@ export class ItemFormComponent implements OnInit {
   // Helpers
 
   onTaxChange(): void {
-    this.form.vatPercent = this.form.taxStatus === 'Exempt' ? 0 : 14;
+    if (this.form.taxStatus === 'Exempt') this.form.vatPercent = 0;
   }
 
   autoSlug(): void {
@@ -830,6 +844,22 @@ export class ItemFormComponent implements OnInit {
   addSpecEntry(): void { this.specsEntries.push({ label: '', value: '' }); }
   removeSpecEntry(idx: number): void { this.specsEntries.splice(idx, 1); }
 
+  getSpecValue(label: string): string {
+    return this.specsEntries.find(s => s.label.toLowerCase() === label.toLowerCase())?.value ?? '';
+  }
+
+  setSpecValue(label: string, value: string): void {
+    this.syncSpecEntry(label, value);
+  }
+
+  isPresetSpec(label: string): boolean {
+    return this.PRESET_SPEC_FIELDS.some(f => f.toLowerCase() === label.trim().toLowerCase());
+  }
+
+  hasCustomSpecs(): boolean {
+    return this.specsEntries.some(s => !this.isPresetSpec(s.label));
+  }
+
   syncSpecEntry(label: string, value: string): void {
     const existing = this.specsEntries.find(s => s.label.trim().toLowerCase() === label.toLowerCase());
     if (value) {
@@ -860,25 +890,10 @@ export class ItemFormComponent implements OnInit {
     this.syncSpecEntry('RAM', this.form.ram);
   }
   loadPresetSpecs(): void {
-    const hasVal = (label: string) => this.specsEntries.some(s => s.label.trim().toLowerCase() === label.toLowerCase());
-    const base: { label: string; value: string }[] = [
-      { label: 'Color', value: this.form.color || '' },
-      { label: 'Storage', value: this.form.storage || '' },
-      { label: 'RAM', value: this.form.ram || '' },
-      { label: 'Display', value: '' },
-      { label: 'Processor', value: '' },
-      { label: 'Camera', value: '' },
-      { label: 'Front Camera', value: '' },
-      { label: 'Battery', value: '' },
-      { label: 'OS', value: '' },
-      { label: 'SIM', value: '' },
-      { label: 'Connectivity', value: '' },
-      { label: 'Sensors', value: '' },
-      { label: 'Dimensions', value: '' },
-      { label: 'Weight', value: '' },
-    ];
-    // Preserve existing entries and merge presets
-    this.specsEntries = base.filter((b, idx, arr) => arr.findIndex(x => x.label === b.label) === idx);
+    // Sync device-detail fields into spec entries
+    if (this.form.color) this.syncSpecEntry('Color', this.form.color);
+    if (this.form.storage) this.syncSpecEntry('Storage', this.form.storage);
+    if (this.form.ram) this.syncSpecEntry('RAM', this.form.ram);
   }
 
   loadPresetBoxItems(): void {
