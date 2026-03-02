@@ -92,11 +92,12 @@ public partial class ItemService : IItemService
             CategoryId = request.CategoryId, Title = request.Title,
             Slug = string.IsNullOrEmpty(request.Slug) ? Slugify(request.Title) : request.Slug,
             Description = request.Description, Price = request.Price, OldPrice = request.OldPrice,
-            TaxStatus = request.TaxStatus, VatPercent = request.VatPercent, Condition = request.Condition,
+            TaxStatus = request.TaxStatus, VatPercent = Math.Clamp(request.VatPercent ?? 0m, 0m, 100m), Condition = request.Condition,
             BatteryHealth = request.BatteryHealth, IMEI = request.IMEI, SerialNumber = request.SerialNumber,
             WarrantyType = request.WarrantyType, WarrantyMonths = request.WarrantyMonths,
             Quantity = request.Quantity, ChecklistJson = request.ChecklistJson,
             CustomFieldsJson = request.CustomFieldsJson, IsFeatured = request.IsFeatured,
+            DeviceType = request.DeviceType,
             Color = request.Color, Storage = request.Storage, RAM = request.RAM,
             InstallmentAvailable = request.InstallmentAvailable,
             Specs = request.Specs, WhatsInTheBox = request.WhatsInTheBox
@@ -116,11 +117,12 @@ public partial class ItemService : IItemService
         item.CategoryId = request.CategoryId; item.Title = request.Title;
         item.Slug = string.IsNullOrEmpty(request.Slug) ? Slugify(request.Title) : request.Slug;
         item.Description = request.Description; item.Price = request.Price; item.OldPrice = request.OldPrice;
-        item.TaxStatus = request.TaxStatus; item.VatPercent = request.VatPercent; item.Condition = request.Condition;
+        item.TaxStatus = request.TaxStatus; item.VatPercent = Math.Clamp(request.VatPercent ?? 0m, 0m, 100m); item.Condition = request.Condition;
         item.BatteryHealth = request.BatteryHealth; item.IMEI = request.IMEI; item.SerialNumber = request.SerialNumber;
         item.WarrantyType = request.WarrantyType; item.WarrantyMonths = request.WarrantyMonths;
         item.Quantity = request.Quantity; item.ChecklistJson = request.ChecklistJson;
         item.CustomFieldsJson = request.CustomFieldsJson; item.IsFeatured = request.IsFeatured;
+        item.DeviceType = request.DeviceType;
         item.Color = request.Color; item.Storage = request.Storage; item.RAM = request.RAM;
         item.InstallmentAvailable = request.InstallmentAvailable;
         item.Specs = request.Specs; item.WhatsInTheBox = request.WhatsInTheBox;
@@ -207,6 +209,7 @@ public partial class ItemService : IItemService
         Quantity = i.Quantity, Status = i.Status, MainImageUrl = i.MainImageUrl,
         GalleryImagesJson = i.GalleryImagesJson, ChecklistJson = i.ChecklistJson,
         CustomFieldsJson = i.CustomFieldsJson, IsFeatured = i.IsFeatured,
+        DeviceType = i.DeviceType,
         Color = i.Color, Storage = i.Storage, RAM = i.RAM,
         InstallmentAvailable = i.InstallmentAvailable,
         Specs = i.Specs, WhatsInTheBox = i.WhatsInTheBox,

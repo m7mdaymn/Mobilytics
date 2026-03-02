@@ -54,4 +54,13 @@ public class InvoicesController : BaseApiController
         var userId = GetUserId();
         return Ok(await _svc.RefundAsync(tenantId, id, request, userId, ct));
     }
+
+    [HttpDelete("{id:guid}")]
+    [RequirePermission("invoices.delete")]
+    public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
+    {
+        var tenantId = _tenantContext.TenantId!.Value;
+        await _svc.DeleteAsync(tenantId, id, ct);
+        return NoContent();
+    }
 }

@@ -43,6 +43,7 @@ export type PermissionKey =
   | 'home.manage'
   | 'invoices.create'
   | 'invoices.refund'
+  | 'invoices.delete'
   | 'expenses.manage'
   | 'employees.manage'
   | 'leads.manage'
@@ -52,7 +53,7 @@ export type PermissionKey =
 export const ALL_PERMISSIONS: PermissionKey[] = [
   'items.create', 'items.edit', 'items.delete',
   'itemtypes.manage', 'brands.manage', 'categories.manage',
-  'home.manage', 'invoices.create', 'invoices.refund',
+  'home.manage', 'invoices.create', 'invoices.refund', 'invoices.delete',
   'expenses.manage', 'employees.manage', 'leads.manage',
   'reports.view', 'settings.edit',
 ];

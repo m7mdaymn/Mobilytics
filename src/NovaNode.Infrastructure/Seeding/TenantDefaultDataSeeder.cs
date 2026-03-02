@@ -129,16 +129,17 @@ public static class TenantDefaultDataSeeder
                 StoreName = resolvedName,
                 CurrencyCode = "EGP",
                 ThemePresetId = 1,
+                SystemThemeId = 4,
                 HeaderNoticeText = $"🚚 Free Delivery | ✅ Warranty on all products | 💳 Installment plans available",
                 AboutTitle = $"Welcome to {resolvedName}",
                 AboutDescription = $"{resolvedName} is your trusted destination for the latest smartphones, tablets, laptops and accessories. We offer genuine products with manufacturer warranty, flexible installment plans, and exceptional after-sales support. Whether you're looking for the newest flagship or a quality pre-owned device, we've got you covered with competitive prices and personalized service.",
                 AboutImageUrl = null,
                 HeroBannersJson = $@"[
-                    {{""imageUrl"":"""",""title"":""Welcome to {resolvedName}"",""subtitle"":""Your trusted destination for smartphones, tablets & accessories"",""linkUrl"":""/catalog""}},
-                    {{""imageUrl"":"""",""title"":""Latest Smartphones"",""subtitle"":""Discover the newest arrivals with warranty & installment options"",""linkUrl"":""/catalog""}},
-                    {{""imageUrl"":"""",""title"":""Buy Now, Pay Later"",""subtitle"":""Flexible installment plans with 0% interest from top providers"",""linkUrl"":""/catalog?installmentAvailable=true""}},
-                    {{""imageUrl"":"""",""title"":""Certified Pre-Owned"",""subtitle"":""Quality checked used phones at unbeatable prices"",""linkUrl"":""/catalog?condition=Used""}},
-                    {{""imageUrl"":"""",""title"":""Accessories & More"",""subtitle"":""Cases, chargers, earphones and everything your device needs"",""linkUrl"":""/catalog?category=accessories""}}
+                    {{""imageUrl"":""https://images.unsplash.com/photo-1616348436168-de43ad0db179?w=1600&q=80"",""title"":""Welcome to {resolvedName}"",""subtitle"":""Your trusted destination for smartphones, tablets & accessories"",""linkUrl"":""/catalog""}},
+                    {{""imageUrl"":""https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=1600&q=80"",""title"":""Latest Smartphones"",""subtitle"":""Discover the newest arrivals with warranty & installment options"",""linkUrl"":""/catalog""}},
+                    {{""imageUrl"":""https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=1600&q=80"",""title"":""Buy Now, Pay Later"",""subtitle"":""Flexible installment plans with 0% interest from top providers"",""linkUrl"":""/catalog?installmentAvailable=true""}},
+                    {{""imageUrl"":""https://images.unsplash.com/photo-1592899677977-9c10ca588bbd?w=1600&q=80"",""title"":""Certified Pre-Owned"",""subtitle"":""Quality checked used phones at unbeatable prices"",""linkUrl"":""/catalog?condition=Used""}},
+                    {{""imageUrl"":""https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=1600&q=80"",""title"":""Accessories & More"",""subtitle"":""Cases, chargers, earphones and everything your device needs"",""linkUrl"":""/catalog?category=accessories""}}
                 ]",
                 TestimonialsJson = @"[
                     {""name"":""Ahmed M."",""text"":""Excellent store with genuine products and great prices. The installment plan made it easy to get the latest iPhone. Highly recommend!"",""rating"":5},
@@ -259,17 +260,35 @@ public static class TenantDefaultDataSeeder
             await db.SaveChangesAsync(ct);
         }
 
-        // ── Installment Providers (add missing by name) ──
+        // ── Installment Providers (add missing by name, with logo URLs) ──
         var existingProviderNames = await db.InstallmentProviders.Where(ip => ip.TenantId == tenantId).Select(ip => ip.Name).ToListAsync(ct);
-        var defaultProviders = new[] { ("ValU", 0), ("Souhoola", 1), ("Contact", 2), ("Shahry", 3), ("Forsa", 4) };
-        var newProviders = defaultProviders.Where(p => !existingProviderNames.Contains(p.Item1))
-            .Select(p => new InstallmentProvider { TenantId = tenantId, Name = p.Item1, Type = "BNPL", IsActive = true, DisplayOrder = p.Item2 })
+        var defaultProviders = new (string Name, int Order, string? LogoUrl)[]
+        {
+            ("ValU", 0, "https://mir-s3-cdn-cf.behance.net/project_modules/fs/0efea2100159065.5f031e3e8c32c.jpg"),
+            ("Souhoola", 1, "https://www.souhoola.net/assets/img/home/Group%203100-min.png"),
+            ("Contact", 2, "https://contact-app-prod.s3.us-east-2.amazonaws.com/contact.eg/alahly_momkn.svg"),
+            ("Fawry", 3, "https://contact-app-prod.s3.us-east-2.amazonaws.com/contact.eg/Homepage_channels_logos/fawry.svg"),
+            ("\u0636\u0627\u0645\u0646", 4, "https://contact-app-prod.s3.us-east-2.amazonaws.com/contact.eg/Homepage_channels_logos/damen.svg"),
+            ("Aman", 5, "https://contact-app-prod.s3.us-east-2.amazonaws.com/contact.eg/Homepage_channels_logos/aman.svg"),
+            ("Momkn", 6, "https://contact-app-prod.s3.us-east-2.amazonaws.com/contact.eg/alahly_momkn.svg"),
+        };
+        var newProviders = defaultProviders.Where(p => !existingProviderNames.Contains(p.Name))
+            .Select(p => new InstallmentProvider { TenantId = tenantId, Name = p.Name, Type = "BNPL", LogoUrl = p.LogoUrl, IsActive = true, DisplayOrder = p.Order })
             .ToArray();
+
+        // Also update logo URLs for existing providers that have no logo
+        var existingProviders = await db.InstallmentProviders.Where(ip => ip.TenantId == tenantId && ip.LogoUrl == null).ToListAsync(ct);
+        foreach (var ep in existingProviders)
+        {
+            var match = defaultProviders.FirstOrDefault(p => p.Name == ep.Name);
+            if (match.LogoUrl != null) ep.LogoUrl = match.LogoUrl;
+        }
+
         if (newProviders.Length > 0)
         {
             db.InstallmentProviders.AddRange(newProviders);
-            await db.SaveChangesAsync(ct);
         }
+        await db.SaveChangesAsync(ct);
     }
 
     /// <summary>

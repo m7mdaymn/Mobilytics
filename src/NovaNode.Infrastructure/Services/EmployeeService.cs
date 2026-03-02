@@ -23,6 +23,15 @@ public class EmployeeService : IEmployeeService
         return MapDto(emp);
     }
 
+    private static readonly string[] DefaultPermissionKeys =
+    [
+        "items.create", "items.edit", "items.delete",
+        "brands.manage", "categories.manage", "itemtypes.manage",
+        "invoices.create", "invoices.refund", "invoices.delete",
+        "expenses.manage", "employees.manage",
+        "leads.manage", "settings.edit"
+    ];
+
     public async Task<EmployeeDto> CreateAsync(Guid tenantId, CreateEmployeeRequest request, CancellationToken ct = default)
     {
         var emp = new Employee
@@ -32,7 +41,20 @@ public class EmployeeService : IEmployeeService
             Role = request.Role, SalaryMonthly = request.SalaryMonthly
         };
         _db.Employees.Add(emp);
+
+        // Seed all permissions enabled by default for new employees
+        foreach (var key in DefaultPermissionKeys)
+        {
+            _db.Permissions.Add(new Permission
+            {
+                TenantId = tenantId, EmployeeId = emp.Id, Key = key, IsEnabled = true
+            });
+        }
+
         await _db.SaveChangesAsync(ct);
+
+        // Reload with permissions for the DTO
+        await _db.Entry(emp).Collection(e => e.Permissions).LoadAsync(ct);
         return MapDto(emp);
     }
 

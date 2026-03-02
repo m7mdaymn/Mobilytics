@@ -153,7 +153,7 @@ interface PagedExpenses {
                     {{ exp.amount | currency: settingsStore.currency() : 'symbol-narrow' : '1.0-0' }}
                   } @else { — }
                 </td>
-                <td class="px-4 py-3 text-end space-x-2">
+                <td class="px-4 py-3 text-end space-x-2 rtl:space-x-reverse">
                   <button (click)="editExpense(exp)" class="text-blue-600 hover:underline">{{ i18n.t('common.edit') }}</button>
                   <button (click)="deleteExpense(exp)" class="text-red-600 hover:underline">{{ i18n.t('common.delete') }}</button>
                 </td>

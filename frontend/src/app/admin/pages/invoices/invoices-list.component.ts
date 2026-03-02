@@ -228,7 +228,9 @@ export class InvoicesListComponent implements OnInit {
       if (d) {
         this.paginated.set(d);
         this.invoices.set(d.items);
-        this.totalRevenue.set(d.items.filter(inv => !inv.isRefund).reduce((sum, inv) => sum + inv.total, 0));
+        const salesTotal = d.items.filter(inv => !inv.isRefund).reduce((sum, inv) => sum + inv.total, 0);
+        const refundTotal = d.items.filter(inv => inv.isRefund).reduce((sum, inv) => sum + Math.abs(inv.total), 0);
+        this.totalRevenue.set(salesTotal - refundTotal);
         this.pendingCount.set(0);
         this.refundedCount.set(d.items.filter(inv => inv.isRefund).length);
       }

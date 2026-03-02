@@ -66,7 +66,7 @@ public class CreateItemRequestValidator : AbstractValidator<CreateItemRequest>
 {
     public CreateItemRequestValidator()
     {
-        RuleFor(x => x.ItemTypeId).NotEmpty();
+        RuleFor(x => x.CategoryId).NotEmpty();
         RuleFor(x => x.Title).NotEmpty().MaximumLength(500);
         RuleFor(x => x.Price).GreaterThanOrEqualTo(0);
         RuleFor(x => x.Quantity).GreaterThanOrEqualTo(0);
@@ -77,7 +77,7 @@ public class UpdateItemRequestValidator : AbstractValidator<UpdateItemRequest>
 {
     public UpdateItemRequestValidator()
     {
-        RuleFor(x => x.ItemTypeId).NotEmpty();
+        RuleFor(x => x.CategoryId).NotEmpty();
         RuleFor(x => x.Title).NotEmpty().MaximumLength(500);
         RuleFor(x => x.Price).GreaterThanOrEqualTo(0);
         RuleFor(x => x.Quantity).GreaterThanOrEqualTo(0);
@@ -155,6 +155,7 @@ public class UpdateThemeRequestValidator : AbstractValidator<UpdateThemeRequest>
 {
     public UpdateThemeRequestValidator()
     {
-        RuleFor(x => x.ThemePresetId).InclusiveBetween(1, 6);
+        RuleFor(x => x.ThemePresetId).InclusiveBetween(1, 4);
+        RuleFor(x => x.SystemThemeId).InclusiveBetween(1, 4);
     }
 }

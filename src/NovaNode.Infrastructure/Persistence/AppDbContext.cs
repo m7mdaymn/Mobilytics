@@ -44,6 +44,7 @@ public class AppDbContext : DbContext
     public DbSet<InstallmentPlan> InstallmentPlans => Set<InstallmentPlan>();
     public DbSet<TenantSlugHistory> TenantSlugHistories => Set<TenantSlugHistory>();
     public DbSet<Notification> Notifications => Set<Notification>();
+    public DbSet<SpecFieldTemplate> SpecFieldTemplates => Set<SpecFieldTemplate>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -137,6 +138,7 @@ public class AppDbContext : DbContext
             b.Property(i => i.Price).HasPrecision(18, 2);
             b.Property(i => i.OldPrice).HasPrecision(18, 2);
             b.Property(i => i.VatPercent).HasPrecision(5, 2);
+            b.Property(i => i.MonthlyPayment).HasPrecision(18, 2);
             b.HasOne(i => i.ItemType).WithMany(it => it.Items).HasForeignKey(i => i.ItemTypeId).OnDelete(DeleteBehavior.SetNull);
             b.HasOne(i => i.Brand).WithMany(br => br.Items).HasForeignKey(i => i.BrandId).OnDelete(DeleteBehavior.SetNull);
             b.HasOne(i => i.Category).WithMany(c => c.Items).HasForeignKey(i => i.CategoryId).OnDelete(DeleteBehavior.Restrict);
@@ -247,6 +249,13 @@ public class AppDbContext : DbContext
         {
             b.HasIndex(h => h.OldSlug).IsUnique();
             b.HasOne(h => h.Tenant).WithMany(t => t.SlugHistory).HasForeignKey(h => h.TenantId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // SpecFieldTemplate - Global Query Filter
+        modelBuilder.Entity<SpecFieldTemplate>(b =>
+        {
+            b.HasIndex(sf => new { sf.TenantId, sf.Label, sf.DeviceType });
+            b.HasQueryFilter(sf => _tenantContext.TenantId == null || sf.TenantId == _tenantContext.TenantId);
         });
     }
 

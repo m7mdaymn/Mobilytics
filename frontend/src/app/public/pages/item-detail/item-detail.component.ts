@@ -198,7 +198,7 @@ interface InstallmentPlan {
           </div>
         </div>
 
-        <!-- â”€â”€â”€ Tabbed Content Section â”€â”€â”€ -->
+        <!-- ─── Tabbed Content Section ─── -->
         <div class="mt-12">
           <!-- Tab Buttons -->
           <div class="flex gap-1 border-b border-gray-200 overflow-x-auto">

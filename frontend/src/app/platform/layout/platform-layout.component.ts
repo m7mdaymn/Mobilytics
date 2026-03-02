@@ -23,7 +23,7 @@ interface NavItem {
       <!-- Sidebar -->
       <aside
         class="fixed lg:static inset-y-0 start-0 z-50 w-[260px] bg-black text-white flex flex-col transition-transform duration-200"
-        [class]="sidebarOpen() ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'">
+        [class]="sidebarOpen() ? 'translate-x-0' : '-translate-x-full lg:translate-x-0 rtl:translate-x-full rtl:lg:translate-x-0'">
 
         <!-- Brand -->
         <div class="h-16 flex items-center gap-3 px-5 border-b border-white/10 shrink-0">

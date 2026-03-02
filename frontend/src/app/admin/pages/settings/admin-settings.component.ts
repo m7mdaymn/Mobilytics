@@ -1,8 +1,9 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { NgClass } from '@angular/common';
 import { ApiService } from '../../../core/services/api.service';
 import { ToastService } from '../../../core/services/toast.service';
-import { AdminStoreSettings, SocialLinks, PwaSettings, WhatsAppTemplates, THEME_PRESETS } from '../../../core/models/settings.models';
+import { AdminStoreSettings, SocialLinks, PwaSettings, WhatsAppTemplates, COLOR_THEMES, SYSTEM_THEMES } from '../../../core/models/settings.models';
 import { SettingsStore, HeroBanner, Testimonial, FaqItem } from '../../../core/stores/settings.store';
 import { I18nService } from '../../../core/services/i18n.service';
 import { resolveImageUrl } from '../../../core/utils/image.utils';
@@ -16,7 +17,7 @@ interface StorePolicies {
 @Component({
   selector: 'app-admin-settings',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, NgClass],
   template: `
     <div class="space-y-6">
       <h1 class="text-2xl font-bold text-gray-900">{{ i18n.t('settings.title') }}</h1>
@@ -84,54 +85,126 @@ interface StorePolicies {
           <div class="bg-white rounded-2xl border border-gray-200 p-6 space-y-5">
             <h2 class="font-semibold text-lg text-gray-900">{{ i18n.t('settings.theme') }}</h2>
             <p class="text-sm text-gray-500">{{ i18n.t('settings.themeHint') }}</p>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-              @for (preset of themePresets; track preset.id) {
-                <button (click)="selectPreset(preset.id)"
-                  class="relative rounded-2xl border-2 p-3 transition-all hover:shadow-md text-start group"
-                  [class]="selectedPreset() === preset.id
-                    ? 'border-gray-900 shadow-lg ring-2 ring-gray-900/20'
-                    : 'border-gray-200 hover:border-gray-400'">
-                  @if (selectedPreset() === preset.id) {
-                    <div class="absolute top-2 end-2 w-5 h-5 bg-gray-900 rounded-full flex items-center justify-center">
-                      <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+
+            <!-- Color Theme -->
+            <div class="space-y-3">
+              <h3 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                <span class="w-5 h-5 rounded-full bg-black inline-block ring-1 ring-black/10"></span>
+                Color Theme
+              </h3>
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                @for (preset of colorThemes; track preset.id) {
+                  <button (click)="selectPreset(preset.id)"
+                    class="relative rounded-2xl border-2 p-3 transition-all hover:shadow-md text-start group"
+                    [class]="selectedPreset() === preset.id
+                      ? 'border-gray-900 shadow-lg ring-2 ring-gray-900/20'
+                      : 'border-gray-200 hover:border-gray-400'">
+                    @if (selectedPreset() === preset.id) {
+                      <div class="absolute top-2 end-2 w-5 h-5 bg-gray-900 rounded-full flex items-center justify-center">
+                        <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                      </div>
+                    }
+                    <!-- Mini storefront preview -->
+                    <div class="rounded-lg overflow-hidden border border-gray-100 mb-2.5">
+                      <div [style.background-color]="preset.primary" class="h-5 flex items-center px-2 gap-1">
+                        <div class="w-2 h-2 rounded-full bg-white/30"></div>
+                        <div class="flex-1 h-1.5 bg-white/20 rounded-full mx-1"></div>
+                        <div class="w-3 h-1.5 bg-white/20 rounded-full"></div>
+                      </div>
+                      <div [style.background-color]="preset.secondary" class="h-3 flex items-center justify-center gap-2 px-2">
+                        <div class="w-4 h-1 bg-white/20 rounded-full"></div>
+                        <div class="w-5 h-1 bg-white/20 rounded-full"></div>
+                        <div class="w-4 h-1 bg-white/20 rounded-full"></div>
+                      </div>
+                      <div class="bg-gray-50 p-2 space-y-1.5">
+                        <div [style.background-color]="preset.accent" class="h-6 rounded opacity-30"></div>
+                        <div class="grid grid-cols-3 gap-1">
+                          <div class="bg-white h-5 rounded shadow-sm border border-gray-100"></div>
+                          <div class="bg-white h-5 rounded shadow-sm border border-gray-100"></div>
+                          <div class="bg-white h-5 rounded shadow-sm border border-gray-100"></div>
+                        </div>
+                      </div>
+                      <div [style.background-color]="preset.secondary" class="h-3"></div>
                     </div>
-                  }
-                  <!-- Mini storefront preview -->
-                  <div class="rounded-lg overflow-hidden border border-gray-100 mb-2.5">
-                    <!-- Header bar -->
-                    <div [style.background-color]="preset.primary" class="h-5 flex items-center px-2 gap-1">
-                      <div class="w-2 h-2 rounded-full bg-white/30"></div>
-                      <div class="flex-1 h-1.5 bg-white/20 rounded-full mx-1"></div>
-                      <div class="w-3 h-1.5 bg-white/20 rounded-full"></div>
+                    <!-- Color dots -->
+                    <div class="flex items-center gap-1.5 mb-1">
+                      <div [style.background-color]="preset.primary" class="w-4 h-4 rounded-full ring-1 ring-black/10"></div>
+                      <div [style.background-color]="preset.secondary" class="w-4 h-4 rounded-full ring-1 ring-black/10"></div>
+                      <div [style.background-color]="preset.accent" class="w-4 h-4 rounded-full ring-1 ring-black/10"></div>
                     </div>
-                    <!-- Nav bar -->
-                    <div [style.background-color]="preset.secondary" class="h-3 flex items-center justify-center gap-2 px-2">
-                      <div class="w-4 h-1 bg-white/20 rounded-full"></div>
-                      <div class="w-5 h-1 bg-white/20 rounded-full"></div>
-                      <div class="w-4 h-1 bg-white/20 rounded-full"></div>
-                    </div>
-                    <!-- Content area -->
-                    <div class="bg-gray-50 p-2 space-y-1.5">
-                      <div [style.background-color]="preset.accent" class="h-6 rounded opacity-30"></div>
-                      <div class="grid grid-cols-3 gap-1">
-                        <div class="bg-white h-5 rounded shadow-sm border border-gray-100"></div>
-                        <div class="bg-white h-5 rounded shadow-sm border border-gray-100"></div>
-                        <div class="bg-white h-5 rounded shadow-sm border border-gray-100"></div>
+                    <p class="text-xs font-bold text-gray-900">{{ preset.name }}</p>
+                    <p class="text-[10px] text-gray-400 leading-tight">{{ preset.description }}</p>
+                  </button>
+                }
+              </div>
+            </div>
+
+            <!-- System Theme -->
+            <div class="space-y-3">
+              <h3 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                <span class="text-base">🎨</span>
+                UI Style
+              </h3>
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                @for (theme of systemThemes; track theme.id) {
+                  <button (click)="selectSystemTheme(theme.id)"
+                    class="relative rounded-2xl border-2 p-3 transition-all hover:shadow-md text-start group"
+                    [class]="selectedSystemTheme() === theme.id
+                      ? 'border-gray-900 shadow-lg ring-2 ring-gray-900/20'
+                      : 'border-gray-200 hover:border-gray-400'">
+                    @if (selectedSystemTheme() === theme.id) {
+                      <div class="absolute top-2 end-2 w-5 h-5 bg-gray-900 rounded-full flex items-center justify-center">
+                        <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                      </div>
+                    }
+                    <!-- System theme mini preview -->
+                    <div class="rounded-lg overflow-hidden border border-gray-100 mb-2.5 h-16 flex flex-col"
+                      [ngClass]="{
+                        'bg-gradient-to-br from-slate-800 to-slate-900': theme.id === 1,
+                        'bg-gradient-to-br from-gray-200 to-gray-300': theme.id === 2,
+                        'bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900': theme.id === 3,
+                        'bg-white': theme.id === 4
+                      }">
+                      <!-- Preview header -->
+                      <div class="h-5 flex items-center px-2 gap-1"
+                        [ngClass]="{
+                          'bg-white/10 backdrop-blur-sm': theme.id === 1,
+                          'bg-white/80 shadow-[0_2px_8px_rgba(0,0,0,0.1)]': theme.id === 2,
+                          'bg-gradient-to-r from-gray-800 to-gray-700': theme.id === 3,
+                          'bg-white/80 backdrop-blur-md border-b border-gray-100': theme.id === 4
+                        }">
+                        <div class="w-2 h-2 rounded-full"
+                          [ngClass]="{
+                            'bg-white/40': theme.id === 1 || theme.id === 3,
+                            'bg-gray-400/60': theme.id === 2,
+                            'bg-gray-400': theme.id === 4
+                          }"></div>
+                        <div class="flex-1 h-1 rounded-full mx-1"
+                          [ngClass]="{
+                            'bg-white/20': theme.id === 1 || theme.id === 3,
+                            'bg-gray-300': theme.id === 2,
+                            'bg-gray-200': theme.id === 4
+                          }"></div>
+                      </div>
+                      <!-- Preview cards -->
+                      <div class="flex-1 flex items-center justify-center gap-1 p-1">
+                        @for (i of [1,2,3]; track i) {
+                          <div class="flex-1 h-8 rounded-md"
+                            [ngClass]="{
+                              'bg-white/10 backdrop-blur border border-white/20': theme.id === 1,
+                              'bg-white shadow-[4px_4px_8px_rgba(0,0,0,0.12),-4px_-4px_8px_rgba(255,255,255,0.8)]': theme.id === 2,
+                              'bg-gradient-to-b from-gray-700 to-gray-800 shadow-[0_4px_12px_rgba(0,0,0,0.4)]': theme.id === 3,
+                              'bg-white/90 shadow-sm border border-gray-100/80': theme.id === 4
+                            }"></div>
+                        }
                       </div>
                     </div>
-                    <!-- Footer -->
-                    <div [style.background-color]="preset.secondary" class="h-3"></div>
-                  </div>
-                  <!-- Color dots -->
-                  <div class="flex items-center gap-1.5 mb-1">
-                    <div [style.background-color]="preset.primary" class="w-4 h-4 rounded-full ring-1 ring-black/10"></div>
-                    <div [style.background-color]="preset.secondary" class="w-4 h-4 rounded-full ring-1 ring-black/10"></div>
-                    <div [style.background-color]="preset.accent" class="w-4 h-4 rounded-full ring-1 ring-black/10"></div>
-                  </div>
-                  <p class="text-xs font-bold text-gray-900">{{ preset.name }}</p>
-                  <p class="text-[10px] text-gray-400 leading-tight">{{ preset.description }}</p>
-                </button>
-              }
+                    <p class="text-lg mb-1">{{ theme.icon }}</p>
+                    <p class="text-xs font-bold text-gray-900">{{ theme.name }}</p>
+                    <p class="text-[10px] text-gray-400 leading-tight">{{ theme.description }}</p>
+                  </button>
+                }
+              </div>
             </div>
             <button (click)="saveTheme()" [disabled]="saving()" class="bg-gray-900 hover:bg-black text-white px-5 py-2 rounded-lg text-sm font-semibold transition disabled:opacity-50">
               {{ saving() ? i18n.t('common.saving') : i18n.t('common.save') }}
@@ -541,8 +614,10 @@ export class AdminSettingsComponent implements OnInit {
   readonly activeTab = signal('info');
   readonly saving = signal(false);
   readonly selectedPreset = signal(1);
+  readonly selectedSystemTheme = signal(4);
 
-  themePresets = THEME_PRESETS;
+  colorThemes = COLOR_THEMES;
+  systemThemes = SYSTEM_THEMES;
 
   // Parsed local editing objects
   socialLinks: SocialLinks = {};
@@ -550,7 +625,7 @@ export class AdminSettingsComponent implements OnInit {
   workingHours = '';
   mapUrl = '';
   whatsAppTemplates: WhatsAppTemplates = { inquiryTemplate: '', followUpTemplate: '' };
-  pwaSettings: PwaSettings = { appName: '', shortName: '', themeColor: '#111827', backgroundColor: '#ffffff' };
+  pwaSettings: PwaSettings = { appName: '', shortName: '', themeColor: '#000000', backgroundColor: '#ffffff' };
 
   // New local editing objects
   heroBanners: HeroBanner[] = [];
@@ -589,11 +664,12 @@ export class AdminSettingsComponent implements OnInit {
       if (d) {
         this.settings.set(d);
         this.selectedPreset.set(d.themePresetId || 1);
+        this.selectedSystemTheme.set(d.systemThemeId || 4);
 
         // Parse JSON fields
         try { this.socialLinks = d.socialLinksJson ? JSON.parse(d.socialLinksJson) : {}; } catch { this.socialLinks = {}; }
         try { this.whatsAppTemplates = d.whatsAppTemplatesJson ? JSON.parse(d.whatsAppTemplatesJson) : { inquiryTemplate: '', followUpTemplate: '' }; } catch { this.whatsAppTemplates = { inquiryTemplate: '', followUpTemplate: '' }; }
-        try { this.pwaSettings = d.pwaSettingsJson ? JSON.parse(d.pwaSettingsJson) : { appName: '', shortName: '', themeColor: '#111827', backgroundColor: '#ffffff' }; } catch { this.pwaSettings = { appName: '', shortName: '', themeColor: '#111827', backgroundColor: '#ffffff' }; }
+        try { this.pwaSettings = d.pwaSettingsJson ? JSON.parse(d.pwaSettingsJson) : { appName: '', shortName: '', themeColor: '#000000', backgroundColor: '#ffffff' }; } catch { this.pwaSettings = { appName: '', shortName: '', themeColor: '#000000', backgroundColor: '#ffffff' }; }
         try { this.heroBanners = d.heroBannersJson ? JSON.parse(d.heroBannersJson) : []; } catch { this.heroBanners = []; }
         try { this.testimonials = d.testimonialsJson ? JSON.parse(d.testimonialsJson) : []; } catch { this.testimonials = []; }
         try { this.policies = d.policiesJson ? JSON.parse(d.policiesJson) : { returnPolicy: '', warrantyPolicy: '', privacyPolicy: '' }; } catch { this.policies = { returnPolicy: '', warrantyPolicy: '', privacyPolicy: '' }; }
@@ -613,6 +689,10 @@ export class AdminSettingsComponent implements OnInit {
 
   selectPreset(id: number): void {
     this.selectedPreset.set(id);
+  }
+
+  selectSystemTheme(id: number): void {
+    this.selectedSystemTheme.set(id);
   }
 
   // ── Save methods ──
@@ -636,10 +716,10 @@ export class AdminSettingsComponent implements OnInit {
 
   saveTheme(): void {
     this.saving.set(true);
-    this.api.put('/Settings/theme', { themePresetId: this.selectedPreset() }).subscribe({
+    this.api.put('/Settings/theme', { themePresetId: this.selectedPreset(), systemThemeId: this.selectedSystemTheme() }).subscribe({
       next: () => {
         const s = this.settings();
-        if (s) { s.themePresetId = this.selectedPreset(); this.settings.set({ ...s }); }
+        if (s) { s.themePresetId = this.selectedPreset(); s.systemThemeId = this.selectedSystemTheme(); this.settings.set({ ...s }); }
         this.settingsStore.loadSettings();
         this.toastService.success(this.i18n.t('settings.savedSuccess'));
         this.saving.set(false);

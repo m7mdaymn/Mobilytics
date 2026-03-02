@@ -24,7 +24,7 @@ import { THEME_PRESETS } from '../../../core/models/settings.models';
                 <button
                   (click)="selectPreset(preset.id)"
                   class="p-3 rounded-lg border-2 transition"
-                  [class]="selectedPreset() === preset.id ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-400'">
+                  [class]="selectedPreset() === preset.id ? 'border-gray-900 bg-gray-50' : 'border-gray-200 hover:border-gray-400'">
                   <div class="flex gap-1 mb-1">
                     <div [style.background-color]="preset.primary" class="w-5 h-5 rounded-full"></div>
                     <div [style.background-color]="preset.secondary" class="w-5 h-5 rounded-full"></div>
@@ -38,7 +38,7 @@ import { THEME_PRESETS } from '../../../core/models/settings.models';
             <button
               (click)="saveTheme()"
               [disabled]="saving()"
-              class="w-full px-3 py-2 bg-blue-500 text-white text-sm font-medium rounded hover:bg-blue-600 disabled:opacity-50 transition">
+              class="w-full px-3 py-2 bg-gray-900 text-white text-sm font-medium rounded hover:bg-black disabled:opacity-50 transition">
               {{ saving() ? 'Saving...' : 'Save Theme' }}
             </button>
           </div>

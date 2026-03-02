@@ -13,8 +13,10 @@ public class StoreSettings : BaseEntity
     public string? BannerUrl { get; set; }
     public string? WhatsAppNumber { get; set; }
     public string? PhoneNumber { get; set; }
-    /// <summary>Theme preset (1-6). Each maps to a predefined color palette.</summary>
+    /// <summary>Color theme (1-4). Controls brand colors / accent palette.</summary>
     public int ThemePresetId { get; set; } = 1;
+    /// <summary>System theme (1-4). Controls layout style (Liquid Glass, Neumorphism, Glossy 3D, Slate Minimal).</summary>
+    public int SystemThemeId { get; set; } = 4;
     public string CurrencyCode { get; set; } = "EGP";
     public string? FooterAddress { get; set; }
     public string? WorkingHours { get; set; }
@@ -26,6 +28,10 @@ public class StoreSettings : BaseEntity
 
     // Header
     public string? HeaderNoticeText { get; set; }
+
+    // Offer banner (shown above nav bar, dismissible)
+    public string? OfferBannerText { get; set; }
+    public string? OfferBannerUrl { get; set; }
 
     // About page
     public string? AboutTitle { get; set; }
@@ -47,18 +53,31 @@ public class StoreSettings : BaseEntity
     // Navigation
     public Tenant Tenant { get; set; } = null!;
 
-    // ── Theme Presets (static lookup) ──
+    // ── Color Presets (static lookup - black & white brand colors) ──
+    public static readonly Dictionary<int, ColorPreset> ColorPresets = new()
+    {
+        [1] = new("Classic",    "#000000", "#111111", "#000000"),
+        [2] = new("Soft Black", "#1a1a1a", "#333333", "#1a1a1a"),
+        [3] = new("Charcoal",   "#222222", "#444444", "#222222"),
+        [4] = new("Ink",        "#0a0a0a", "#1c1c1c", "#0a0a0a"),
+    };
+
+    // ── System Presets (static lookup - UI style, only Minimal available) ──
+    public static readonly Dictionary<int, SystemPreset> SystemPresets = new()
+    {
+        [4] = new("Slate Minimal", "Ultra-clean Apple-inspired, frosted header"),
+    };
+
+    // Keep backward-compat: old Presets maps to ColorPresets
     public static readonly Dictionary<int, ThemePreset> Presets = new()
     {
-        [1] = new("Midnight Pro", "#111827", "#374151", "#f59e0b"),
-        [2] = new("Ocean Blue", "#1e40af", "#1e3a5f", "#06b6d4"),
-        [3] = new("Forest Green", "#065f46", "#064e3b", "#34d399"),
-        [4] = new("Royal Purple", "#5b21b6", "#4c1d95", "#a78bfa"),
-        [5] = new("Sunset Orange", "#c2410c", "#9a3412", "#fb923c"),
-        [6] = new("Slate Minimal", "#0f172a", "#334155", "#94a3b8"),
-        [7] = new("Rose Gold", "#9f1239", "#881337", "#fda4af"),
-        [8] = new("Arctic Blue", "#0369a1", "#075985", "#7dd3fc"),
+        [1] = new("Classic",    "#000000", "#111111", "#000000"),
+        [2] = new("Soft Black", "#1a1a1a", "#333333", "#1a1a1a"),
+        [3] = new("Charcoal",   "#222222", "#444444", "#222222"),
+        [4] = new("Ink",        "#0a0a0a", "#1c1c1c", "#0a0a0a"),
     };
 
     public record ThemePreset(string Name, string Primary, string Secondary, string Accent);
+    public record ColorPreset(string Name, string Primary, string Secondary, string Accent);
+    public record SystemPreset(string Name, string Description);
 }

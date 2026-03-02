@@ -213,4 +213,36 @@ public class InvoiceService : IInvoiceService
             TaxStatusSnapshot = ii.TaxStatusSnapshot, VatPercentSnapshot = ii.VatPercentSnapshot
         }).ToList()
     };
+
+    public async Task DeleteAsync(Guid tenantId, Guid id, CancellationToken ct = default)
+    {
+        var invoice = await _db.Invoices
+            .Include(i => i.Items).ThenInclude(ii => ii.Item).ThenInclude(i => i!.Category)
+            .FirstOrDefaultAsync(i => i.TenantId == tenantId && i.Id == id, ct)
+            ?? throw new KeyNotFoundException("Invoice not found.");
+
+        // Restore inventory for non-refund invoices
+        if (!invoice.IsRefund)
+        {
+            foreach (var ii in invoice.Items)
+            {
+                if (ii.Item == null) continue;
+
+                if (ii.Item.Category.IsDevice)
+                {
+                    ii.Item.Status = ItemStatus.Available;
+                    ii.Item.Quantity = 1;
+                }
+                else if (ii.Item.Category.IsStockItem)
+                {
+                    ii.Item.Quantity += ii.Quantity;
+                    if (ii.Item.Status == ItemStatus.Sold)
+                        ii.Item.Status = ItemStatus.Available;
+                }
+            }
+        }
+
+        _db.Invoices.Remove(invoice);
+        await _db.SaveChangesAsync(ct);
+    }
 }

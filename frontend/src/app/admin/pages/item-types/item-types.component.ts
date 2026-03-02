@@ -133,7 +133,7 @@ import { ItemType } from '../../../core/models/item.models';
                     {{ type.isActive !== false ? 'Active' : 'Inactive' }}
                   </span>
                 </td>
-                <td class="px-4 py-3 text-end space-x-2">
+                <td class="px-4 py-3 text-end space-x-2 rtl:space-x-reverse">
                   <button (click)="editType(type)" class="text-blue-600 hover:underline">Edit</button>
                   <button (click)="deleteType(type)" class="text-red-600 hover:underline">Delete</button>
                 </td>

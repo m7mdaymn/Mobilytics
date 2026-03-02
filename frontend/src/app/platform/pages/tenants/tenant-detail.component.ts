@@ -61,7 +61,7 @@ import { environment } from '../../../../environments/environment';
           </div>
         </div>
 
-        <!-- â•â•â• TAB NAVIGATION â•â•â• -->
+        <!-- ═══ TAB NAVIGATION ═══ -->
         <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
           <div class="flex border-b border-slate-200 overflow-x-auto">
             @for (tab of pageTabs; track tab.key) {
@@ -77,7 +77,7 @@ import { environment } from '../../../../environments/environment';
           </div>
 
           <div class="p-6">
-            <!-- â”€â”€â”€ TAB: Overview â”€â”€â”€ -->
+            <!-- ─── TAB: Overview ─── -->
             @if (activePageTab() === 'overview') {
               <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <!-- Basic Info -->
@@ -148,7 +148,7 @@ import { environment } from '../../../../environments/environment';
               </div>
             }
 
-            <!-- â”€â”€â”€ TAB: Subscription â”€â”€â”€ -->
+            <!-- ─── TAB: Subscription ─── -->
             @if (activePageTab() === 'subscription') {
               <div class="space-y-4">
                 <div class="flex items-center justify-between">
@@ -209,7 +209,7 @@ import { environment } from '../../../../environments/environment';
               </div>
             }
 
-            <!-- â”€â”€â”€ TAB: Store Settings â”€â”€â”€ -->
+            <!-- ─── TAB: Store Settings ─── -->
             @if (activePageTab() === 'settings') {
               <div class="space-y-5">
                 <div class="flex items-center justify-between">
@@ -264,14 +264,14 @@ import { environment } from '../../../../environments/environment';
                       <div>
                         <label class="block text-sm font-medium text-slate-700 mb-1">Theme</label>
                         <select [(ngModel)]="settingsForm.themePresetId" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm">
-                          <option [ngValue]="1">1 â€” Midnight Pro</option>
-                          <option [ngValue]="2">2 â€” Ocean Blue</option>
-                          <option [ngValue]="3">3 â€” Forest Green</option>
-                          <option [ngValue]="4">4 â€” Royal Purple</option>
-                          <option [ngValue]="5">5 â€” Sunset Orange</option>
-                          <option [ngValue]="6">6 â€” Slate Minimal</option>
-                          <option [ngValue]="7">7 â€” Rose Gold</option>
-                          <option [ngValue]="8">8 â€” Arctic Blue</option>
+                          <option [ngValue]="1">1 — Midnight Pro</option>
+                          <option [ngValue]="2">2 — Ocean Blue</option>
+                          <option [ngValue]="3">3 — Forest Green</option>
+                          <option [ngValue]="4">4 — Royal Purple</option>
+                          <option [ngValue]="5">5 — Sunset Orange</option>
+                          <option [ngValue]="6">6 — Slate Minimal</option>
+                          <option [ngValue]="7">7 — Rose Gold</option>
+                          <option [ngValue]="8">8 — Arctic Blue</option>
                         </select>
                       </div>
                       <div>
@@ -463,7 +463,7 @@ import { environment } from '../../../../environments/environment';
               </div>
             }
 
-            <!-- â”€â”€â”€ TAB: Invoices â”€â”€â”€ -->
+            <!-- ─── TAB: Invoices ─── -->
             @if (activePageTab() === 'invoices') {
               <div class="space-y-4">
                 <div class="flex items-center justify-between">
@@ -530,7 +530,7 @@ import { environment } from '../../../../environments/environment';
               </div>
             }
 
-            <!-- â”€â”€â”€ TAB: Actions â”€â”€â”€ -->
+            <!-- ─── TAB: Actions ─── -->
             @if (activePageTab() === 'actions') {
               <div class="space-y-6">
                 <!-- Quick Actions -->
@@ -730,7 +730,7 @@ export class TenantDetailComponent implements OnInit {
     });
   }
 
-  // â”€â”€â”€ Subscription Management â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ─── Subscription Management ──────────────────────────
 
   startEditSubscription(): void {
     const sub = this.tenant()?.subscription;
@@ -764,7 +764,7 @@ export class TenantDetailComponent implements OnInit {
     if (!confirm(`Delete all subscriptions for "${tenant.name}"? Revenue will be recalculated.`)) return;
     this.api.deleteSubscription(tenant.id).subscribe({
       next: () => {
-        this.toast.success('Subscription deleted â€” revenue recalculated');
+        this.toast.success('Subscription deleted — revenue recalculated');
         this.load(tenant.id);
       },
       error: () => this.toast.error('Failed to delete subscription'),
@@ -782,7 +782,7 @@ export class TenantDetailComponent implements OnInit {
     });
   }
 
-  // â”€â”€â”€ Invoice PDF (print-based) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ─── Invoice PDF (print-based) ───────────────────────
 
   printInvoice(inv: PlatformInvoice): void {
     const tenant = this.tenant();
@@ -879,7 +879,7 @@ export class TenantDetailComponent implements OnInit {
     }
   }
 
-  // â”€â”€â”€ WhatsApp Sharing â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ─── WhatsApp Sharing ────────────────────────────────
 
   sendInvoiceWhatsApp(inv: PlatformInvoice): void {
     const tenant = this.tenant();
@@ -901,7 +901,7 @@ export class TenantDetailComponent implements OnInit {
     window.open(`https://wa.me/${cleanPhone}?text=${msg}`, '_blank');
   }
 
-  // â”€â”€â”€ JSON Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ─── JSON Helpers ─────────────────────────────────
 
   countJsonArray(json?: string): number {
     if (!json) return 0;
@@ -919,7 +919,7 @@ export class TenantDetailComponent implements OnInit {
     const val = this.settingsForm[field];
     if (typeof val !== 'string' || !val) return;
     try { (this.settingsForm as any)[field] = JSON.stringify(JSON.parse(val), null, 2); }
-    catch { this.toast.error('Invalid JSON â€” cannot format'); }
+    catch { this.toast.error('Invalid JSON — cannot format'); }
   }
 
   sendCredentialsWhatsApp(): void {

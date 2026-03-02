@@ -4,7 +4,9 @@ public class DashboardDto
 {
     // KPIs
     public decimal TotalSales { get; set; }
+    public decimal TotalRefunds { get; set; }
     public decimal TotalExpenses { get; set; }
+    public decimal TotalSalaries { get; set; }
     public decimal NetAfterExpenses { get; set; }
     public int InvoicesCount { get; set; }
     public int DevicesSoldCount { get; set; }

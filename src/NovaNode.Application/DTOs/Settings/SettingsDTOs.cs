@@ -8,6 +8,7 @@ public class StoreSettingsDto
     public string? WhatsAppNumber { get; set; }
     public string? PhoneNumber { get; set; }
     public int ThemePresetId { get; set; } = 1;
+    public int SystemThemeId { get; set; } = 4;
     public string CurrencyCode { get; set; } = "EGP";
     public string? FooterAddress { get; set; }
     public string? WorkingHours { get; set; }
@@ -17,6 +18,8 @@ public class StoreSettingsDto
     public string? PwaSettingsJson { get; set; }
     public string? WhatsAppTemplatesJson { get; set; }
     public string? HeaderNoticeText { get; set; }
+    public string? OfferBannerText { get; set; }
+    public string? OfferBannerUrl { get; set; }
     public string? AboutTitle { get; set; }
     public string? AboutDescription { get; set; }
     public string? AboutImageUrl { get; set; }
@@ -34,6 +37,7 @@ public class PublicSettingsDto
     public string? WhatsAppNumber { get; set; }
     public string? PhoneNumber { get; set; }
     public int ThemePresetId { get; set; } = 1;
+    public int SystemThemeId { get; set; } = 4;
     public string PrimaryColor { get; set; } = "#111827";
     public string SecondaryColor { get; set; } = "#374151";
     public string AccentColor { get; set; } = "#f59e0b";
@@ -48,6 +52,8 @@ public class PublicSettingsDto
     public bool IsActive { get; set; }
     public bool PoweredByEnabled { get; set; }
     public string? HeaderNoticeText { get; set; }
+    public string? OfferBannerText { get; set; }
+    public string? OfferBannerUrl { get; set; }
     public string? AboutTitle { get; set; }
     public string? AboutDescription { get; set; }
     public string? AboutImageUrl { get; set; }
@@ -60,6 +66,7 @@ public class PublicSettingsDto
 public class UpdateThemeRequest
 {
     public int ThemePresetId { get; set; } = 1;
+    public int SystemThemeId { get; set; } = 4;
 }
 
 public class UpdateFooterRequest

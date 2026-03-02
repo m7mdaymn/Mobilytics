@@ -67,6 +67,24 @@ interface SubscriptionInfo {
               {{ data()?.netAfterExpenses | currency: settingsStore.currency() : 'symbol-narrow' : '1.0-0' }}
             </p>
           </div>
+
+          <!-- Refunds (red card) -->
+          <div class="relative overflow-hidden bg-gradient-to-br from-red-600 to-red-500 rounded-2xl p-5 text-white">
+            <div class="absolute top-3 end-4 w-10 h-10 bg-white/15 rounded-xl flex items-center justify-center">
+              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/></svg>
+            </div>
+            <p class="text-xs font-medium text-red-100 uppercase tracking-wider">{{ i18n.t('dashboard.refunds') }}</p>
+            <p class="text-2xl font-bold mt-1">{{ data()?.totalRefunds | currency: settingsStore.currency() : 'symbol-narrow' : '1.0-0' }}</p>
+          </div>
+
+          <!-- Salaries -->
+          <div class="relative overflow-hidden rounded-2xl p-5 border border-gray-200 bg-white">
+            <div class="absolute top-3 end-4 w-10 h-10 bg-orange-50 rounded-xl flex items-center justify-center">
+              <svg class="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            </div>
+            <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ i18n.t('dashboard.salaries') }}</p>
+            <p class="text-2xl font-bold text-orange-600 mt-1">{{ data()?.totalSalaries | currency: settingsStore.currency() : 'symbol-narrow' : '1.0-0' }}</p>
+          </div>
           }
 
           <!-- Invoices -->

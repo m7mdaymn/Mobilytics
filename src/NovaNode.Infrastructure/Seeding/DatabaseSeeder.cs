@@ -87,6 +87,7 @@ public static class DatabaseSeeder
                 StoreName = "TechHub Electronics",
                 CurrencyCode = "EGP",
                 ThemePresetId = 1,
+                SystemThemeId = 4,
                 PwaSettingsJson = "{\"shortName\":\"TechHub\",\"description\":\"Your Ultimate Tech Store\"}"
             });
 

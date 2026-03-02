@@ -10,6 +10,8 @@ using NovaNode.Application.DTOs.Employees;
 using NovaNode.Application.Interfaces;
 using NovaNode.Infrastructure.Persistence;
 
+using NovaNode.Domain.Entities;
+
 namespace NovaNode.Infrastructure.Services;
 
 public class AuthService : IAuthService
@@ -17,10 +19,36 @@ public class AuthService : IAuthService
     private readonly AppDbContext _db;
     private readonly IConfiguration _config;
 
+    private static readonly string[] DefaultPermissionKeys =
+    [
+        "items.create", "items.edit", "items.delete",
+        "brands.manage", "categories.manage", "itemtypes.manage",
+        "invoices.create", "invoices.refund", "invoices.delete",
+        "expenses.manage", "employees.manage",
+        "leads.manage", "settings.edit"
+    ];
+
     public AuthService(AppDbContext db, IConfiguration config)
     {
         _db = db;
         _config = config;
+    }
+
+    /// <summary>Auto-seed default permissions for employees with none.</summary>
+    private async Task EnsurePermissionsSeeded(Employee employee, CancellationToken ct)
+    {
+        if (employee.Role == "Owner") return;
+        if (employee.Permissions.Any()) return;
+
+        foreach (var key in DefaultPermissionKeys)
+        {
+            _db.Permissions.Add(new Permission
+            {
+                TenantId = employee.TenantId, EmployeeId = employee.Id, Key = key, IsEnabled = true
+            });
+        }
+        await _db.SaveChangesAsync(ct);
+        await _db.Entry(employee).Collection(e => e.Permissions).LoadAsync(ct);
     }
 
     public async Task<LoginResponse> LoginAsync(Guid tenantId, LoginRequest request, CancellationToken ct = default)
@@ -32,6 +60,9 @@ public class AuthService : IAuthService
 
         if (!BCrypt.Net.BCrypt.Verify(request.Password, employee.PasswordHash))
             throw new UnauthorizedAccessException("Invalid credentials.");
+
+        // Auto-seed permissions for existing employees with none
+        await EnsurePermissionsSeeded(employee, ct);
 
         var permissions = employee.Permissions.Where(p => p.IsEnabled).Select(p => p.Key).ToList();
         var token = GenerateJwt(employee.Id, employee.Name, employee.Email, employee.Role, tenantId, permissions);
@@ -68,6 +99,9 @@ public class AuthService : IAuthService
         var tenant = await _db.Tenants
             .FirstOrDefaultAsync(t => t.Id == employee.TenantId, ct)
             ?? throw new UnauthorizedAccessException("Store not found.");
+
+        // Auto-seed permissions for existing employees with none
+        await EnsurePermissionsSeeded(employee, ct);
 
         var permissions = employee.Permissions.Where(p => p.IsEnabled).Select(p => p.Key).ToList();
         var token = GenerateJwt(employee.Id, employee.Name, employee.Email, employee.Role, employee.TenantId, permissions);

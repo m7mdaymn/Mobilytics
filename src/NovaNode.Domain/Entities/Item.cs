@@ -33,6 +33,7 @@ public class Item : TenantEntity
     public bool IsFeatured { get; set; }
 
     // Device-specific fields
+    public string? DeviceType { get; set; }
     public string? Color { get; set; }
     public string? Storage { get; set; }
     public string? RAM { get; set; }

@@ -6,6 +6,7 @@ export interface StoreSettings {
   whatsAppNumber: string | null;
   phoneNumber: string | null;
   themePresetId: number;
+  systemThemeId: number;
   primaryColor: string;
   secondaryColor: string;
   accentColor: string;
@@ -20,6 +21,8 @@ export interface StoreSettings {
   isActive: boolean;
   poweredByEnabled: boolean;
   headerNoticeText: string | null;
+  offerBannerText: string | null;
+  offerBannerUrl: string | null;
   aboutTitle: string | null;
   aboutDescription: string | null;
   aboutImageUrl: string | null;
@@ -37,6 +40,7 @@ export interface AdminStoreSettings {
   whatsAppNumber: string | null;
   phoneNumber: string | null;
   themePresetId: number;
+  systemThemeId: number;
   currencyCode: string;
   footerAddress: string | null;
   workingHours: string | null;
@@ -44,6 +48,8 @@ export interface AdminStoreSettings {
   policiesJson: string | null;
   mapUrl: string | null;
   headerNoticeText: string | null;
+  offerBannerText: string | null;
+  offerBannerUrl: string | null;
   pwaSettingsJson: string | null;
   whatsAppTemplatesJson: string | null;
   aboutTitle: string | null;
@@ -76,7 +82,7 @@ export interface WhatsAppTemplates {
   followUpTemplate: string;
 }
 
-// ── Theme Presets (must match backend StoreSettings.Presets) ──
+// ── Theme Presets (must match backend StoreSettings.ColorPresets / SystemPresets) ──
 export interface ThemePreset {
   id: number;
   name: string;
@@ -86,13 +92,28 @@ export interface ThemePreset {
   description: string;
 }
 
-export const THEME_PRESETS: ThemePreset[] = [
-  { id: 1, name: 'Midnight Pro',   primary: '#111827', secondary: '#374151', accent: '#f59e0b', description: 'Sharp, editorial, luxury feel' },
-  { id: 2, name: 'Ocean Blue',     primary: '#1e40af', secondary: '#1e3a5f', accent: '#06b6d4', description: 'Tech-forward, organized, dense' },
-  { id: 3, name: 'Forest Green',   primary: '#065f46', secondary: '#064e3b', accent: '#34d399', description: 'Bold deals, promotions first' },
-  { id: 4, name: 'Royal Purple',   primary: '#5b21b6', secondary: '#4c1d95', accent: '#a78bfa', description: 'Rich, elegant gradients' },
-  { id: 5, name: 'Sunset Orange',  primary: '#c2410c', secondary: '#9a3412', accent: '#fb923c', description: 'Warm, energetic, punchy CTAs' },
-  { id: 6, name: 'Slate Minimal',  primary: '#0f172a', secondary: '#334155', accent: '#94a3b8', description: 'Ultra-clean, Apple-inspired' },
-  { id: 7, name: 'Rose Gold',      primary: '#9f1239', secondary: '#881337', accent: '#fda4af', description: 'Luxurious, feminine, premium' },
-  { id: 8, name: 'Arctic Blue',    primary: '#0369a1', secondary: '#075985', accent: '#7dd3fc', description: 'Crisp, fresh, modern' },
+export interface SystemTheme {
+  id: number;
+  name: string;
+  description: string;
+  icon: string; // emoji
+}
+
+// Color themes (black & white only)
+export const COLOR_THEMES: ThemePreset[] = [
+  { id: 1, name: 'Classic',       primary: '#000000', secondary: '#111111', accent: '#000000', description: 'Pure black on white' },
+  { id: 2, name: 'Soft Black',    primary: '#1a1a1a', secondary: '#333333', accent: '#1a1a1a', description: 'Soft black, clean look' },
+  { id: 3, name: 'Charcoal',      primary: '#222222', secondary: '#444444', accent: '#222222', description: 'Dark charcoal, minimal' },
+  { id: 4, name: 'Ink',           primary: '#0a0a0a', secondary: '#1c1c1c', accent: '#0a0a0a', description: 'Deep ink, elegant' },
 ];
+
+// System themes (UI style) — Minimal is the default
+export const SYSTEM_THEMES: SystemTheme[] = [
+  { id: 4, name: 'Slate Minimal',  description: 'Ultra-clean Apple-inspired, frosted header', icon: '🍎' },
+];
+
+// Backward compat alias
+export const THEME_PRESETS: ThemePreset[] = COLOR_THEMES;
+
+// Only minimal system theme is available
+export const DEFAULT_SYSTEM_THEME_ID = 4;

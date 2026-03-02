@@ -97,6 +97,7 @@ public interface IInvoiceService
     Task<InvoiceDto> GetByIdAsync(Guid tenantId, Guid id, CancellationToken ct = default);
     Task<InvoiceDto> CreateAsync(Guid tenantId, CreateInvoiceRequest request, Guid userId, CancellationToken ct = default);
     Task<InvoiceDto> RefundAsync(Guid tenantId, Guid invoiceId, RefundInvoiceRequest request, Guid userId, CancellationToken ct = default);
+    Task DeleteAsync(Guid tenantId, Guid id, CancellationToken ct = default);
 }
 
 public interface IExpenseService

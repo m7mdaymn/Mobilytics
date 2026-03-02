@@ -152,6 +152,7 @@ public class PlatformService : IPlatformService
             PhoneNumber = request.StorePhone, SocialLinksJson = request.SocialLinksJson,
             MapUrl = request.MapUrl, FooterAddress = request.Address,
             ThemePresetId = request.ThemePresetId > 0 ? request.ThemePresetId : 1,
+            SystemThemeId = request.SystemThemeId > 0 ? request.SystemThemeId : 4,
             CurrencyCode = string.IsNullOrWhiteSpace(request.CurrencyCode) ? "EGP" : request.CurrencyCode,
             WorkingHours = request.WorkingHours
         });
@@ -566,9 +567,11 @@ public class PlatformService : IPlatformService
             StoreName = s.StoreName, LogoUrl = s.LogoUrl, BannerUrl = s.BannerUrl,
             WhatsAppNumber = s.WhatsAppNumber, PhoneNumber = s.PhoneNumber,
             ThemePresetId = s.ThemePresetId,
+            SystemThemeId = s.SystemThemeId,
             CurrencyCode = s.CurrencyCode, FooterAddress = s.FooterAddress, WorkingHours = s.WorkingHours,
             SocialLinksJson = s.SocialLinksJson, PoliciesJson = s.PoliciesJson, MapUrl = s.MapUrl,
             HeaderNoticeText = s.HeaderNoticeText,
+            OfferBannerText = s.OfferBannerText, OfferBannerUrl = s.OfferBannerUrl,
             AboutTitle = s.AboutTitle, AboutDescription = s.AboutDescription, AboutImageUrl = s.AboutImageUrl,
             HeroBannersJson = s.HeroBannersJson, TestimonialsJson = s.TestimonialsJson,
             FaqJson = s.FaqJson, TrustBadgesJson = s.TrustBadgesJson,
@@ -587,10 +590,12 @@ public class PlatformService : IPlatformService
         s.StoreName = request.StoreName; s.LogoUrl = request.LogoUrl; s.BannerUrl = request.BannerUrl;
         s.WhatsAppNumber = request.WhatsAppNumber; s.PhoneNumber = request.PhoneNumber;
         s.ThemePresetId = request.ThemePresetId;
+        s.SystemThemeId = request.SystemThemeId;
         s.CurrencyCode = request.CurrencyCode; s.FooterAddress = request.FooterAddress;
         s.WorkingHours = request.WorkingHours; s.SocialLinksJson = request.SocialLinksJson;
         s.PoliciesJson = request.PoliciesJson; s.MapUrl = request.MapUrl;
         s.HeaderNoticeText = request.HeaderNoticeText;
+        s.OfferBannerText = request.OfferBannerText; s.OfferBannerUrl = request.OfferBannerUrl;
         s.AboutTitle = request.AboutTitle; s.AboutDescription = request.AboutDescription; s.AboutImageUrl = request.AboutImageUrl;
         s.HeroBannersJson = request.HeroBannersJson; s.TestimonialsJson = request.TestimonialsJson;
         s.FaqJson = request.FaqJson; s.TrustBadgesJson = request.TrustBadgesJson;
@@ -703,10 +708,12 @@ public class PlatformService : IPlatformService
                 LogoUrl = settings.LogoUrl, BannerUrl = settings.BannerUrl,
                 WhatsAppNumber = settings.WhatsAppNumber, PhoneNumber = settings.PhoneNumber,
                 ThemePresetId = settings.ThemePresetId,
+                SystemThemeId = settings.SystemThemeId,
                 CurrencyCode = settings.CurrencyCode, FooterAddress = settings.FooterAddress,
                 WorkingHours = settings.WorkingHours, SocialLinksJson = settings.SocialLinksJson,
                 PoliciesJson = settings.PoliciesJson, MapUrl = settings.MapUrl,
                 HeaderNoticeText = settings.HeaderNoticeText,
+                OfferBannerText = settings.OfferBannerText, OfferBannerUrl = settings.OfferBannerUrl,
                 AboutTitle = settings.AboutTitle, AboutDescription = settings.AboutDescription, AboutImageUrl = settings.AboutImageUrl,
                 HeroBannersJson = settings.HeroBannersJson, TestimonialsJson = settings.TestimonialsJson,
                 FaqJson = settings.FaqJson, TrustBadgesJson = settings.TrustBadgesJson,

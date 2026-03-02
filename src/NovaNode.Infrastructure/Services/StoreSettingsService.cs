@@ -39,6 +39,7 @@ public class StoreSettingsService : IStoreSettingsService
             WhatsAppNumber = s?.WhatsAppNumber,
             PhoneNumber = s?.PhoneNumber,
             ThemePresetId = presetId,
+            SystemThemeId = s?.SystemThemeId ?? 4,
             PrimaryColor = preset.Primary,
             SecondaryColor = preset.Secondary,
             AccentColor = preset.Accent,
@@ -53,6 +54,8 @@ public class StoreSettingsService : IStoreSettingsService
             IsActive = isActive,
             PoweredByEnabled = poweredByEnabled,
             HeaderNoticeText = s?.HeaderNoticeText,
+            OfferBannerText = s?.OfferBannerText,
+            OfferBannerUrl = s?.OfferBannerUrl,
             AboutTitle = s?.AboutTitle,
             AboutDescription = s?.AboutDescription,
             AboutImageUrl = s?.AboutImageUrl,
@@ -74,11 +77,14 @@ public class StoreSettingsService : IStoreSettingsService
         s.StoreName = request.StoreName; s.LogoUrl = request.LogoUrl; s.BannerUrl = request.BannerUrl;
         s.WhatsAppNumber = request.WhatsAppNumber; s.PhoneNumber = request.PhoneNumber;
         s.ThemePresetId = request.ThemePresetId;
+        s.SystemThemeId = request.SystemThemeId;
         s.CurrencyCode = request.CurrencyCode; s.FooterAddress = request.FooterAddress;
         s.WorkingHours = request.WorkingHours; s.SocialLinksJson = request.SocialLinksJson;
         s.PoliciesJson = request.PoliciesJson; s.MapUrl = request.MapUrl;
         s.PwaSettingsJson = request.PwaSettingsJson; s.WhatsAppTemplatesJson = request.WhatsAppTemplatesJson;
         s.HeaderNoticeText = request.HeaderNoticeText;
+        s.OfferBannerText = request.OfferBannerText;
+        s.OfferBannerUrl = request.OfferBannerUrl;
         s.AboutTitle = request.AboutTitle; s.AboutDescription = request.AboutDescription;
         s.AboutImageUrl = request.AboutImageUrl;
         s.HeroBannersJson = request.HeroBannersJson; s.TestimonialsJson = request.TestimonialsJson;
@@ -91,6 +97,7 @@ public class StoreSettingsService : IStoreSettingsService
     {
         var s = await GetOrCreateSettings(tenantId, ct);
         s.ThemePresetId = request.ThemePresetId;
+        s.SystemThemeId = request.SystemThemeId;
         await _db.SaveChangesAsync(ct);
     }
 
@@ -142,11 +149,14 @@ public class StoreSettingsService : IStoreSettingsService
         StoreName = s.StoreName, LogoUrl = s.LogoUrl, BannerUrl = s.BannerUrl,
         WhatsAppNumber = s.WhatsAppNumber, PhoneNumber = s.PhoneNumber,
         ThemePresetId = s.ThemePresetId,
+        SystemThemeId = s.SystemThemeId,
         CurrencyCode = s.CurrencyCode, FooterAddress = s.FooterAddress,
         WorkingHours = s.WorkingHours, SocialLinksJson = s.SocialLinksJson,
         PoliciesJson = s.PoliciesJson, MapUrl = s.MapUrl,
         PwaSettingsJson = s.PwaSettingsJson, WhatsAppTemplatesJson = s.WhatsAppTemplatesJson,
         HeaderNoticeText = s.HeaderNoticeText,
+        OfferBannerText = s.OfferBannerText,
+        OfferBannerUrl = s.OfferBannerUrl,
         AboutTitle = s.AboutTitle, AboutDescription = s.AboutDescription,
         AboutImageUrl = s.AboutImageUrl,
         HeroBannersJson = s.HeroBannersJson, TestimonialsJson = s.TestimonialsJson,

@@ -59,15 +59,15 @@ interface Step {
                     <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">{{ i18n.t('onboarding.tips') }}</h4>
                     <ul class="space-y-1.5 text-sm text-gray-600">
                       <li class="flex items-start gap-2">
-                        <span class="text-green-500 mt-0.5">âœ“</span>
+<span class="text-green-500 mt-0.5">✔</span>
                         <span>{{ i18n.t('onboarding.' + step.key + '.tip1') }}</span>
                       </li>
                       <li class="flex items-start gap-2">
-                        <span class="text-green-500 mt-0.5">âœ“</span>
+                        <span class="text-green-500 mt-0.5">✔</span>
                         <span>{{ i18n.t('onboarding.' + step.key + '.tip2') }}</span>
                       </li>
                       <li class="flex items-start gap-2">
-                        <span class="text-green-500 mt-0.5">âœ“</span>
+                        <span class="text-green-500 mt-0.5">✔</span>
                         <span>{{ i18n.t('onboarding.' + step.key + '.tip3') }}</span>
                       </li>
                     </ul>
@@ -104,14 +104,14 @@ export class OnboardingComponent {
   readonly expandedStep = signal<number | null>(0);
 
   readonly steps: Step[] = [
-    { key: 'settings',   icon: 'âš™ï¸', route: '/settings' },
-    { key: 'categories', icon: 'ðŸ“‚', route: '/categories' },
-    { key: 'brands',     icon: 'ðŸ·ï¸', route: '/brands' },
-    { key: 'items',      icon: 'ðŸ“±', route: '/items' },
-    { key: 'invoices',   icon: 'ðŸ§¾', route: '/invoices' },
-    { key: 'expenses',   icon: 'ðŸ’°', route: '/expenses' },
-    { key: 'employees',  icon: 'ðŸ‘¥', route: '/employees' },
-    { key: 'leads',      icon: 'ðŸ“Š', route: '/leads' },
+    { key: 'settings',   icon: '⚙️', route: '/settings' },
+    { key: 'categories', icon: '📂', route: '/categories' },
+    { key: 'brands',     icon: '🏷️', route: '/brands' },
+    { key: 'items',      icon: '📱', route: '/items' },
+    { key: 'invoices',   icon: '🧾', route: '/invoices' },
+    { key: 'expenses',   icon: '💰', route: '/expenses' },
+    { key: 'employees',  icon: '👥', route: '/employees' },
+    { key: 'leads',      icon: '📊', route: '/leads' },
   ];
 
   toggleStep(idx: number): void {

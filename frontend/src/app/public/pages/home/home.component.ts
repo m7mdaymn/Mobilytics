@@ -62,7 +62,7 @@ import { resolveImageUrl } from '../../../core/utils/image.utils';
                     <p class="hero-slide__sub">{{ banner.subtitle }}</p>
                   }
                   @if (banner.linkUrl) {
-                    <a [routerLink]="banner.linkUrl" class="hero-cta">
+                    <a [routerLink]="resolveHeroCta(banner.linkUrl)" class="hero-cta">
                       {{ i18n.t('store.shopNow') }}
                       <svg class="hero-cta__arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
                     </a>
@@ -342,7 +342,7 @@ import { resolveImageUrl } from '../../../core/utils/image.utils';
         </section>
       }
 
-      <!-- ═══ SECTION 8: TESTIMONIALS — GLASS CARDS ═══ -->
+      <!-- ═══ SECTION 8: TESTIMONIALS — HORIZONTAL SLIDER ═══ -->
       @if (settingsStore.testimonials().length > 0) {
         <section class="section reveal-section">
           <div class="section__header section__header--center">
@@ -352,25 +352,33 @@ import { resolveImageUrl } from '../../../core/utils/image.utils';
               <p class="section__subtitle">Real reviews from real customers</p>
             </div>
           </div>
-          <div class="testimonial-grid">
-            @for (t of settingsStore.testimonials(); track $index; let i = $index) {
-              <div class="testimonial-card reveal-item" [style.animation-delay.ms]="i * 100">
-                <div class="testimonial-card__stars">
-                  @for (star of [1,2,3,4,5]; track star) {
-                    <span [class]="star <= t.rating ? 'star--filled' : 'star--empty'">&#9733;</span>
-                  }
+          <div class="testimonial-slider-wrap">
+            <button (click)="scrollTestimonials(-1)" class="testimonial-slider-nav testimonial-slider-nav--left" aria-label="Previous">
+              <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+            </button>
+            <div #testimonialScroll class="testimonial-slider">
+              @for (t of settingsStore.testimonials(); track $index; let i = $index) {
+                <div class="testimonial-card reveal-item" [style.animation-delay.ms]="i * 100">
+                  <div class="testimonial-card__stars">
+                    @for (star of [1,2,3,4,5]; track star) {
+                      <span [class]="star <= t.rating ? 'star--filled' : 'star--empty'">&#9733;</span>
+                    }
+                  </div>
+                  <p class="testimonial-card__text">{{ t.text }}</p>
+                  <div class="testimonial-card__author">
+                    @if (t.imageUrl) {
+                      <img [src]="resolveImg(t.imageUrl)" [alt]="t.name" class="testimonial-card__avatar" />
+                    } @else {
+                      <div class="testimonial-card__avatar-placeholder">{{ t.name.charAt(0) }}</div>
+                    }
+                    <span class="testimonial-card__name">{{ t.name }}</span>
+                  </div>
                 </div>
-                <p class="testimonial-card__text">{{ t.text }}</p>
-                <div class="testimonial-card__author">
-                  @if (t.imageUrl) {
-                    <img [src]="resolveImg(t.imageUrl)" [alt]="t.name" class="testimonial-card__avatar" />
-                  } @else {
-                    <div class="testimonial-card__avatar-placeholder">{{ t.name.charAt(0) }}</div>
-                  }
-                  <span class="testimonial-card__name">{{ t.name }}</span>
-                </div>
-              </div>
-            }
+              }
+            </div>
+            <button (click)="scrollTestimonials(1)" class="testimonial-slider-nav testimonial-slider-nav--right" aria-label="Next">
+              <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </button>
           </div>
         </section>
       }
@@ -433,7 +441,15 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
   readonly i18n = inject(I18nService);
   readonly resolveImg = resolveImageUrl;
 
+  resolveHeroCta(linkUrl: string): string {
+    if (linkUrl.startsWith('/store/') || linkUrl.startsWith('store/')) return linkUrl;
+    const base = this.tenantService.storeUrl();
+    const path = linkUrl.startsWith('/') ? linkUrl : '/' + linkUrl;
+    return base + path;
+  }
+
   @ViewChild('catScroll') catScrollRef?: ElementRef<HTMLElement>;
+  @ViewChild('testimonialScroll') testimonialScrollRef?: ElementRef<HTMLElement>;
 
   readonly loading = signal(true);
   readonly categories = signal<Category[]>([]);
@@ -524,6 +540,11 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
 
   scrollCategories(direction: number): void {
     const el = this.catScrollRef?.nativeElement;
+    if (el) el.scrollBy({ left: direction * 300, behavior: 'smooth' });
+  }
+
+  scrollTestimonials(direction: number): void {
+    const el = this.testimonialScrollRef?.nativeElement;
     if (el) el.scrollBy({ left: direction * 300, behavior: 'smooth' });
   }
 

@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed, OnInit } from '@angular/core';
+import { Component, inject, signal, computed, OnInit, OnDestroy } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { AuthService } from '../../core/services/auth.service';
@@ -219,7 +219,7 @@ const ICONS: Record<string, string> = {
     </div>
   `,
 })
-export class AdminLayoutComponent {
+export class AdminLayoutComponent implements OnDestroy {
   readonly authService = inject(AuthService);
   readonly settingsStore = inject(SettingsStore);
   readonly tenantService = inject(TenantService);
@@ -239,12 +239,19 @@ export class AdminLayoutComponent {
   }
 
   constructor() {
+    // Prevent storefront system-theme from leaking into admin
+    this.settingsStore.setAdminMode(true);
+
     this.api.get<any>('/Settings/subscription').subscribe({
       next: s => this.subInfo.set(s),
     });
     this.loadNotifications();
     // Poll every 60s
     setInterval(() => this.loadNotifications(), 60000);
+  }
+
+  ngOnDestroy(): void {
+    this.settingsStore.setAdminMode(false);
   }
 
   loadNotifications(): void {

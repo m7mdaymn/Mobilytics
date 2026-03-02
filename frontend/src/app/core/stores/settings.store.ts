@@ -3,6 +3,7 @@ import { DOCUMENT } from '@angular/common';
 import { Inject } from '@angular/core';
 import { Observable, tap, catchError, of } from 'rxjs';
 import { ApiService } from '../services/api.service';
+import { TenantService } from '../services/tenant.service';
 import { StoreSettings, THEME_PRESETS } from '../models/settings.models';
 import { resolveImageUrl } from '../utils/image.utils';
 
@@ -30,6 +31,7 @@ export class SettingsStore {
   private readonly _settings = signal<StoreSettings | null>(null);
   private readonly _loading = signal(true);
   private readonly _error = signal<string | null>(null);
+  private readonly _adminMode = signal(false);
 
   readonly settings = this._settings.asReadonly();
   readonly loading = this._loading.asReadonly();
@@ -38,6 +40,7 @@ export class SettingsStore {
   readonly storeName = computed(() => this._settings()?.storeName ?? 'Store');
   readonly currency = computed(() => this._settings()?.currencyCode ?? 'EGP');
   readonly themePresetId = computed(() => this._settings()?.themePresetId ?? 1);
+  readonly systemThemeId = computed(() => this._settings()?.systemThemeId ?? 4);
   readonly whatsappNumber = computed(() => this._settings()?.whatsAppNumber ?? '');
   readonly showPoweredBy = computed(() => this._settings()?.poweredByEnabled ?? true);
   readonly phone = computed(() => this._settings()?.phoneNumber ?? '');
@@ -49,6 +52,8 @@ export class SettingsStore {
     try { return json ? JSON.parse(json) : {}; } catch { return {}; }
   });
   readonly headerNoticeText = computed(() => this._settings()?.headerNoticeText ?? '');
+  readonly offerBannerText = computed(() => this._settings()?.offerBannerText ?? '');
+  readonly offerBannerUrl = computed(() => this._settings()?.offerBannerUrl ?? '');
   readonly aboutTitle = computed(() => this._settings()?.aboutTitle ?? '');
   readonly aboutDescription = computed(() => this._settings()?.aboutDescription ?? '');
   readonly aboutImageUrl = computed(() => this._settings()?.aboutImageUrl ?? '');
@@ -75,8 +80,22 @@ export class SettingsStore {
 
   constructor(
     private readonly api: ApiService,
+    private readonly tenantService: TenantService,
     @Inject(DOCUMENT) private readonly document: Document
   ) {}
+
+  /** Toggle admin mode — strips system theme from body so admin UI stays clean */
+  setAdminMode(active: boolean): void {
+    this._adminMode.set(active);
+    if (active) {
+      this.document.body.classList.remove('system-1', 'system-2', 'system-3', 'system-4');
+    } else {
+      const settings = this._settings();
+      if (settings) {
+        this.document.body.classList.add(`system-${settings.systemThemeId || 4}`);
+      }
+    }
+  }
 
   loadSettings(): Observable<StoreSettings | null> {
     this._loading.set(true);
@@ -99,9 +118,9 @@ export class SettingsStore {
     const root = this.document.documentElement;
 
     // Backend resolves colors from preset — use them directly
-    const primary = settings.primaryColor || '#111827';
-    const secondary = settings.secondaryColor || '#374151';
-    const accent = settings.accentColor || '#f59e0b';
+    const primary = settings.primaryColor || '#000000';
+    const secondary = settings.secondaryColor || '#111111';
+    const accent = settings.accentColor || '#000000';
 
     root.style.setProperty('--color-primary', primary);
     root.style.setProperty('--color-primary-hover', this.darken(primary, 15));
@@ -111,9 +130,19 @@ export class SettingsStore {
     root.style.setProperty('--color-accent', accent);
     root.style.setProperty('--color-accent-hover', this.darken(accent, 15));
 
-    // Theme wrapper class
-    this.document.body.classList.remove('theme-1', 'theme-2', 'theme-3', 'theme-4', 'theme-5', 'theme-6', 'theme-7', 'theme-8');
-    this.document.body.classList.add(`theme-${settings.themePresetId || 1}`);
+    // RGB component variables for opacity variants in CSS: rgba(var(--X-rgb), 0.1)
+    root.style.setProperty('--color-primary-rgb', this.hexToRgb(primary));
+    root.style.setProperty('--color-secondary-rgb', this.hexToRgb(secondary));
+    root.style.setProperty('--color-accent-rgb', this.hexToRgb(accent));
+
+    // System theme class (controls structural styles: glassmorphism, neomorphism, etc.)
+    this.document.body.classList.remove('system-1', 'system-2', 'system-3', 'system-4');
+    if (!this._adminMode()) {
+      this.document.body.classList.add(`system-${settings.systemThemeId || 4}`);
+    }
+
+    // Remove legacy theme-N classes
+    this.document.body.classList.remove('theme-1', 'theme-2', 'theme-3', 'theme-4', 'theme-5', 'theme-6', 'theme-7', 'theme-8', 'theme-9', 'theme-10', 'theme-11');
 
     // Document title
     this.document.title = `${settings.storeName} | Mobilytics`;
@@ -157,9 +186,9 @@ export class SettingsStore {
       link.type = 'image/png';
       appleLink.href = resolvedUrl;
     } else {
-      link.href = 'icons/icon-192x192.png';
+      link.href = '/icons/icon-192x192.png';
       link.type = 'image/png';
-      appleLink.href = 'icons/icon-192x192.png';
+      appleLink.href = '/icons/icon-192x192.png';
     }
   }
 
@@ -167,23 +196,27 @@ export class SettingsStore {
     let pwa: { shortName?: string; description?: string } = {};
     try { pwa = settings.pwaSettingsJson ? JSON.parse(settings.pwaSettingsJson) : {}; } catch {}
 
+    const storeUrl = this.tenantService.storeUrl() || '/';
+    const scope = storeUrl.endsWith('/') ? storeUrl : storeUrl + '/';
+
     const manifest = {
       name: settings.storeName || 'Mobilytics Store',
       short_name: pwa.shortName || settings.storeName || 'Store',
       description: pwa.description || `${settings.storeName} - Mobile Store`,
-      start_url: '/',
+      start_url: scope,
+      scope: scope,
       display: 'standalone',
       background_color: '#ffffff',
       theme_color: primary,
       icons: [
-        { src: 'icons/icon-72x72.png', sizes: '72x72', type: 'image/png' },
-        { src: 'icons/icon-96x96.png', sizes: '96x96', type: 'image/png' },
-        { src: 'icons/icon-128x128.png', sizes: '128x128', type: 'image/png' },
-        { src: 'icons/icon-144x144.png', sizes: '144x144', type: 'image/png' },
-        { src: 'icons/icon-152x152.png', sizes: '152x152', type: 'image/png' },
-        { src: 'icons/icon-192x192.png', sizes: '192x192', type: 'image/png' },
-        { src: 'icons/icon-384x384.png', sizes: '384x384', type: 'image/png' },
-        { src: 'icons/icon-512x512.png', sizes: '512x512', type: 'image/png' },
+        { src: '/icons/icon-72x72.png', sizes: '72x72', type: 'image/png' },
+        { src: '/icons/icon-96x96.png', sizes: '96x96', type: 'image/png' },
+        { src: '/icons/icon-128x128.png', sizes: '128x128', type: 'image/png' },
+        { src: '/icons/icon-144x144.png', sizes: '144x144', type: 'image/png' },
+        { src: '/icons/icon-152x152.png', sizes: '152x152', type: 'image/png' },
+        { src: '/icons/icon-192x192.png', sizes: '192x192', type: 'image/png' },
+        { src: '/icons/icon-384x384.png', sizes: '384x384', type: 'image/png' },
+        { src: '/icons/icon-512x512.png', sizes: '512x512', type: 'image/png' },
       ],
     };
 
@@ -208,6 +241,15 @@ export class SettingsStore {
 
   private lighten(hex: string, percent: number): string {
     return this.adjustColor(hex, percent);
+  }
+
+  private hexToRgb(hex: string): string {
+    hex = hex.replace('#', '');
+    if (hex.length === 3) {
+      hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+    }
+    const num = parseInt(hex, 16);
+    return `${(num >> 16) & 0xff}, ${(num >> 8) & 0xff}, ${num & 0xff}`;
   }
 
   private adjustColor(hex: string, percent: number): string {

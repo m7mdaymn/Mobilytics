@@ -1,4 +1,5 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
+import { I18nService } from '../../../core/services/i18n.service';
 
 @Component({
   selector: 'app-pagination',
@@ -13,7 +14,7 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
           (click)="onPage(currentPage - 1)"
           [disabled]="currentPage <= 1"
           class="px-3 py-1.5 rounded-lg text-sm border border-[color:var(--color-border)] disabled:opacity-40 hover:bg-gray-50">
-          ← Prev
+          {{ i18n.t('common.prev') }}
         </button>
         @for (page of visiblePages; track page) {
           @if (page === -1) {
@@ -33,13 +34,14 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
           (click)="onPage(currentPage + 1)"
           [disabled]="currentPage >= totalPages"
           class="px-3 py-1.5 rounded-lg text-sm border border-[color:var(--color-border)] disabled:opacity-40 hover:bg-gray-50">
-          Next →
+          {{ i18n.t('common.next') }}
         </button>
       </div>
     </div>
   `,
 })
 export class PaginationComponent {
+  readonly i18n = inject(I18nService);
   @Input() currentPage = 1;
   @Input() totalPages = 1;
   @Input() totalCount = 0;

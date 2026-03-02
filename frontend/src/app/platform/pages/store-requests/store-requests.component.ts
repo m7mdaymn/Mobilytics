@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+﻿import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DatePipe } from '@angular/common';
 import { PlatformApiService } from '../../../core/services/platform-api.service';
@@ -71,7 +71,7 @@ import { StoreRequest, RegistrationStatus } from '../../../core/models/platform.
                     <td class="px-5 py-4">
                       <div>
                         <p class="font-medium text-slate-800">{{ req.storeName }}</p>
-                        <p class="text-xs text-slate-500">{{ req.category }} Â· {{ req.location }}</p>
+                        <p class="text-xs text-slate-500">{{ req.category }} · {{ req.location }}</p>
                       </div>
                     </td>
                     <td class="px-5 py-4">
@@ -80,7 +80,7 @@ import { StoreRequest, RegistrationStatus } from '../../../core/models/platform.
                     </td>
                     <td class="px-5 py-4">
                       <p class="text-slate-800">{{ req.phone }}</p>
-                      <p class="text-xs text-slate-500">{{ req.numberOfStores }} store(s) Â· {{ req.source || 'Direct' }}</p>
+                      <p class="text-xs text-slate-500">{{ req.numberOfStores }} store(s) · {{ req.source || 'Direct' }}</p>
                     </td>
                     <td class="px-5 py-4 text-center">
                       <span class="text-xs px-2.5 py-1 rounded-full font-medium"
@@ -96,21 +96,21 @@ import { StoreRequest, RegistrationStatus } from '../../../core/models/platform.
                         @if (req.status === 'PendingApproval' || req.status === 'OnHold') {
                           <button (click)="openActionModal(req, 'Approved')"
                                   class="text-emerald-600 hover:bg-emerald-50 px-2 py-1 rounded-lg text-xs font-medium transition-colors">
-                            âœ“ Approve
+                            ✓ Approve
                           </button>
                           <button (click)="openActionModal(req, 'Rejected')"
                                   class="text-red-600 hover:bg-red-50 px-2 py-1 rounded-lg text-xs font-medium transition-colors">
-                            âœ— Reject
+                            ✗ Reject
                           </button>
                           @if (req.status !== 'OnHold') {
                             <button (click)="openActionModal(req, 'OnHold')"
                                     class="text-slate-600 hover:bg-slate-100 px-2 py-1 rounded-lg text-xs font-medium transition-colors">
-                              â¸ Hold
+                              ⏸ Hold
                             </button>
                           }
                         }
                         @if (req.status === 'Approved') {
-                          <span class="text-xs text-emerald-600">âœ“ {{ req.approvedAt | date:'shortDate' }}</span>
+                          <span class="text-xs text-emerald-600">✓ {{ req.approvedAt | date:'shortDate' }}</span>
                         }
                         @if (req.status === 'Rejected') {
                           <span class="text-xs text-red-500 max-w-[120px] truncate" [title]="req.rejectionReason || 'Rejected'">{{ req.rejectionReason || 'Rejected' }}</span>
@@ -137,7 +137,7 @@ import { StoreRequest, RegistrationStatus } from '../../../core/models/platform.
             <div class="p-6 space-y-4">
               <h2 class="text-lg font-bold text-slate-800">
                 {{ actionStatus === 'Approved' ? 'Approve' : actionStatus === 'Rejected' ? 'Reject' : 'Put on Hold' }}
-                â€” {{ actionReq()!.storeName }}
+                — {{ actionReq()!.storeName }}
               </h2>
               <p class="text-sm text-slate-500">
                 {{ actionStatus === 'Approved' ? 'Approve this store request. The owner will be notified.' :
@@ -183,7 +183,7 @@ import { StoreRequest, RegistrationStatus } from '../../../core/models/platform.
                   {{ statusLabel(selected()!.status) }}
                 </span>
               </div>
-              <button (click)="selected.set(null)" class="text-slate-400 hover:text-slate-600 text-xl p-1">âœ•</button>
+              <button (click)="selected.set(null)" class="text-slate-400 hover:text-slate-600 text-xl p-1">✕</button>
             </div>
             <div class="p-6 space-y-5">
               <!-- Store Info -->
@@ -246,11 +246,11 @@ import { StoreRequest, RegistrationStatus } from '../../../core/models/platform.
                 <div class="border-t border-slate-200 pt-4 flex gap-3">
                   <button (click)="approveFromDrawer()"
                     class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 rounded-lg text-sm font-medium transition-colors">
-                    âœ“ Approve
+                    ✓ Approve
                   </button>
                   <button (click)="rejectFromDrawer()"
                     class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2.5 rounded-lg text-sm font-medium transition-colors">
-                    âœ— Reject
+                    ✗ Reject
                   </button>
                 </div>
               }

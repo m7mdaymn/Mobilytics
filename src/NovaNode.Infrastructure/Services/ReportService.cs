@@ -21,9 +21,15 @@ public class ReportService : IReportService
         var leads = _db.Leads.Where(l => l.TenantId == tenantId && l.CreatedAt >= from && l.CreatedAt <= to);
 
         var totalSales = await invoices.SumAsync(i => (decimal?)i.Total, ct) ?? 0;
-        var totalRefunds = await refunds.SumAsync(i => (decimal?)i.Total, ct) ?? 0;
+        var totalRefundsRaw = await refunds.SumAsync(i => (decimal?)i.Total, ct) ?? 0;
+        var totalRefunds = Math.Abs(totalRefundsRaw); // Refund invoices store negative Total; display as positive
         var totalExpenses = await expenses.SumAsync(e => (decimal?)e.Amount, ct) ?? 0;
         var netSales = totalSales - totalRefunds;
+
+        // Calculate total monthly salaries of active employees
+        var totalSalaries = await _db.Employees
+            .Where(e => e.TenantId == tenantId && e.IsActive && e.SalaryMonthly > 0)
+            .SumAsync(e => (decimal?)e.SalaryMonthly, ct) ?? 0;
 
         var invoiceItems = _db.InvoiceItems
             .Where(ii => ii.Invoice.TenantId == tenantId && ii.Invoice.CreatedAt >= from && ii.Invoice.CreatedAt <= to && !ii.Invoice.IsRefund);
@@ -101,9 +107,11 @@ public class ReportService : IReportService
 
         return new DashboardDto
         {
-            TotalSales = netSales,
+            TotalSales = totalSales,
+            TotalRefunds = totalRefunds,
             TotalExpenses = totalExpenses,
-            NetAfterExpenses = netSales - totalExpenses,
+            TotalSalaries = totalSalaries,
+            NetAfterExpenses = netSales - totalExpenses - totalSalaries,
             InvoicesCount = await invoices.CountAsync(ct),
             DevicesSoldCount = devicesSold,
             AccessoriesSoldQty = accessoriesQty,

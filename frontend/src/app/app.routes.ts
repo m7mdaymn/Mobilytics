@@ -17,32 +17,16 @@ export const routes: Routes = [
     path: 'store/:slug',
     canActivate: [tenantResolverGuard],
     children: [
-      // Public storefront
-      {
-        path: '',
-        loadComponent: () => import('./public/layouts/storefront-shell.component').then(m => m.StorefrontShellComponent),
-        children: [
-          { path: '', loadComponent: () => import('./public/pages/home/home.component').then(m => m.HomeComponent) },
-          { path: 'catalog', loadComponent: () => import('./public/pages/catalog/catalog.component').then(m => m.CatalogComponent) },
-          { path: 'type/:typeSlug', loadComponent: () => import('./public/pages/catalog/catalog.component').then(m => m.CatalogComponent) },
-          { path: 'category/:catSlug', loadComponent: () => import('./public/pages/category/category.component').then(m => m.CategoryComponent) },
-          { path: 'brands', loadComponent: () => import('./public/pages/brands/brands.component').then(m => m.BrandsComponent) },
-          { path: 'brand/:brandSlug', loadComponent: () => import('./public/pages/brands/brand-detail.component').then(m => m.BrandDetailComponent) },
-          { path: 'item/:itemSlug', loadComponent: () => import('./public/pages/item-detail/item-detail.component').then(m => m.ItemDetailComponent) },
-          { path: 'compare', loadComponent: () => import('./public/pages/compare/compare.component').then(m => m.CompareComponent) },
-          { path: 'policies/:key', loadComponent: () => import('./public/pages/policies/policies.component').then(m => m.PoliciesComponent) },
-          { path: 'about', loadComponent: () => import('./public/pages/about/about.component').then(m => m.AboutComponent) },
-        ],
-      },
-
-      // Tenant Admin (nested under /store/:slug/admin)
+      // ── Tenant Admin MUST come BEFORE the storefront '' route ──
+      // (the storefront has a '**' wildcard child that would catch admin routes if listed first)
       { path: 'admin/login', loadComponent: () => import('./admin/pages/login/login.component').then(m => m.LoginComponent) },
       {
         path: 'admin',
         loadComponent: () => import('./admin/layout/admin-layout.component').then(m => m.AdminLayoutComponent),
         canActivate: [authGuard],
         children: [
-          { path: '', loadComponent: () => import('./admin/pages/dashboard/dashboard.component').then(m => m.DashboardComponent) },
+          { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+          { path: 'dashboard', loadComponent: () => import('./admin/pages/dashboard/dashboard.component').then(m => m.DashboardComponent) },
           { path: 'items', canActivate: [permissionGuard('items.create', 'items.edit')], loadComponent: () => import('./admin/pages/items/items-list.component').then(m => m.ItemsListComponent) },
           { path: 'items/new', canActivate: [permissionGuard('items.create')], loadComponent: () => import('./admin/pages/items/item-form.component').then(m => m.ItemFormComponent) },
           { path: 'items/:id/edit', canActivate: [permissionGuard('items.edit')], loadComponent: () => import('./admin/pages/items/item-form.component').then(m => m.ItemFormComponent) },
@@ -60,6 +44,25 @@ export const routes: Routes = [
           { path: 'approvals', loadComponent: () => import('./admin/pages/store-approvals/store-approvals.component').then(m => m.StoreApprovalsComponent) },
           { path: 'blocked', loadComponent: () => import('./admin/pages/blocked/blocked.component').then(m => m.BlockedComponent) },
           { path: 'onboarding', loadComponent: () => import('./admin/pages/onboarding/onboarding.component').then(m => m.OnboardingComponent) },
+        ],
+      },
+
+      // Public storefront — listed LAST so '**' doesn't catch admin routes above
+      {
+        path: '',
+        loadComponent: () => import('./public/layouts/storefront-shell.component').then(m => m.StorefrontShellComponent),
+        children: [
+          { path: '', loadComponent: () => import('./public/pages/home/home.component').then(m => m.HomeComponent) },
+          { path: 'catalog', loadComponent: () => import('./public/pages/catalog/catalog.component').then(m => m.CatalogComponent) },
+          { path: 'type/:typeSlug', loadComponent: () => import('./public/pages/catalog/catalog.component').then(m => m.CatalogComponent) },
+          { path: 'category/:catSlug', loadComponent: () => import('./public/pages/category/category.component').then(m => m.CategoryComponent) },
+          { path: 'brands', loadComponent: () => import('./public/pages/brands/brands.component').then(m => m.BrandsComponent) },
+          { path: 'brand/:brandSlug', loadComponent: () => import('./public/pages/brands/brand-detail.component').then(m => m.BrandDetailComponent) },
+          { path: 'item/:itemSlug', loadComponent: () => import('./public/pages/item-detail/item-detail.component').then(m => m.ItemDetailComponent) },
+          { path: 'compare', loadComponent: () => import('./public/pages/compare/compare.component').then(m => m.CompareComponent) },
+          { path: 'policies/:key', loadComponent: () => import('./public/pages/policies/policies.component').then(m => m.PoliciesComponent) },
+          { path: 'about', loadComponent: () => import('./public/pages/about/about.component').then(m => m.AboutComponent) },
+          { path: '**', redirectTo: '' },
         ],
       },
     ],

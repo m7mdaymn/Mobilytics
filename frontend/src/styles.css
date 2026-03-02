@@ -8,18 +8,18 @@
    ══════════════════════════════════════════════════════════ */
 
 :root {
-  --color-primary: #2563eb;
-  --color-primary-hover: #1d4ed8;
-  --color-primary-light: #dbeafe;
-  --color-secondary: #1e293b;
-  --color-secondary-hover: #334155;
-  --color-accent: #f59e0b;
-  --color-accent-hover: #d97706;
+  --color-primary: #000000;
+  --color-primary-hover: #1a1a1a;
+  --color-primary-light: #f5f5f5;
+  --color-secondary: #111111;
+  --color-secondary-hover: #333333;
+  --color-accent: #000000;
+  --color-accent-hover: #1a1a1a;
 
   --color-bg: #ffffff;
   --color-bg-alt: #f8fafc;
   --color-bg-card: #ffffff;
-  --color-bg-sidebar: #0f172a;
+  --color-bg-sidebar: #000000;
   --color-text: #1e293b;
   --color-text-muted: #64748b;
   --color-text-on-primary: #ffffff;
@@ -240,390 +240,14 @@ body {
 /* ══════════════════════════════════════════════════════════
    PREMIUM STOREFRONT THEMES
    Each theme changes layout, spacing, card design, header/footer.
-   CSS variables for colors are still overridden by backend settings.
+   System themes control structure; color themes control palette.
    ══════════════════════════════════════════════════════════ */
 
-/* ────── Theme 1: Minimal Luxury ──────
-   Clean white space, sharp typography, subtle borders.
-   Large image cards, minimal text, editorial feel.
+/* ────── System 4: Slate Minimal ──────
+   Ultra-clean Apple-inspired, frosted header.
+   Subtle depth, airy spacing, rounded cards.
 */
-.theme-1 {
-  --radius: 2px;
-  --radius-lg: 4px;
-  --card-padding: 1.25rem;
-  --card-gap: 1.5rem;
-  --card-img-ratio: 4 / 5;
-  --card-title-size: 0.8125rem;
-  --card-price-size: 1rem;
-  --section-gap: 4rem;
-  --header-height: 72px;
-}
-.theme-1 .storefront-header {
-  background: #fff;
-  border-bottom: none;
-  box-shadow: none;
-  padding: 0 2rem;
-}
-.theme-1 .storefront-header .store-name {
-  font-weight: 300;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  font-size: 1.25rem;
-}
-.theme-1 .storefront-nav a {
-  font-weight: 400;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  font-size: 0.75rem;
-}
-.theme-1 .card {
-  border: none;
-  box-shadow: none;
-  border-radius: 0;
-  background: transparent;
-}
-.theme-1 .card:hover {
-  box-shadow: none;
-  transform: none;
-}
-.theme-1 .card .card-image {
-  aspect-ratio: var(--card-img-ratio);
-}
-.theme-1 .card .card-image img {
-  transition: opacity 300ms ease;
-}
-.theme-1 .card:hover .card-image img {
-  opacity: 0.92;
-}
-.theme-1 .card .card-body {
-  padding: 0.75rem 0;
-}
-.theme-1 .card .card-title {
-  font-weight: 400;
-  font-size: var(--card-title-size);
-  letter-spacing: 0.02em;
-}
-.theme-1 .card .card-price {
-  font-weight: 500;
-  font-size: var(--card-price-size);
-}
-.theme-1 .card .card-actions {
-  opacity: 0;
-  transition: opacity 250ms ease;
-}
-.theme-1 .card:hover .card-actions {
-  opacity: 1;
-}
-.theme-1 .section-title {
-  font-weight: 300;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  font-size: 0.875rem;
-  border-bottom: 1px solid var(--color-border);
-  padding-bottom: 0.75rem;
-}
-.theme-1 .hero-banner {
-  aspect-ratio: 21/9;
-}
-.theme-1 .storefront-footer {
-  background: #fafafa;
-  color: var(--color-text);
-  border-top: 1px solid var(--color-border);
-}
-.theme-1 .storefront-footer a {
-  color: var(--color-text-muted);
-}
-.theme-1 .storefront-footer a:hover {
-  color: var(--color-primary);
-}
-.theme-1 .btn-whatsapp {
-  border-radius: 0;
-  font-weight: 500;
-  letter-spacing: 0.05em;
-}
-.theme-1 .badge {
-  border-radius: 2px;
-  font-weight: 500;
-  letter-spacing: 0.03em;
-}
-
-/* ────── Theme 2: Tech Store Pro ──────
-   Dense, organized layout. Strong specs display,
-   filter panel, badges, category chips.
-*/
-.theme-2 {
-  --radius: 8px;
-  --radius-lg: 12px;
-  --card-padding: 0.75rem;
-  --card-gap: 0.75rem;
-  --card-img-ratio: 1 / 1;
-  --card-title-size: 0.8125rem;
-  --card-price-size: 1.125rem;
-  --section-gap: 2rem;
-  --header-height: 64px;
-}
-.theme-2 .storefront-header {
-  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
-  border-bottom: none;
-  color: #fff;
-}
-.theme-2 .storefront-header .store-name {
-  color: #fff;
-  font-weight: 700;
-}
-.theme-2 .storefront-nav a {
-  color: rgba(255,255,255,0.85);
-  font-weight: 500;
-  font-size: 0.875rem;
-}
-.theme-2 .storefront-nav a:hover {
-  color: #fff;
-}
-.theme-2 .storefront-header .mobile-menu-btn {
-  color: #fff;
-}
-.theme-2 .card {
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-}
-.theme-2 .card:hover {
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 1px var(--color-primary), var(--shadow);
-}
-.theme-2 .card .card-body {
-  padding: var(--card-padding);
-}
-.theme-2 .card .card-brand {
-  font-size: 0.6875rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  color: var(--color-primary);
-}
-.theme-2 .card .card-title {
-  font-weight: 600;
-  font-size: var(--card-title-size);
-  line-height: 1.3;
-}
-.theme-2 .card .card-price {
-  font-weight: 800;
-  font-size: var(--card-price-size);
-  color: var(--color-primary);
-}
-.theme-2 .section-title {
-  font-weight: 700;
-  font-size: 1.125rem;
-}
-.theme-2 .hero-banner {
-  aspect-ratio: 2.5 / 1;
-  border-radius: var(--radius-lg);
-}
-.theme-2 .storefront-footer {
-  background: var(--color-secondary);
-  color: #fff;
-}
-.theme-2 .chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  padding: 0.375rem 0.75rem;
-  border-radius: 9999px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  background: var(--color-primary-light);
-  color: var(--color-primary);
-  transition: all var(--transition);
-}
-.theme-2 .chip:hover {
-  background: var(--color-primary);
-  color: #fff;
-}
-
-/* ────── Theme 3: Deals & Bold ──────
-   Promotion-first, discount highlights, strong CTAs,
-   price-first cards, sticky WhatsApp.
-*/
-.theme-3 {
-  --radius: 12px;
-  --radius-lg: 16px;
-  --card-padding: 0.625rem;
-  --card-gap: 0.5rem;
-  --card-img-ratio: 1 / 1;
-  --card-title-size: 0.8125rem;
-  --card-price-size: 1.25rem;
-  --section-gap: 1.5rem;
-  --header-height: 56px;
-}
-.theme-3 .storefront-header {
-  background: var(--color-accent);
-  border-bottom: none;
-  color: #fff;
-}
-.theme-3 .storefront-header .store-name {
-  color: #fff;
-  font-weight: 900;
-  font-size: 1.25rem;
-}
-.theme-3 .storefront-nav a {
-  color: rgba(255,255,255,0.9);
-  font-weight: 700;
-  font-size: 0.8125rem;
-}
-.theme-3 .storefront-nav a:hover {
-  color: #fff;
-}
-.theme-3 .storefront-header .mobile-menu-btn {
-  color: #fff;
-}
-.theme-3 .card {
-  border: 2px solid transparent;
-  border-radius: var(--radius-lg);
-  position: relative;
-}
-.theme-3 .card:hover {
-  border-color: var(--color-accent);
-}
-.theme-3 .card .card-body {
-  padding: var(--card-padding);
-}
-.theme-3 .card .card-price {
-  font-weight: 900;
-  font-size: var(--card-price-size);
-  color: var(--color-danger);
-}
-.theme-3 .card .card-old-price {
-  font-size: 0.875rem;
-  text-decoration: line-through;
-  color: var(--color-text-muted);
-}
-.theme-3 .card .card-title {
-  font-weight: 600;
-  font-size: var(--card-title-size);
-}
-.theme-3 .card .discount-tag {
-  position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
-  background: var(--color-danger);
-  color: #fff;
-  font-weight: 800;
-  font-size: 0.75rem;
-  padding: 0.25rem 0.5rem;
-  border-radius: var(--radius);
-  z-index: 2;
-}
-.theme-3 .section-title {
-  font-weight: 800;
-  font-size: 1.25rem;
-  color: var(--color-text);
-}
-.theme-3 .hero-banner {
-  aspect-ratio: 16/9;
-  border-radius: var(--radius-lg);
-}
-.theme-3 .storefront-footer {
-  background: var(--color-secondary);
-  color: #fff;
-}
-.theme-3 .deals-row {
-  background: linear-gradient(135deg, var(--color-accent), var(--color-danger));
-  border-radius: var(--radius-lg);
-  padding: 1rem;
-}
-.theme-3 .deals-row .section-title {
-  color: #fff;
-}
-.theme-3 .btn-whatsapp {
-  border-radius: 9999px;
-  font-weight: 800;
-  font-size: 1rem;
-  padding: 0.75rem 2rem;
-}
-.theme-3 .whatsapp-sticky {
-  position: fixed;
-  bottom: 1.25rem;
-  right: 1.25rem;
-  z-index: 50;
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  background: #25d366;
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-  transition: transform 150ms ease;
-}
-.theme-3 .whatsapp-sticky:hover {
-  transform: scale(1.1);
-}
-.theme-3 .badge {
-  border-radius: var(--radius);
-  font-weight: 700;
-}
-
-/* ────── Theme 4: Royal Purple ──────
-   Rich, elegant feel. Soft gradients, rounded cards.
-*/
-.theme-4 {
-  --radius: 12px;
-  --radius-lg: 16px;
-  --card-padding: 1rem;
-  --card-gap: 1rem;
-  --card-img-ratio: 1 / 1;
-  --card-title-size: 0.875rem;
-  --card-price-size: 1.125rem;
-  --section-gap: 2.5rem;
-  --header-height: 64px;
-}
-.theme-4 .storefront-header {
-  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
-  border-bottom: none;
-  color: #fff;
-}
-.theme-4 .storefront-header .store-name { color: #fff; font-weight: 700; }
-.theme-4 .storefront-nav a { color: rgba(255,255,255,0.85); font-weight: 500; }
-.theme-4 .storefront-nav a:hover { color: #fff; }
-.theme-4 .card { border-radius: var(--radius-lg); }
-.theme-4 .card:hover { border-color: var(--color-accent); }
-.theme-4 .hero-banner { aspect-ratio: 2.5 / 1; border-radius: var(--radius-lg); }
-.theme-4 .storefront-footer { background: var(--color-secondary); color: #fff; }
-.theme-4 .section-title { font-weight: 700; }
-
-/* ────── Theme 5: Sunset Orange ──────
-   Warm, energetic. Bold orange accents, punchy CTAs.
-*/
-.theme-5 {
-  --radius: 10px;
-  --radius-lg: 14px;
-  --card-padding: 0.875rem;
-  --card-gap: 0.75rem;
-  --card-img-ratio: 1 / 1;
-  --card-title-size: 0.875rem;
-  --card-price-size: 1.125rem;
-  --section-gap: 2rem;
-  --header-height: 60px;
-}
-.theme-5 .storefront-header {
-  background: var(--color-primary);
-  border-bottom: none;
-  color: #fff;
-}
-.theme-5 .storefront-header .store-name { color: #fff; font-weight: 800; }
-.theme-5 .storefront-nav a { color: rgba(255,255,255,0.9); font-weight: 600; }
-.theme-5 .card { border-radius: var(--radius-lg); }
-.theme-5 .card:hover { box-shadow: 0 0 0 2px var(--color-accent), var(--shadow-lg); }
-.theme-5 .card .card-price { color: var(--color-primary); font-weight: 800; }
-.theme-5 .hero-banner { aspect-ratio: 2 / 1; border-radius: var(--radius-lg); }
-.theme-5 .storefront-footer { background: var(--color-secondary); color: #fff; }
-.theme-5 .section-title { font-weight: 800; font-size: 1.125rem; }
-
-/* ────── Theme 6: Slate Minimal ──────
-   Ultra-clean slate tones, similar to Apple's approach.
-   Neomorphism-friendly with subtle depth.
-*/
-.theme-6 {
+.system-4 {
   --radius: 16px;
   --radius-lg: 20px;
   --card-padding: 1rem;
@@ -634,116 +258,570 @@ body {
   --section-gap: 3rem;
   --header-height: 68px;
 }
-.theme-6 .storefront-header {
+.system-4 .storefront-header {
   background: rgba(255,255,255,0.85);
   backdrop-filter: blur(12px) saturate(180%);
   -webkit-backdrop-filter: blur(12px) saturate(180%);
   border-bottom: 1px solid rgba(0,0,0,0.06);
 }
-.theme-6 .storefront-header .store-name { font-weight: 600; letter-spacing: -0.01em; }
-.theme-6 .storefront-nav a { font-weight: 500; font-size: 0.8125rem; }
-.theme-6 .card {
+.system-4 .storefront-header .store-name { font-weight: 600; letter-spacing: -0.01em; }
+.system-4 .storefront-nav a { font-weight: 500; font-size: 0.8125rem; }
+.system-4 .card {
   border: none;
   border-radius: var(--radius-lg);
   box-shadow: 0 2px 8px rgba(0,0,0,0.04), 0 0 1px rgba(0,0,0,0.06);
 }
-.theme-6 .card:hover {
+.system-4 .card:hover {
   box-shadow: 0 8px 24px rgba(0,0,0,0.08), 0 0 1px rgba(0,0,0,0.06);
   transform: translateY(-4px);
 }
-.theme-6 .hero-banner { aspect-ratio: 21/9; border-radius: var(--radius-lg); }
-.theme-6 .storefront-footer {
+.system-4 .hero-banner { aspect-ratio: 21/9; border-radius: var(--radius-lg); }
+.system-4 .storefront-footer {
   background: #f8fafc;
   color: var(--color-text);
   border-top: 1px solid rgba(0,0,0,0.06);
 }
-.theme-6 .storefront-footer a { color: var(--color-text-muted); }
-.theme-6 .storefront-footer a:hover { color: var(--color-primary); }
-.theme-6 .section-title { font-weight: 600; font-size: 1.125rem; letter-spacing: -0.01em; }
+.system-4 .storefront-footer a { color: var(--color-text-muted); }
+.system-4 .storefront-footer a:hover { color: var(--color-primary); }
+.system-4 .section-title { font-weight: 600; font-size: 1.125rem; letter-spacing: -0.01em; }
 
-/* ────── Theme 7: Rose Gold ──────
-   Luxurious, feminine, premium feel. Soft rose tones,
-   refined typography, subtle blush highlights.
-*/
-.theme-7 {
-  --radius: 14px;
-  --radius-lg: 18px;
-  --card-padding: 1rem;
-  --card-gap: 1.25rem;
-  --card-img-ratio: 4 / 5;
-  --card-title-size: 0.875rem;
-  --card-price-size: 1.125rem;
-  --section-gap: 3rem;
-  --header-height: 68px;
+/* ══════════════════════════════════════════════════════════
+   System 1: LIQUID GLASS — Full System Theme
+   Glassmorphism with frosted surfaces, glow accents,
+   dreamy translucent backgrounds and animated shimmers.
+   ══════════════════════════════════════════════════════════ */
+.system-1 {
+  --radius: 20px;  --radius-lg: 24px;  --card-padding: 1.25rem;
+  --card-gap: 1.25rem;  --card-img-ratio: 1 / 1;
+  --card-title-size: 0.875rem;  --card-price-size: 1.125rem;
+  --section-gap: 3rem;  --header-height: 68px;
+  --color-bg: #0a0a1a; --color-bg-alt: #0d0d24; --color-bg-card: rgba(255,255,255,0.06);
+  --color-text: #e2e8f0; --color-text-muted: rgba(255,255,255,0.5);
+  --color-border: rgba(255,255,255,0.1); 
+   
+  --color-bg-sidebar: rgba(10,10,26,0.85); 
+  --shadow-sm: 0 2px 8px rgba(0,0,0,0.3); --shadow: 0 4px 16px rgba(0,0,0,0.4);
 }
-.theme-7 .storefront-header {
-  background: linear-gradient(135deg, #fff1f2, #ffffff);
-  border-bottom: 1px solid rgba(159, 18, 57, 0.08);
+/* Body */
+body.system-1 {
+  background: linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 40%, #16213e 100%);
+  background-attachment: fixed;
 }
-.theme-7 .storefront-header .store-name {
-  font-weight: 600;
-  letter-spacing: 0.03em;
-  color: #9f1239;
+/* Animated background gradient orbs */
+body.system-1::before {
+  content: ''; position: fixed; inset: 0; z-index: -1;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(var(--color-accent-rgb), 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(var(--color-accent-rgb), 0.05) 0%, transparent 50%),
+    radial-gradient(circle at 50% 50%, rgba(59,130,246,0.04) 0%, transparent 60%);
+  animation: glassBgPulse 12s ease-in-out infinite alternate;
 }
-.theme-7 .storefront-nav a { font-weight: 500; color: #6b2140; }
-.theme-7 .storefront-nav a:hover { color: #9f1239; }
-.theme-7 .card {
-  border: none;
-  border-radius: var(--radius-lg);
-  box-shadow: 0 2px 12px rgba(159, 18, 57, 0.06);
+@keyframes glassBgPulse {
+  0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.7; }
 }
-.theme-7 .card:hover {
-  box-shadow: 0 8px 24px rgba(159, 18, 57, 0.1);
+/* Header */
+.system-1 .storefront-header {
+  background: rgba(10,10,26,0.55);
+  backdrop-filter: blur(28px) saturate(200%); -webkit-backdrop-filter: blur(28px) saturate(200%);
+  border-bottom: 1px solid rgba(var(--color-accent-rgb), 0.12); color: #fff;
+}
+.system-1 .storefront-header .store-name { color: #fff; font-weight: 600; letter-spacing: 0.02em; text-shadow: 0 0 20px rgba(var(--color-accent-rgb), 0.3); }
+.system-1 .storefront-nav a { color: rgba(255,255,255,0.7); font-weight: 500; transition: all 250ms ease; }
+.system-1 .storefront-nav a:hover { color: var(--color-accent); text-shadow: 0 0 12px rgba(var(--color-accent-rgb), 0.4); }
+/* Cards — Glass morphism */
+.system-1 .card {
+  background: rgba(255,255,255,0.05);
+  backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255,255,255,0.08); border-radius: var(--radius-lg);
+  color: #e2e8f0; position: relative; overflow: hidden;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.06);
+  transition: all 400ms cubic-bezier(0.25,0.46,0.45,0.94);
+}
+.system-1 .card::before {
+  content: ''; position: absolute; top: 0; left: -50%; width: 200%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(var(--color-accent-rgb), 0.03), transparent);
+  transition: transform 600ms ease; transform: translateX(-100%);
+}
+.system-1 .card:hover::before { transform: translateX(100%); }
+.system-1 .card:hover {
+  background: rgba(255,255,255,0.09);
+  border-color: rgba(var(--color-accent-rgb), 0.3);
+  box-shadow: 0 8px 40px rgba(var(--color-accent-rgb), 0.12), 0 0 0 1px rgba(var(--color-accent-rgb), 0.1), inset 0 1px 0 rgba(255,255,255,0.1);
+  transform: translateY(-6px);
+}
+.system-1 .card .card-title { color: #f1f5f9; }
+.system-1 .card .card-price { color: var(--color-accent); font-weight: 700; text-shadow: 0 0 8px rgba(var(--color-accent-rgb), 0.25); }
+.system-1 .card .card-body { background: transparent; }
+/* Buttons */
+.system-1 .btn-primary {
+  background: linear-gradient(135deg, rgba(var(--color-accent-rgb), 0.2), rgba(var(--color-accent-rgb), 0.08));
+  border: 1px solid rgba(var(--color-accent-rgb), 0.35); color: var(--color-accent); font-weight: 600;
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 0 16px rgba(var(--color-accent-rgb), 0.08); transition: all 300ms ease; position: relative; overflow: hidden;
+}
+.system-1 .btn-primary::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(135deg, transparent 40%, rgba(var(--color-accent-rgb), 0.15) 50%, transparent 60%);
+  transform: translateX(-100%); transition: transform 500ms ease;
+}
+.system-1 .btn-primary:hover::after { transform: translateX(100%); }
+.system-1 .btn-primary:hover {
+  background: linear-gradient(135deg, rgba(var(--color-accent-rgb), 0.35), rgba(var(--color-accent-rgb), 0.15));
+  box-shadow: 0 0 30px rgba(var(--color-accent-rgb), 0.2), 0 4px 20px rgba(var(--color-accent-rgb), 0.15);
+  transform: translateY(-1px);
+}
+.system-1 .btn-secondary {
+  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
+  color: #e2e8f0; backdrop-filter: blur(8px);
+}
+.system-1 .btn-secondary:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.2); }
+.system-1 .btn-outline {
+  background: transparent; border: 1px solid rgba(var(--color-accent-rgb), 0.3);
+  color: var(--color-accent); backdrop-filter: blur(8px);
+}
+.system-1 .btn-outline:hover { background: rgba(var(--color-accent-rgb), 0.1); border-color: var(--color-accent); }
+.system-1 .btn-whatsapp {
+  background: linear-gradient(135deg, rgba(37,211,102,0.3), rgba(37,211,102,0.15));
+  border: 1px solid rgba(37,211,102,0.35); color: #4ade80;
+  backdrop-filter: blur(10px); box-shadow: 0 0 16px rgba(37,211,102,0.1);
+}
+.system-1 .btn-whatsapp:hover { box-shadow: 0 0 28px rgba(37,211,102,0.2); background: rgba(37,211,102,0.25); }
+/* Badges */
+.system-1 .badge {
+  background: rgba(var(--color-accent-rgb), 0.12); color: var(--color-accent);
+  border: 1px solid rgba(var(--color-accent-rgb), 0.2); border-radius: 9999px;
+  backdrop-filter: blur(6px);
+}
+.system-1 .badge-success { background: rgba(34,197,94,0.15); color: #4ade80; border-color: rgba(34,197,94,0.25); }
+.system-1 .badge-warning { background: rgba(245,158,11,0.15); color: #fbbf24; border-color: rgba(245,158,11,0.25); }
+.system-1 .badge-danger { background: rgba(239,68,68,0.15); color: #f87171; border-color: rgba(239,68,68,0.25); }
+/* Inputs */
+.system-1 input, .system-1 select, .system-1 textarea {
+  background: rgba(255,255,255,0.04) !important; color: #e2e8f0;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+  backdrop-filter: blur(6px);
+}
+.system-1 input:focus, .system-1 select:focus, .system-1 textarea:focus {
+  border-color: rgba(var(--color-accent-rgb), 0.4) !important;
+  box-shadow: 0 0 0 3px rgba(var(--color-accent-rgb), 0.1) !important;
+}
+.system-1 input::placeholder, .system-1 textarea::placeholder { color: rgba(255,255,255,0.3); }
+/* Section titles */
+.system-1 .section-title { font-weight: 600; font-size: 1.125rem; color: #f1f5f9; text-shadow: 0 0 20px rgba(var(--color-accent-rgb), 0.15); }
+/* Hero */
+.system-1 .hero-banner {
+  aspect-ratio: 21/9; border-radius: var(--radius-lg);
+  box-shadow: 0 8px 40px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05);
+}
+/* Footer */
+.system-1 .storefront-footer {
+  background: rgba(10,10,26,0.8); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  color: rgba(255,255,255,0.5); border-top: 1px solid rgba(var(--color-accent-rgb), 0.08);
+}
+.system-1 .storefront-footer a { color: rgba(255,255,255,0.4); transition: all 250ms ease; }
+.system-1 .storefront-footer a:hover { color: var(--color-accent); text-shadow: 0 0 8px rgba(var(--color-accent-rgb), 0.3); }
+/* Scrollbar */
+.system-1 ::-webkit-scrollbar-thumb { background: rgba(var(--color-accent-rgb), 0.2); }
+.system-1 ::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); }
+/* Text colors */
+.system-1 h1, .system-1 h2, .system-1 h3, .system-1 h4 { color: #f1f5f9; }
+.system-1 p, .system-1 span { color: inherit; }
+.system-1 .text-gray-900 { color: #f1f5f9 !important; }
+.system-1 .text-gray-700 { color: #cbd5e1 !important; }
+.system-1 .text-gray-600 { color: #94a3b8 !important; }
+.system-1 .text-gray-500 { color: rgba(255,255,255,0.5) !important; }
+.system-1 .text-gray-400 { color: rgba(255,255,255,0.35) !important; }
+.system-1 .bg-white { background: rgba(255,255,255,0.05) !important; }
+.system-1 .bg-gray-50, .system-1 .bg-gray-100 { background: rgba(255,255,255,0.03) !important; }
+.system-1 .border-gray-200, .system-1 .border-gray-100, .system-1 .border-gray-300 {
+  border-color: rgba(255,255,255,0.08) !important;
+}
+/* Skeleton shimmer override */
+.system-1 .skeleton {
+  background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(var(--color-accent-rgb), 0.06) 50%, rgba(255,255,255,0.03) 75%);
+  background-size: 200% 100%;
+}
+/* Chip variant */
+.system-1 .chip { background: rgba(var(--color-accent-rgb), 0.1); color: var(--color-accent); border: 1px solid rgba(var(--color-accent-rgb), 0.2); }
+.system-1 .chip:hover { background: rgba(var(--color-accent-rgb), 0.2); }
+
+/* ══════════════════════════════════════════════════════════
+   System 2: NEUMORPHISM — Full System Theme
+   Soft extruded surfaces, inset inputs, pillow-like
+   depth with dual opposing shadows on a matte surface.
+   ══════════════════════════════════════════════════════════ */
+.system-2 {
+  --radius: 20px;  --radius-lg: 24px;  --card-padding: 1.25rem;
+  --card-gap: 1.25rem;  --card-img-ratio: 1 / 1;
+  --card-title-size: 0.875rem;  --card-price-size: 1.125rem;
+  --section-gap: 3rem;  --header-height: 68px;
+  --color-bg: #e0e5ec; --color-bg-alt: #d6dbe3; --color-bg-card: #e0e5ec;
+  --color-text: #2d3748; --color-text-muted: #718096;
+  --color-border: transparent; 
+   
+  --shadow-sm: 4px 4px 8px rgba(163,177,198,0.4), -4px -4px 8px rgba(255,255,255,0.6);
+  --shadow: 6px 6px 14px rgba(163,177,198,0.5), -6px -6px 14px rgba(255,255,255,0.7);
+}
+body.system-2 { background: #e0e5ec; }
+/* Header */
+.system-2 .storefront-header {
+  background: #e0e5ec;
+  box-shadow: 0 4px 14px rgba(163,177,198,0.4), 0 -2px 8px rgba(255,255,255,0.8);
+  border-bottom: none;
+}
+.system-2 .storefront-header .store-name { font-weight: 700; color: #2d3748; }
+.system-2 .storefront-nav a { font-weight: 500; color: #4a5568; transition: all 250ms ease; }
+.system-2 .storefront-nav a:hover { color: var(--color-accent); }
+/* Cards — extruded surface */
+.system-2 .card {
+  background: #e0e5ec; border: none; border-radius: var(--radius-lg);
+  box-shadow: 8px 8px 18px rgba(163,177,198,0.55), -8px -8px 18px rgba(255,255,255,0.75);
+  transition: all 350ms cubic-bezier(0.25,0.46,0.45,0.94);
+}
+.system-2 .card:hover {
+  box-shadow: 4px 4px 10px rgba(163,177,198,0.5), -4px -4px 10px rgba(255,255,255,0.65);
   transform: translateY(-3px);
 }
-.theme-7 .card .card-price { font-weight: 700; color: #9f1239; }
-.theme-7 .hero-banner { aspect-ratio: 2.5 / 1; border-radius: var(--radius-lg); }
-.theme-7 .storefront-footer {
-  background: #1c1017;
-  color: #e8d0d6;
+.system-2 .card:active {
+  box-shadow: inset 3px 3px 6px rgba(163,177,198,0.4), inset -3px -3px 6px rgba(255,255,255,0.6);
 }
-.theme-7 .storefront-footer a { color: #dbb8c0; }
-.theme-7 .storefront-footer a:hover { color: #fda4af; }
-.theme-7 .section-title { font-weight: 600; font-size: 1.125rem; color: #4c0519; }
-.theme-7 .badge { border-radius: 9999px; }
+.system-2 .card .card-image { border-radius: calc(var(--radius-lg) - 4px); overflow: hidden; margin: 4px; }
+.system-2 .card .card-title { color: #2d3748; }
+.system-2 .card .card-price { color: var(--color-accent); font-weight: 700; }
+.system-2 .card .card-body { background: transparent; }
+/* Buttons — raised pillow effect */
+.system-2 .btn-primary {
+  background: #e0e5ec; border: none; color: var(--color-accent); font-weight: 700;
+  box-shadow: 6px 6px 12px rgba(163,177,198,0.5), -6px -6px 12px rgba(255,255,255,0.8);
+  transition: all 200ms ease; position: relative;
+}
+.system-2 .btn-primary:hover {
+  box-shadow: inset 4px 4px 8px rgba(163,177,198,0.45), inset -4px -4px 8px rgba(255,255,255,0.7);
+  color: var(--color-accent-hover);
+}
+.system-2 .btn-primary:active {
+  box-shadow: inset 6px 6px 12px rgba(163,177,198,0.5), inset -6px -6px 12px rgba(255,255,255,0.6);
+}
+.system-2 .btn-secondary {
+  background: #e0e5ec; border: none; color: #4a5568;
+  box-shadow: 4px 4px 8px rgba(163,177,198,0.4), -4px -4px 8px rgba(255,255,255,0.7);
+}
+.system-2 .btn-secondary:hover {
+  box-shadow: inset 3px 3px 6px rgba(163,177,198,0.4), inset -3px -3px 6px rgba(255,255,255,0.6);
+}
+.system-2 .btn-outline {
+  background: #e0e5ec; border: 2px solid var(--color-accent); color: var(--color-accent);
+  box-shadow: 4px 4px 8px rgba(163,177,198,0.3), -4px -4px 8px rgba(255,255,255,0.6);
+}
+.system-2 .btn-outline:hover { background: var(--color-accent); color: #fff; box-shadow: none; }
+.system-2 .btn-whatsapp {
+  background: #e0e5ec; border: none; color: #22c55e; font-weight: 700;
+  box-shadow: 5px 5px 10px rgba(163,177,198,0.45), -5px -5px 10px rgba(255,255,255,0.7);
+}
+.system-2 .btn-whatsapp:hover {
+  box-shadow: inset 3px 3px 6px rgba(163,177,198,0.4), inset -3px -3px 6px rgba(255,255,255,0.6);
+}
+.system-2 .btn-danger {
+  background: #e0e5ec; color: #ef4444; border: none;
+  box-shadow: 4px 4px 8px rgba(163,177,198,0.4), -4px -4px 8px rgba(255,255,255,0.6);
+}
+/* Inputs — inset wells */
+.system-2 input, .system-2 select, .system-2 textarea {
+  background: #e0e5ec !important; border: none !important;
+  border-radius: var(--radius) !important;
+  box-shadow: inset 4px 4px 8px rgba(163,177,198,0.45), inset -4px -4px 8px rgba(255,255,255,0.7) !important;
+  color: #2d3748; transition: box-shadow 200ms ease;
+}
+.system-2 input:focus, .system-2 select:focus, .system-2 textarea:focus {
+  box-shadow: inset 4px 4px 8px rgba(163,177,198,0.45), inset -4px -4px 8px rgba(255,255,255,0.7), 0 0 0 2px rgba(var(--color-accent-rgb), 0.3) !important;
+}
+/* Badges — tiny raised pills */
+.system-2 .badge {
+  background: #e0e5ec; border: none; border-radius: 9999px; color: var(--color-accent);
+  box-shadow: 3px 3px 6px rgba(163,177,198,0.4), -3px -3px 6px rgba(255,255,255,0.6);
+}
+.system-2 .badge-success { color: #22c55e; }
+.system-2 .badge-warning { color: #d97706; }
+.system-2 .badge-danger { color: #ef4444; }
+/* Section titles */
+.system-2 .section-title { font-weight: 700; font-size: 1.125rem; color: #2d3748; }
+/* Hero */
+.system-2 .hero-banner {
+  aspect-ratio: 2.5/1; border-radius: var(--radius-lg);
+  box-shadow: 8px 8px 20px rgba(163,177,198,0.5), -8px -8px 20px rgba(255,255,255,0.7);
+}
+/* Footer */
+.system-2 .storefront-footer {
+  background: #d1d9e6; color: #4a5568;
+  box-shadow: inset 0 2px 8px rgba(163,177,198,0.35);
+}
+.system-2 .storefront-footer a { color: #4a5568; }
+.system-2 .storefront-footer a:hover { color: var(--color-accent); }
+/* Override white/gray backgrounds */
+.system-2 .bg-white { background: #e0e5ec !important; }
+.system-2 .bg-gray-50, .system-2 .bg-gray-100 { background: #dce1e8 !important; }
+.system-2 .border-gray-200, .system-2 .border-gray-100, .system-2 .border-gray-300 {
+  border-color: transparent !important;
+}
+/* Skeleton */
+.system-2 .skeleton {
+  background: linear-gradient(90deg, #dce1e8 25%, #e4e9f0 50%, #dce1e8 75%);
+  box-shadow: 4px 4px 8px rgba(163,177,198,0.3), -4px -4px 8px rgba(255,255,255,0.5);
+}
+/* Scrollbar */
+.system-2 ::-webkit-scrollbar-thumb { background: rgba(var(--color-accent-rgb), 0.25); border-radius: 4px; }
+.system-2 ::-webkit-scrollbar-track { background: #dce1e8; }
 
-/* ────── Theme 8: Arctic Blue ──────
-   Crisp, fresh, modern. Cool blues with light accents.
-   Clean lines, airy spacing.
-*/
-.theme-8 {
-  --radius: 10px;
-  --radius-lg: 14px;
-  --card-padding: 0.875rem;
-  --card-gap: 1rem;
-  --card-img-ratio: 1 / 1;
-  --card-title-size: 0.875rem;
-  --card-price-size: 1.125rem;
-  --section-gap: 2.5rem;
-  --header-height: 64px;
+/* ══════════════════════════════════════════════════════════
+   System 3: GLOSSY 3D — Full System Theme
+   Deep purple space, reflective glass surfaces, 3D
+   perspective transforms, neon glow, cinematic feel.
+   ══════════════════════════════════════════════════════════ */
+.system-3 {
+  --radius: 16px;  --radius-lg: 20px;  --card-padding: 1.25rem;
+  --card-gap: 1.25rem;  --card-img-ratio: 1 / 1;
+  --card-title-size: 0.875rem;  --card-price-size: 1.125rem;
+  --section-gap: 3rem;  --header-height: 68px;
+  --color-bg: #0f0c29; --color-bg-alt: #1a1744; --color-bg-card: linear-gradient(145deg, #1a1744, #2a2660);
+  --color-text: #e2e8f0; --color-text-muted: rgba(255,255,255,0.5);
+  --color-border: rgba(var(--color-accent-rgb), 0.1); 
+   
+  --shadow-sm: 0 4px 12px rgba(0,0,0,0.3); --shadow: 0 8px 24px rgba(0,0,0,0.4);
 }
-.theme-8 .storefront-header {
-  background: linear-gradient(180deg, #f0f9ff, #ffffff);
-  border-bottom: 1px solid rgba(3, 105, 161, 0.08);
+body.system-3 {
+  background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+  background-attachment: fixed;
 }
-.theme-8 .storefront-header .store-name { font-weight: 700; color: #0369a1; }
-.theme-8 .storefront-nav a { font-weight: 500; color: #0c4a6e; }
-.theme-8 .storefront-nav a:hover { color: #0369a1; }
-.theme-8 .card {
-  border: 1px solid #e0f2fe;
-  border-radius: var(--radius-lg);
+/* Animated grid overlay */
+body.system-3::before {
+  content: ''; position: fixed; inset: 0; z-index: -1; opacity: 0.03;
+  background-image:
+    linear-gradient(rgba(var(--color-accent-rgb), 0.3) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(var(--color-accent-rgb), 0.3) 1px, transparent 1px);
+  background-size: 60px 60px;
 }
-.theme-8 .card:hover {
-  border-color: #7dd3fc;
-  box-shadow: 0 0 0 1px #7dd3fc, 0 4px 14px rgba(3, 105, 161, 0.08);
-  transform: translateY(-2px);
+/* Header */
+.system-3 .storefront-header {
+  background: linear-gradient(135deg, rgba(15,12,41,0.9), rgba(48,43,99,0.9));
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(var(--color-accent-rgb), 0.15); color: #fff;
 }
-.theme-8 .card .card-price { font-weight: 700; color: #0369a1; }
-.theme-8 .hero-banner { aspect-ratio: 2.5 / 1; border-radius: var(--radius-lg); }
-.theme-8 .storefront-footer { background: #0c4a6e; color: #bae6fd; }
-.theme-8 .storefront-footer a { color: #bae6fd; }
-.theme-8 .storefront-footer a:hover { color: #ffffff; }
-.theme-8 .section-title { font-weight: 700; font-size: 1.125rem; }
+.system-3 .storefront-header .store-name { color: #fff; font-weight: 800; text-shadow: 0 2px 8px rgba(var(--color-accent-rgb), 0.3); }
+.system-3 .storefront-nav a { color: rgba(255,255,255,0.7); font-weight: 600; transition: all 250ms ease; }
+.system-3 .storefront-nav a:hover { color: var(--color-accent); text-shadow: 0 0 12px rgba(var(--color-accent-rgb), 0.4); transform: translateY(-1px); }
+/* Cards — 3D glass surfaces */
+.system-3 .card {
+  background: linear-gradient(145deg, #1a1744, #2a2660);
+  border: 1px solid rgba(var(--color-accent-rgb), 0.08); border-radius: var(--radius-lg);
+  color: #e2e8f0; position: relative; overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.08);
+  transition: all 400ms cubic-bezier(0.25,0.46,0.45,0.94);
+  transform: perspective(800px) rotateX(0deg);
+}
+/* Glossy reflection strip */
+.system-3 .card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 50%;
+  background: linear-gradient(180deg, rgba(255,255,255,0.06) 0%, transparent 100%);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0; pointer-events: none;
+}
+.system-3 .card:hover {
+  transform: perspective(800px) rotateX(2deg) translateY(-8px);
+  box-shadow: 0 25px 50px rgba(0,0,0,0.4), 0 0 30px rgba(var(--color-accent-rgb), 0.1),
+    inset 0 1px 0 rgba(255,255,255,0.12);
+  border-color: rgba(var(--color-accent-rgb), 0.25);
+}
+.system-3 .card .card-title { color: #f1f5f9; }
+.system-3 .card .card-price { color: var(--color-accent); font-weight: 800; text-shadow: 0 0 16px rgba(var(--color-accent-rgb), 0.35); }
+.system-3 .card .card-body { background: transparent; }
+/* Buttons — gradient glow */
+.system-3 .btn-primary {
+  background: linear-gradient(135deg, var(--color-accent), var(--color-accent)); border: none;
+  color: #fff; font-weight: 700;
+  box-shadow: 0 6px 24px rgba(var(--color-accent-rgb), 0.3), inset 0 1px 0 rgba(255,255,255,0.15);
+  transition: all 300ms ease; position: relative; overflow: hidden;
+}
+.system-3 .btn-primary::after {
+  content: ''; position: absolute; top: 0; left: -100%; width: 200%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+  transition: left 500ms ease;
+}
+.system-3 .btn-primary:hover::after { left: 100%; }
+.system-3 .btn-primary:hover {
+  box-shadow: 0 10px 36px rgba(var(--color-accent-rgb), 0.45), inset 0 1px 0 rgba(255,255,255,0.2);
+  transform: translateY(-2px) scale(1.02);
+}
+.system-3 .btn-secondary {
+  background: linear-gradient(145deg, #1a1744, #2a2660);
+  border: 1px solid rgba(255,255,255,0.1); color: #e2e8f0;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+.system-3 .btn-secondary:hover { border-color: rgba(255,255,255,0.2); transform: translateY(-1px); }
+.system-3 .btn-outline {
+  background: transparent; border: 2px solid rgba(var(--color-accent-rgb), 0.4); color: var(--color-accent);
+}
+.system-3 .btn-outline:hover {
+  background: rgba(var(--color-accent-rgb), 0.1); border-color: var(--color-accent);
+  box-shadow: 0 0 20px rgba(var(--color-accent-rgb), 0.15);
+}
+.system-3 .btn-whatsapp {
+  background: linear-gradient(135deg, #22c55e, #16a34a); color: #fff; border: none;
+  box-shadow: 0 6px 20px rgba(34,197,94,0.25);
+}
+.system-3 .btn-whatsapp:hover { box-shadow: 0 8px 28px rgba(34,197,94,0.35); transform: translateY(-2px); }
+/* Badges */
+.system-3 .badge {
+  background: linear-gradient(135deg, var(--color-accent), var(--color-accent)); color: #fff;
+  border: none; border-radius: var(--radius); box-shadow: 0 4px 12px rgba(var(--color-accent-rgb), 0.25);
+}
+.system-3 .badge-success { background: linear-gradient(135deg, #22c55e, #16a34a); }
+.system-3 .badge-warning { background: linear-gradient(135deg, #f59e0b, #d97706); }
+.system-3 .badge-danger { background: linear-gradient(135deg, #ef4444, #dc2626); }
+/* Inputs */
+.system-3 input, .system-3 select, .system-3 textarea {
+  background: rgba(26,23,68,0.6) !important; color: #e2e8f0;
+  border: 1px solid rgba(255,255,255,0.08) !important;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+}
+.system-3 input:focus, .system-3 select:focus, .system-3 textarea:focus {
+  border-color: rgba(var(--color-accent-rgb), 0.4) !important;
+  box-shadow: 0 0 0 3px rgba(var(--color-accent-rgb), 0.1), inset 0 2px 4px rgba(0,0,0,0.2) !important;
+}
+.system-3 input::placeholder, .system-3 textarea::placeholder { color: rgba(255,255,255,0.3); }
+/* Section titles */
+.system-3 .section-title {
+  font-weight: 800; font-size: 1.25rem; color: #fff;
+  text-shadow: 0 2px 12px rgba(var(--color-accent-rgb), 0.2);
+}
+/* Hero */
+.system-3 .hero-banner {
+  aspect-ratio: 21/9; border-radius: var(--radius-lg);
+  box-shadow: 0 16px 50px rgba(0,0,0,0.4), 0 0 40px rgba(var(--color-accent-rgb), 0.05);
+}
+/* Footer */
+.system-3 .storefront-footer {
+  background: linear-gradient(180deg, rgba(15,12,41,0.95), #000); color: rgba(255,255,255,0.45);
+  border-top: 1px solid rgba(var(--color-accent-rgb), 0.1);
+}
+.system-3 .storefront-footer a { color: rgba(255,255,255,0.35); transition: all 250ms ease; }
+.system-3 .storefront-footer a:hover { color: var(--color-accent); text-shadow: 0 0 8px rgba(var(--color-accent-rgb), 0.3); }
+/* Text colors */
+.system-3 h1, .system-3 h2, .system-3 h3, .system-3 h4 { color: #f1f5f9; }
+.system-3 .text-gray-900 { color: #f1f5f9 !important; }
+.system-3 .text-gray-700 { color: #cbd5e1 !important; }
+.system-3 .text-gray-600 { color: #94a3b8 !important; }
+.system-3 .text-gray-500 { color: rgba(255,255,255,0.5) !important; }
+.system-3 .text-gray-400 { color: rgba(255,255,255,0.35) !important; }
+.system-3 .bg-white { background: linear-gradient(145deg, #1a1744, #2a2660) !important; }
+.system-3 .bg-gray-50, .system-3 .bg-gray-100 { background: rgba(26,23,68,0.5) !important; }
+.system-3 .border-gray-200, .system-3 .border-gray-100, .system-3 .border-gray-300 {
+  border-color: rgba(255,255,255,0.06) !important;
+}
+/* Skeleton */
+.system-3 .skeleton {
+  background: linear-gradient(90deg, rgba(26,23,68,0.5) 25%, rgba(var(--color-accent-rgb), 0.05) 50%, rgba(26,23,68,0.5) 75%);
+  background-size: 200% 100%;
+}
+/* Scrollbar */
+.system-3 ::-webkit-scrollbar-thumb { background: rgba(var(--color-accent-rgb), 0.2); }
+.system-3 ::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); }
+
+/* ══════════════════════════════════════════════════════════
+   RTL / ARABIC SUPPORT
+   Direction-aware overrides for right-to-left layouts.
+   ══════════════════════════════════════════════════════════ */
+
+/* Arabic font override (also set via JS, but this is a CSS fallback) */
+[dir="rtl"] body {
+  font-family: 'Cairo', 'Inter', system-ui, sans-serif;
+  letter-spacing: 0;
+}
+[dir="rtl"] h1, [dir="rtl"] h2, [dir="rtl"] h3, [dir="rtl"] h4, [dir="rtl"] h5 {
+  letter-spacing: 0;
+}
+
+/* Reverse shimmer animation direction for RTL */
+[dir="rtl"] .skeleton {
+  background: linear-gradient(-90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+  animation: shimmer-rtl 1.5s infinite;
+}
+@keyframes shimmer-rtl {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Slide-in animations: come from left in RTL */
+@keyframes slideInLeft {
+  from { transform: translateX(-100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+@keyframes slideOutLeft {
+  from { transform: translateX(0); opacity: 1; }
+  to { transform: translateX(-100%); opacity: 0; }
+}
+
+/* Discount tag and WhatsApp sticky: flip to inline-end in RTL */
+[dir="rtl"] .card .discount-tag {
+  right: auto;
+  left: 0.5rem;
+}
+[dir="rtl"] .whatsapp-sticky {
+  right: auto;
+  left: 1.25rem;
+}
+
+/* Form inputs: text alignment follows direction */
+[dir="rtl"] .input-field,
+[dir="rtl"] input,
+[dir="rtl"] textarea {
+  text-align: right;
+}
+[dir="rtl"] input[type="number"],
+[dir="rtl"] input[type="email"],
+[dir="rtl"] input[type="url"],
+[dir="rtl"] input[type="tel"] {
+  text-align: left;
+  direction: ltr;
+}
+
+/* Select dropdown arrow: move to left side in RTL */
+[dir="rtl"] select {
+  background-position: left 0.75rem center;
+  padding-left: 2rem;
+  padding-right: 0.75rem;
+}
+
+/* tables: inherit start alignment in RTL */
+[dir="rtl"] table {
+  text-align: right;
+}
+[dir="rtl"] th, [dir="rtl"] td {
+  text-align: inherit;
+}
+
+/* Admin sidebar: nav active border flip */
+[dir="rtl"] .border-s-2 {
+  border-inline-start-width: 2px;
+}
+
+/* Trust strip: respect direction */
+[dir="rtl"] .trust-strip {
+  flex-direction: row-reverse;
+}
+
+/* Letter-spacing kills Arabic readability when set > 0 */
+[dir="rtl"] .system-4 .storefront-header .store-name,
+[dir="rtl"] .system-4 .storefront-nav a,
+[dir="rtl"] .system-4 .section-title,
+[dir="rtl"] .system-4 .badge,
+[dir="rtl"] .system-1 .storefront-header .store-name {
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+/* Marquee / header notice: reverse scroll direction */
+[dir="rtl"] .marquee {
+  animation-direction: reverse;
+}
 
 /* ══════════════════════════════════════════════════════════
    NEOMORPHISM & PREMIUM POLISH

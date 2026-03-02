@@ -28,6 +28,7 @@ export interface Item {
   serialNumber: string | null;
 
   // Device-specific
+  deviceType: string | null;
   color: string | null;
   storage: string | null;
   ram: string | null;
@@ -92,6 +93,7 @@ export interface ItemCreateDto {
   quantity?: number;
   imei?: string;
   serialNumber?: string;
+  deviceType?: string;
   color?: string;
   storage?: string;
   ram?: string;
@@ -125,9 +127,11 @@ export interface ItemQueryParams {
   priceMin?: number;
   priceMax?: number;
   featured?: boolean;
+  isFeatured?: boolean;
   color?: string;
   storage?: string;
   ram?: string;
+  deviceType?: string;
   installmentAvailable?: boolean;
   warrantyType?: string;
 }
@@ -287,7 +291,9 @@ export interface Lead {
 
 export interface DashboardData {
   totalSales: number;
+  totalRefunds: number;
   totalExpenses: number;
+  totalSalaries: number;
   netAfterExpenses: number;
   invoicesCount: number;
   devicesSoldCount: number;

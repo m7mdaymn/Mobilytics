@@ -14,8 +14,8 @@ import { I18nService } from '../../../core/services/i18n.service';
       <!-- Dot grid background -->
       <div class="absolute inset-0 opacity-[0.03]" style="background-image: radial-gradient(circle, #000 1px, transparent 1px); background-size: 24px 24px;"></div>
       <!-- Gradient orbs -->
-      <div class="absolute top-0 right-0 w-[600px] h-[600px] rounded-full opacity-[0.03]" style="background: radial-gradient(circle, #000 0%, transparent 70%);"></div>
-      <div class="absolute bottom-0 left-0 w-[500px] h-[500px] rounded-full opacity-[0.02]" style="background: radial-gradient(circle, #333 0%, transparent 70%);"></div>
+      <div class="absolute top-0 end-0 w-[600px] h-[600px] rounded-full opacity-[0.03]" style="background: radial-gradient(circle, #000 0%, transparent 70%);"></div>
+      <div class="absolute bottom-0 start-0 w-[500px] h-[500px] rounded-full opacity-[0.02]" style="background: radial-gradient(circle, #333 0%, transparent 70%);"></div>
 
       <!-- Top Nav -->
       <nav class="relative z-10 flex items-center justify-between h-[72px] px-6 max-w-7xl mx-auto w-full">

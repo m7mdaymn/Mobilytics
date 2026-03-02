@@ -147,6 +147,21 @@ import { resolveImageUrl } from '../../core/utils/image.utils';
     } @else {
     <div class="shell-enter">
 
+    <!--  OFFER BANNER (above nav, dismissible)  -->
+    @if (settingsStore.offerBannerText() && !offerBannerDismissed) {
+      <div class="bg-gradient-to-r from-[color:var(--color-primary)] to-[color:var(--color-accent)] text-white relative">
+        <div class="max-w-7xl mx-auto px-4 py-2 flex items-center justify-center gap-3 text-sm font-semibold text-center">
+          <span>🎉 {{ settingsStore.offerBannerText() }}</span>
+          @if (settingsStore.offerBannerUrl()) {
+            <a [routerLink]="settingsStore.offerBannerUrl()" class="underline font-bold hover:opacity-80 transition">{{ i18n.t('store.shopNow') }}</a>
+          }
+          <button (click)="offerBannerDismissed = true" class="absolute end-3 top-1/2 -translate-y-1/2 p-1 hover:opacity-70 transition" aria-label="Dismiss">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+      </div>
+    }
+
     <!--  ROW 1: Header Notice (scrolling marquee)  -->
     @if (settingsStore.headerNoticeText()) {
       <div class="bg-[color:var(--color-primary)] text-white overflow-hidden">
@@ -420,10 +435,11 @@ import { resolveImageUrl } from '../../core/utils/image.utils';
           </div>
           <div class="space-y-3 text-sm">
             @if (settingsStore.address()) {
-              <p class="flex items-start gap-2.5">
-                <svg class="w-4 h-4 mt-0.5 text-gray-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+              <a [href]="'https://www.google.com/maps/search/' + encodeURI(settingsStore.address())" target="_blank" rel="noopener"
+                class="flex items-start gap-2.5 hover:text-white transition group cursor-pointer">
+                <svg class="w-4 h-4 mt-0.5 text-gray-600 shrink-0 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                 <span class="leading-relaxed">{{ settingsStore.address() }}</span>
-              </p>
+              </a>
             }
             @if (settingsStore.phone()) {
               <p class="flex items-start gap-2.5">
@@ -496,8 +512,13 @@ import { resolveImageUrl } from '../../core/utils/image.utils';
                 WhatsApp Support
               </a>
             }
-            @if (settingsStore.mapUrl()) {
-              <button (click)="showMap = true" class="block hover:text-white transition text-start">{{ i18n.t('store.showMap') || 'Our Location' }}</button>
+             @if (settingsStore.mapUrl()) {
+              <button (click)="showMap = true" class="flex items-center gap-2.5 hover:text-white transition text-start group">
+                <span class="w-7 h-7 rounded-lg bg-white/5 group-hover:bg-white/10 flex items-center justify-center shrink-0 transition">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                </span>
+                {{ i18n.t('store.showMap') || 'View on Map' }}
+              </button>
             }
           </div>
         </div>
@@ -529,14 +550,6 @@ import { resolveImageUrl } from '../../core/utils/image.utils';
                 </span>
                 {{ i18n.t('store.privacy') || 'Privacy Policy' }}
               </a>
-            }
-            @if (settingsStore.mapUrl()) {
-              <button (click)="showMap = true" class="flex items-center gap-2.5 hover:text-white transition text-start group">
-                <span class="w-7 h-7 rounded-lg bg-white/5 group-hover:bg-white/10 flex items-center justify-center shrink-0 transition">
-                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                </span>
-                {{ i18n.t('store.showMap') || 'View on Map' }}
-              </button>
             }
           </div>
         </div>
@@ -649,6 +662,7 @@ export class StorefrontShellComponent implements OnInit {
   });
 
   mobileMenuOpen = false;
+  offerBannerDismissed = false;
   expandedMobileSection: string | null = null;
   showMap = false;
   searchQuery = '';
@@ -680,6 +694,10 @@ export class StorefrontShellComponent implements OnInit {
 
   resolveImg(url: string): string {
     return resolveImageUrl(url);
+  }
+
+  encodeURI(value: string): string {
+    return encodeURIComponent(value);
   }
 
   toggleMobileSection(typeId: string): void {

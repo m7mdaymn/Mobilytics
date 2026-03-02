@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+﻿import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../../core/services/api.service';
 import { ToastService } from '../../../core/services/toast.service';
@@ -122,14 +122,14 @@ import { Category } from '../../../core/models/item.models';
             @for (cat of sortedCategories(); track cat.id) {
               <tr class="hover:bg-gray-50" [class.ps-8]="cat.parentId">
                 <td class="px-4 py-3 font-medium">
-                  @if (cat.parentId) { <span class="text-gray-300 me-2">â””</span> }
+                  @if (cat.parentId) { <span class="text-gray-300 me-2">└</span> }
                   {{ cat.name }}
                 </td>
                 <td class="px-4 py-3 text-gray-500">{{ cat.slug }}</td>
                 <td class="px-4 py-3 text-gray-500">{{ getParentName(cat.parentId) }}</td>
                 <td class="px-4 py-3 text-center">{{ cat.sortOrder }}</td>
-                <td class="px-4 py-3 text-center">{{ cat.isVisibleInNav !== false ? 'âœ“' : 'â€”' }}</td>
-                <td class="px-4 py-3 text-center text-xs space-x-1">
+                <td class="px-4 py-3 text-center">{{ cat.isVisibleInNav !== false ? '✓' : '—' }}</td>
+                <td class="px-4 py-3 text-center text-xs space-x-1 rtl:space-x-reverse">
                   @if (cat.isDevice) { <span title="Device">📱</span> }
                   @if (cat.isStockItem) { <span title="Stock">📦</span> }
                   @if (cat.supportsIMEI) { <span title="IMEI">📢</span> }
@@ -137,7 +137,7 @@ import { Category } from '../../../core/models/item.models';
                   @if (cat.supportsBatteryHealth) { <span title="Battery">📋</span> }
                   @if (cat.supportsWarranty) { <span title="Warranty">🛡️</span> }
                 </td>
-                <td class="px-4 py-3 text-end space-x-2">
+                <td class="px-4 py-3 text-end space-x-2 rtl:space-x-reverse">
                   <button (click)="editCategory(cat)" class="text-blue-600 hover:underline">{{ i18n.t('common.edit') }}</button>
                   <button (click)="deleteCategory(cat)" class="text-red-600 hover:underline">{{ i18n.t('common.delete') }}</button>
                 </td>
@@ -192,8 +192,8 @@ export class AdminCategoriesComponent implements OnInit {
   }
 
   getParentName(parentId?: string | null): string {
-    if (!parentId) return 'â€”';
-    return this.categories().find(c => c.id === parentId)?.name || 'â€”';
+    if (!parentId) return '—';
+    return this.categories().find(c => c.id === parentId)?.name || '—';
   }
 
   openForm(): void {

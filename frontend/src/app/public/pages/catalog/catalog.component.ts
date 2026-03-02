@@ -29,6 +29,17 @@ import { debounceTime, Subject } from 'rxjs';
           <div class="bg-white rounded-2xl border border-gray-100 p-5 space-y-5 sticky top-28 shadow-sm">
             <h3 class="font-bold text-sm text-gray-900 uppercase tracking-wider">Filters</h3>
 
+            <!-- Device Type -->
+            <div>
+              <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5 block">{{ i18n.t('store.deviceType') || 'Device Type' }}</label>
+              <select [(ngModel)]="deviceTypeFilter" (change)="applyFilter()" class="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm bg-white focus:ring-2 focus:ring-[color:var(--color-primary)]/20 outline-none">
+                <option value="">{{ i18n.t('store.allTypes') || 'All Types' }}</option>
+                @for (dt of deviceTypeOptions; track dt) {
+                  <option [value]="dt">{{ dt }}</option>
+                }
+              </select>
+            </div>
+
             <!-- Category -->
             <div>
               <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5 block">{{ i18n.t('store.allCategories') }}</label>
@@ -64,30 +75,49 @@ import { debounceTime, Subject } from 'rxjs';
 
             <!-- Color -->
             <div>
-              <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5 block">Color</label>
-              <input [(ngModel)]="colorFilter" (ngModelChange)="filterSubject.next()" type="text" placeholder="e.g. Black"
-                class="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[color:var(--color-primary)]/20 outline-none" />
+              <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5 block">{{ i18n.t('store.color') || 'Color' }}</label>
+              <select [(ngModel)]="colorFilter" (change)="applyFilter()" class="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm bg-white focus:ring-2 focus:ring-[color:var(--color-primary)]/20 outline-none">
+                <option value="">{{ i18n.t('store.allColors') || 'All Colors' }}</option>
+                @for (c of colorFilterOptions; track c) {
+                  <option [value]="c">{{ c }}</option>
+                }
+              </select>
             </div>
 
             <!-- Storage -->
             <div>
-              <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5 block">Storage</label>
-              <input [(ngModel)]="storageFilter" (ngModelChange)="filterSubject.next()" type="text" placeholder="e.g. 256GB"
-                class="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[color:var(--color-primary)]/20 outline-none" />
+              <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5 block">{{ i18n.t('store.storage') || 'Storage' }}</label>
+              <select [(ngModel)]="storageFilter" (change)="applyFilter()" class="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm bg-white focus:ring-2 focus:ring-[color:var(--color-primary)]/20 outline-none">
+                <option value="">{{ i18n.t('store.allStorage') || 'All' }}</option>
+                @for (s of storageFilterOptions; track s) {
+                  <option [value]="s">{{ s }}</option>
+                }
+              </select>
             </div>
 
             <!-- RAM -->
             <div>
               <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5 block">RAM</label>
-              <input [(ngModel)]="ramFilter" (ngModelChange)="filterSubject.next()" type="text" placeholder="e.g. 8GB"
-                class="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-[color:var(--color-primary)]/20 outline-none" />
+              <select [(ngModel)]="ramFilter" (change)="applyFilter()" class="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm bg-white focus:ring-2 focus:ring-[color:var(--color-primary)]/20 outline-none">
+                <option value="">All</option>
+                @for (r of ramFilterOptions; track r) {
+                  <option [value]="r">{{ r }}</option>
+                }
+              </select>
             </div>
 
             <!-- Installment Available -->
             <label class="flex items-center gap-2.5 cursor-pointer">
               <input type="checkbox" [(ngModel)]="installmentFilter" (change)="applyFilter()"
                 class="w-4 h-4 rounded border-gray-300 text-[color:var(--color-primary)] focus:ring-[color:var(--color-primary)]" />
-              <span class="text-sm font-medium text-gray-700">Installment Available</span>
+              <span class="text-sm font-medium text-gray-700">{{ i18n.t('store.installmentAvailable') || 'Installment Available' }}</span>
+            </label>
+
+            <!-- Featured Only -->
+            <label class="flex items-center gap-2.5 cursor-pointer">
+              <input type="checkbox" [(ngModel)]="featuredFilter" (change)="applyFilter()"
+                class="w-4 h-4 rounded border-gray-300 text-[color:var(--color-primary)] focus:ring-[color:var(--color-primary)]" />
+              <span class="text-sm font-medium text-gray-700">{{ i18n.t('store.featuredOnly') || 'Featured Only' }}</span>
             </label>
 
             <!-- Price Range -->
@@ -156,6 +186,10 @@ import { debounceTime, Subject } from 'rxjs';
             <!-- Mobile filters (inline) -->
             @if (mobileFiltersOpen) {
               <div class="lg:hidden mt-4 pt-4 border-t border-gray-100 grid grid-cols-2 gap-3">
+                <select [(ngModel)]="deviceTypeFilter" (change)="applyFilter()" class="px-3 py-2 border border-gray-200 rounded-xl text-sm bg-white">
+                  <option value="">All Types</option>
+                  @for (dt of deviceTypeOptions; track dt) { <option [value]="dt">{{ dt }}</option> }
+                </select>
                 <select [(ngModel)]="categoryFilter" (change)="applyFilter()" class="px-3 py-2 border border-gray-200 rounded-xl text-sm bg-white">
                   <option value="">All Categories</option>
                   @for (cat of categories(); track cat) { <option [value]="cat">{{ cat }}</option> }
@@ -168,12 +202,27 @@ import { debounceTime, Subject } from 'rxjs';
                   <option value="">All Conditions</option>
                   <option value="New">New</option><option value="Used">Used</option><option value="Refurbished">Refurbished</option>
                 </select>
-                <input [(ngModel)]="colorFilter" (ngModelChange)="filterSubject.next()" type="text" placeholder="Color" class="px-3 py-2 border border-gray-200 rounded-xl text-sm" />
-                <input [(ngModel)]="storageFilter" (ngModelChange)="filterSubject.next()" type="text" placeholder="Storage" class="px-3 py-2 border border-gray-200 rounded-xl text-sm" />
-                <input [(ngModel)]="ramFilter" (ngModelChange)="filterSubject.next()" type="text" placeholder="RAM" class="px-3 py-2 border border-gray-200 rounded-xl text-sm" />
-                <label class="col-span-2 flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" [(ngModel)]="installmentFilter" (change)="applyFilter()" class="w-4 h-4 rounded border-gray-300 text-[color:var(--color-primary)]" />
-                  <span class="text-sm text-gray-700">Installment only</span>
+                <select [(ngModel)]="colorFilter" (change)="applyFilter()" class="px-3 py-2 border border-gray-200 rounded-xl text-sm bg-white">
+                  <option value="">All Colors</option>
+                  @for (c of colorFilterOptions; track c) { <option [value]="c">{{ c }}</option> }
+                </select>
+                <select [(ngModel)]="storageFilter" (change)="applyFilter()" class="px-3 py-2 border border-gray-200 rounded-xl text-sm bg-white">
+                  <option value="">All Storage</option>
+                  @for (s of storageFilterOptions; track s) { <option [value]="s">{{ s }}</option> }
+                </select>
+                <select [(ngModel)]="ramFilter" (change)="applyFilter()" class="px-3 py-2 border border-gray-200 rounded-xl text-sm bg-white">
+                  <option value="">All RAM</option>
+                  @for (r of ramFilterOptions; track r) { <option [value]="r">{{ r }}</option> }
+                </select>
+                <label class="col-span-2 flex items-center gap-4">
+                  <label class="flex items-center gap-1.5 cursor-pointer">
+                    <input type="checkbox" [(ngModel)]="installmentFilter" (change)="applyFilter()" class="w-4 h-4 rounded border-gray-300 text-[color:var(--color-primary)]" />
+                    <span class="text-sm text-gray-700">Installment</span>
+                  </label>
+                  <label class="flex items-center gap-1.5 cursor-pointer">
+                    <input type="checkbox" [(ngModel)]="featuredFilter" (change)="applyFilter()" class="w-4 h-4 rounded border-gray-300 text-[color:var(--color-primary)]" />
+                    <span class="text-sm text-gray-700">Featured</span>
+                  </label>
                 </label>
                 @if (hasActiveFilters()) {
                   <button (click)="clearFilters()" class="col-span-2 py-2 text-xs font-semibold text-gray-500 border border-gray-200 rounded-xl hover:bg-gray-50 transition">Clear All &times;</button>
@@ -246,12 +295,20 @@ export class CatalogComponent implements OnInit, OnDestroy {
   colorFilter = '';
   storageFilter = '';
   ramFilter = '';
+  deviceTypeFilter = '';
   installmentFilter = false;
+  featuredFilter = false;
   minPriceFilter: number | null = null;
   maxPriceFilter: number | null = null;
   maxPriceSlider = 50000;
   typeSlug = '';
   mobileFiltersOpen = false;
+
+  // Filter option constants
+  readonly deviceTypeOptions = ['Smartphone', 'Tablet', 'Laptop', 'Gaming Console', 'Accessories', 'Smartwatch', 'Headphones', 'Speaker', 'Camera', 'Drone', 'Monitor / TV'];
+  readonly colorFilterOptions = ['Black', 'White', 'Space Gray', 'Silver', 'Gold', 'Rose Gold', 'Blue', 'Red', 'Green', 'Purple', 'Yellow', 'Orange', 'Pink', 'Midnight', 'Starlight', 'Graphite', 'Deep Purple', 'Natural Titanium'];
+  readonly storageFilterOptions = ['32GB', '64GB', '128GB', '256GB', '512GB', '1TB', '2TB'];
+  readonly ramFilterOptions = ['2GB', '3GB', '4GB', '6GB', '8GB', '12GB', '16GB', '18GB', '24GB', '32GB'];
 
   followUpOpen = false;
   followUpItemId = '';
@@ -267,7 +324,7 @@ export class CatalogComponent implements OnInit, OnDestroy {
   });
 
   readonly hasActiveFilters = computed(() =>
-    !!(this.search || this.categoryFilter || this.brandFilter || this.conditionFilter || this.colorFilter || this.storageFilter || this.ramFilter || this.installmentFilter || this.minPriceFilter || this.maxPriceFilter)
+    !!(this.search || this.categoryFilter || this.brandFilter || this.conditionFilter || this.colorFilter || this.storageFilter || this.ramFilter || this.deviceTypeFilter || this.installmentFilter || this.featuredFilter || this.minPriceFilter || this.maxPriceFilter)
   );
 
   readonly activeFilterCount = computed(() => {
@@ -278,7 +335,9 @@ export class CatalogComponent implements OnInit, OnDestroy {
     if (this.colorFilter) count++;
     if (this.storageFilter) count++;
     if (this.ramFilter) count++;
+    if (this.deviceTypeFilter) count++;
     if (this.installmentFilter) count++;
+    if (this.featuredFilter) count++;
     return count;
   });
 
@@ -355,7 +414,9 @@ export class CatalogComponent implements OnInit, OnDestroy {
       color: this.colorFilter || undefined,
       storage: this.storageFilter || undefined,
       ram: this.ramFilter || undefined,
+      deviceType: this.deviceTypeFilter || undefined,
       installmentAvailable: this.installmentFilter || undefined,
+      isFeatured: this.featuredFilter || undefined,
       priceMin: this.minPriceFilter || undefined,
       priceMax: this.maxPriceFilter || undefined,
       status: 'Available',
@@ -391,7 +452,9 @@ export class CatalogComponent implements OnInit, OnDestroy {
     this.colorFilter = '';
     this.storageFilter = '';
     this.ramFilter = '';
+    this.deviceTypeFilter = '';
     this.installmentFilter = false;
+    this.featuredFilter = false;
     this.minPriceFilter = null;
     this.maxPriceFilter = null;
     this.maxPriceSlider = 50000;

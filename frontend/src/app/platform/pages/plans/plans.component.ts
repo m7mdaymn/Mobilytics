@@ -14,7 +14,7 @@ import { Plan, CreatePlanFormData, planAnnualPrice } from '../../../core/models/
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 class="text-2xl font-bold text-slate-800">Subscription Plans</h1>
-          <p class="text-sm text-slate-500 mt-1">Manage pricing plans â€” monthly & annual (20% discount)</p>
+          <p class="text-sm text-slate-500 mt-1">Manage pricing plans — monthly & annual (20% discount)</p>
         </div>
         <button (click)="openForm()"
            class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition-colors inline-flex items-center gap-2">

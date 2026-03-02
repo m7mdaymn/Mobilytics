@@ -24,9 +24,9 @@ import { environment } from '../../../../environments/environment';
       </div>
 
       @if (result()) {
-        <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+        <!-- ═══════════════════════════════════════════════ -->
         <!--  POST-CREATION SUMMARY                         -->
-        <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+        <!-- ═══════════════════════════════════════════════ -->
         <div class="bg-white rounded-xl p-8 shadow-sm border border-slate-200 space-y-6">
           <!-- Success Header -->
           <div class="text-center space-y-3">
@@ -174,7 +174,7 @@ import { environment } from '../../../../environments/environment';
           </div>
         </div>
       } @else {
-        <!-- â•â•â• STEP INDICATORS â•â•â• -->
+        <!-- ═══ STEP INDICATORS ═══ -->
         <div class="flex items-center justify-between max-w-md mx-auto">
           @for (s of steps; track s.num) {
             <div class="flex flex-col items-center gap-1">
@@ -191,7 +191,7 @@ import { environment } from '../../../../environments/environment';
         </div>
 
         <div class="bg-white rounded-xl p-6 shadow-sm border border-slate-200 space-y-6">
-          <!-- â•â•â• STEP 1: STORE INFO â•â•â• -->
+          <!-- ═══ STEP 1: STORE INFO ═══ -->
           @if (step() === 1) {
             <h2 class="text-lg font-semibold text-slate-800">Store Information</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -234,14 +234,14 @@ import { environment } from '../../../../environments/environment';
               <div>
                 <label class="block text-sm font-medium text-slate-700 mb-1">Theme</label>
                 <select [(ngModel)]="form.themePresetId" class="w-full px-4 py-2.5 border border-slate-300 rounded-lg bg-white">
-                  <option [ngValue]="1">1 â€” Midnight Pro</option>
-                  <option [ngValue]="2">2 â€” Ocean Blue</option>
-                  <option [ngValue]="3">3 â€” Forest Green</option>
-                  <option [ngValue]="4">4 â€” Royal Purple</option>
-                  <option [ngValue]="5">5 â€” Sunset Orange</option>
-                  <option [ngValue]="6">6 â€” Slate Minimal</option>
-                  <option [ngValue]="7">7 â€” Rose Gold</option>
-                  <option [ngValue]="8">8 â€” Arctic Blue</option>
+                  <option [ngValue]="1">1 — Midnight Pro</option>
+                  <option [ngValue]="2">2 — Ocean Blue</option>
+                  <option [ngValue]="3">3 — Forest Green</option>
+                  <option [ngValue]="4">4 — Royal Purple</option>
+                  <option [ngValue]="5">5 — Sunset Orange</option>
+                  <option [ngValue]="6">6 — Slate Minimal</option>
+                  <option [ngValue]="7">7 — Rose Gold</option>
+                  <option [ngValue]="8">8 — Arctic Blue</option>
                 </select>
               </div>
               <div>
@@ -277,7 +277,7 @@ import { environment } from '../../../../environments/environment';
             </div>
           }
 
-          <!-- â•â•â• STEP 2: OWNER INFO â•â•â• -->
+          <!-- ═══ STEP 2: OWNER INFO ═══ -->
           @if (step() === 2) {
             <h2 class="text-lg font-semibold text-slate-800">Owner Information</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -312,7 +312,7 @@ import { environment } from '../../../../environments/environment';
             </div>
           }
 
-          <!-- â•â•â• STEP 3: PLAN & PAYMENT â•â•â• -->
+          <!-- ═══ STEP 3: PLAN & PAYMENT ═══ -->
           @if (step() === 3) {
             <h2 class="text-lg font-semibold text-slate-800">Plan & Payment</h2>
             @if (loadingPlans()) {
@@ -395,7 +395,7 @@ import { environment } from '../../../../environments/environment';
             }
           }
 
-          <!-- â•â•â• STEP 4: REVIEW â•â•â• -->
+          <!-- ═══ STEP 4: REVIEW ═══ -->
           @if (step() === 4) {
             <h2 class="text-lg font-semibold text-slate-800">Review & Confirm</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
@@ -560,7 +560,7 @@ export class TenantCreateComponent implements OnInit {
   }
 
   selectedPlanName(): string {
-    return this.plans().find(p => p.id === this.form.planId)?.name ?? 'â€”';
+    return this.plans().find(p => p.id === this.form.planId)?.name ?? '—';
   }
 
   normalizeSlug(): void {
@@ -649,7 +649,7 @@ export class TenantCreateComponent implements OnInit {
     });
   }
 
-  // â”€â”€â”€ Invoice PDF (print-based) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ─── Invoice PDF (print-based) ───────────────────────
 
   printInvoice(): void {
     const inv = this.result()?.invoice;
@@ -747,7 +747,7 @@ export class TenantCreateComponent implements OnInit {
     }
   }
 
-  // â”€â”€â”€ WhatsApp Sharing â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ─── WhatsApp Sharing ────────────────────────────────
 
   sendInvoiceWhatsApp(): void {
     const inv = this.result()?.invoice;

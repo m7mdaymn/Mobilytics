@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NovaNode.Infrastructure.Persistence;
 
@@ -11,9 +12,11 @@ using NovaNode.Infrastructure.Persistence;
 namespace NovaNode.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260302000549_AddDeviceTypeAndSpecFieldTemplate")]
+    partial class AddDeviceTypeAndSpecFieldTemplate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1236,12 +1239,6 @@ namespace NovaNode.Infrastructure.Persistence.Migrations
                     b.Property<string>("MapUrl")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("OfferBannerText")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("OfferBannerUrl")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("PhoneNumber")
                         .HasColumnType("nvarchar(max)");
 
@@ -1257,9 +1254,6 @@ namespace NovaNode.Infrastructure.Persistence.Migrations
                     b.Property<string>("StoreName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("SystemThemeId")
-                        .HasColumnType("int");
 
                     b.Property<Guid>("TenantId")
                         .HasColumnType("uniqueidentifier");

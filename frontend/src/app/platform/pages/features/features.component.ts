@@ -21,7 +21,7 @@ import { Tenant, TenantFeatures, Plan } from '../../../core/models/platform.mode
               class="w-full px-4 py-2.5 border border-slate-300 rounded-lg bg-white focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400">
               <option value="">-- Choose a tenant --</option>
               @for (tenant of tenants(); track tenant.id) {
-                <option [value]="tenant.id">{{ tenant.name }} ({{ tenant.slug }}) â€” {{ tenant.status }}</option>
+                <option [value]="tenant.id">{{ tenant.name }} ({{ tenant.slug }}) — {{ tenant.status }}</option>
               }
             </select>
           </div>

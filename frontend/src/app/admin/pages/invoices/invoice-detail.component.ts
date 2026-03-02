@@ -1,5 +1,5 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { ApiService } from '../../../core/services/api.service';
@@ -50,11 +50,21 @@ import { TenantService } from '../../../core/services/tenant.service';
                 <span class="text-xs font-medium text-gray-500 uppercase tracking-wide">{{ i18n.t('invoices.customer') }}</span>
                 <p class="font-medium text-gray-900 mt-1.5">{{ inv.customerName }}</p>
               </div>
+            } @else {
+              <div>
+                <span class="text-xs font-medium text-gray-500 uppercase tracking-wide">{{ i18n.t('invoices.customer') }}</span>
+                <p class="text-gray-400 mt-1.5">—</p>
+              </div>
             }
             @if (inv.customerPhone) {
               <div>
                 <span class="text-xs font-medium text-gray-500 uppercase tracking-wide">{{ i18n.t('invoices.customerPhone') }}</span>
                 <p class="font-medium text-gray-900 mt-1.5">{{ inv.customerPhone }}</p>
+              </div>
+            } @else {
+              <div>
+                <span class="text-xs font-medium text-gray-500 uppercase tracking-wide">{{ i18n.t('invoices.customerPhone') }}</span>
+                <p class="text-gray-400 mt-1.5">—</p>
               </div>
             }
           </div>
@@ -136,6 +146,22 @@ import { TenantService } from '../../../core/services/tenant.service';
             </button>
           </div>
         }
+
+        <!-- Delete Section -->
+        @if (authService.hasPermission('invoices.delete')) {
+          <div class="bg-white rounded-2xl border border-gray-200 p-6">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"/></svg>
+                <span class="text-sm text-gray-600">{{ i18n.t('invoices.delete') }}</span>
+              </div>
+              <button (click)="deleteInvoice()" [disabled]="deleting()"
+                class="bg-gray-100 hover:bg-red-50 text-gray-600 hover:text-red-600 px-4 py-2 rounded-xl text-sm font-medium transition disabled:opacity-50 border border-gray-200 hover:border-red-200">
+                {{ deleting() ? i18n.t('common.saving') : i18n.t('invoices.delete') }}
+              </button>
+            </div>
+          </div>
+        }
       } @else {
         <div class="text-center py-16">
           <svg class="w-10 h-10 text-gray-300 mx-auto animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
@@ -149,6 +175,7 @@ export class InvoiceDetailComponent implements OnInit {
   private readonly api = inject(ApiService);
   readonly tenantService = inject(TenantService);
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   private readonly toastService = inject(ToastService);
   readonly authService = inject(AuthService);
   readonly settingsStore = inject(SettingsStore);
@@ -156,6 +183,7 @@ export class InvoiceDetailComponent implements OnInit {
 
   readonly invoice = signal<Invoice | null>(null);
   readonly refunding = signal(false);
+  readonly deleting = signal(false);
 
   refundReason = '';
 
@@ -190,6 +218,25 @@ export class InvoiceDetailComponent implements OnInit {
       error: (err) => {
         this.toastService.error(err.message || this.i18n.t('invoices.refundFailed'));
         this.refunding.set(false);
+      },
+    });
+  }
+
+  deleteInvoice(): void {
+    const inv = this.invoice();
+    if (!inv) return;
+    if (!confirm(this.i18n.t('invoices.deleteConfirm'))) return;
+
+    this.deleting.set(true);
+    this.api.delete(`/Invoices/${inv.id}`).subscribe({
+      next: () => {
+        this.toastService.success(this.i18n.t('invoices.deleteSuccess'));
+        this.deleting.set(false);
+        this.router.navigateByUrl(this.tenantService.adminUrl() + '/invoices');
+      },
+      error: (err) => {
+        this.toastService.error(err.message || this.i18n.t('invoices.deleteFailed'));
+        this.deleting.set(false);
       },
     });
   }

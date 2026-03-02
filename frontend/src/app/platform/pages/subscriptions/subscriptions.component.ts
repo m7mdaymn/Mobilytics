@@ -23,7 +23,7 @@ import { Tenant, Plan, ExpiringSubscription, StartTrialRequest, ActivateSubscrip
               class="w-full px-4 py-2.5 border border-slate-300 rounded-lg bg-white focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 transition">
               <option value="">-- Choose a tenant --</option>
               @for (tenant of tenants(); track tenant.id) {
-                <option [value]="tenant.id">{{ tenant.name }} ({{ tenant.slug }}) â€” {{ tenant.status }}</option>
+                <option [value]="tenant.id">{{ tenant.name }} ({{ tenant.slug }}) — {{ tenant.status }}</option>
               }
             </select>
           </div>
@@ -45,7 +45,7 @@ import { Tenant, Plan, ExpiringSubscription, StartTrialRequest, ActivateSubscrip
       <!-- Expiring Subscriptions Alert -->
       @if (expiring().length > 0) {
         <div class="bg-orange-50 border border-orange-200 rounded-xl p-5">
-          <h3 class="font-semibold text-orange-800 mb-3">âš ï¸ {{ expiring().length }} Subscription(s) Expiring Within {{ daysFilter }} Days</h3>
+          <h3 class="font-semibold text-orange-800 mb-3">⚠️ {{ expiring().length }} Subscription(s) Expiring Within {{ daysFilter }} Days</h3>
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             @for (sub of expiring(); track sub.tenantId) {
               <div class="bg-white rounded-lg p-4 border border-orange-100 hover:shadow-sm transition-shadow">
@@ -60,9 +60,9 @@ import { Tenant, Plan, ExpiringSubscription, StartTrialRequest, ActivateSubscrip
                   </span>
                 </div>
                 <div class="mt-2 flex items-center justify-between">
-                  <span class="text-xs text-slate-500">{{ sub.planName }} Â· Ends {{ sub.endDate | date:'mediumDate' }}</span>
+                  <span class="text-xs text-slate-500">{{ sub.planName }} · Ends {{ sub.endDate | date:'mediumDate' }}</span>
                   <button (click)="selectTenant(sub.tenantId)" class="text-indigo-600 hover:text-indigo-800 text-xs font-semibold">
-                    Manage â†’
+                    Manage →
                   </button>
                 </div>
               </div>
@@ -164,7 +164,7 @@ import { Tenant, Plan, ExpiringSubscription, StartTrialRequest, ActivateSubscrip
                   <select [(ngModel)]="trialForm.planId" class="w-full px-4 py-2.5 border border-slate-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-200 focus:border-blue-400">
                     <option value="">Select plan</option>
                     @for (plan of plans(); track plan.id) {
-                      <option [value]="plan.id">{{ plan.name }} â€” {{ plan.priceMonthly | number:'1.0-0' }} EGP/mo</option>
+                      <option [value]="plan.id">{{ plan.name }} — {{ plan.priceMonthly | number:'1.0-0' }} EGP/mo</option>
                     }
                   </select>
                 </div>
@@ -245,7 +245,7 @@ import { Tenant, Plan, ExpiringSubscription, StartTrialRequest, ActivateSubscrip
                 @if (selectedTenant()?.subscription) {
                   <div class="bg-purple-50 rounded-lg p-3 text-sm">
                     <span class="text-purple-700 font-medium">Current plan: {{ selectedTenant()!.subscription!.planName }}</span>
-                    <span class="text-purple-500 ms-2">Â· Ends {{ selectedTenant()!.subscription!.endDate | date:'mediumDate' }}</span>
+                    <span class="text-purple-500 ms-2">· Ends {{ selectedTenant()!.subscription!.endDate | date:'mediumDate' }}</span>
                   </div>
                 }
 
@@ -365,7 +365,7 @@ export class SubscriptionsComponent implements OnInit {
     });
   }
 
-  // â”€â”€ Activate helpers â”€â”€
+  // ── Activate helpers ──
   selectActivatePlan(plan: Plan): void {
     this.activateForm.planId = plan.id;
     this.recalcActivateAmount();
@@ -388,10 +388,10 @@ export class SubscriptionsComponent implements OnInit {
   }
 
   selectedActivatePlanName(): string {
-    return this.plans().find(p => p.id === this.activateForm.planId)?.name ?? 'â€”';
+    return this.plans().find(p => p.id === this.activateForm.planId)?.name ?? '—';
   }
 
-  // â”€â”€ Renew helpers â”€â”€
+  // ── Renew helpers ──
   recalcRenewAmount(): void {
     const price = this.currentPlanPrice();
     if (price > 0) {
@@ -410,7 +410,7 @@ export class SubscriptionsComponent implements OnInit {
     return plan?.priceMonthly ?? 0;
   }
 
-  // â”€â”€ Actions â”€â”€
+  // ── Actions ──
   startTrial(): void {
     if (!this.selectedTenant() || !this.trialForm.planId) return;
     this.processing.set(true);

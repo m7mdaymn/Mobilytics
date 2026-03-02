@@ -13,11 +13,11 @@ import { I18nService } from '../../../core/services/i18n.service';
   template: `
     <div class="space-y-6 max-w-[1440px] mx-auto">
 
-      <!-- â•â•â• Header â•â•â• -->
+      <!-- ═══ Header ═══ -->
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 class="text-2xl font-bold text-black tracking-tight">{{ i18n.t('platform.nav.dashboard') }}</h1>
-          <p class="text-sm text-neutral-500 mt-0.5">{{ greeting() }} â€” {{ today | date:'fullDate' }}</p>
+          <p class="text-sm text-neutral-500 mt-0.5">{{ greeting() }} — {{ today | date:'fullDate' }}</p>
         </div>
         <div class="flex items-center gap-2">
           @for (opt of rangeOptions; track opt.value) {
@@ -51,7 +51,7 @@ import { I18nService } from '../../../core/services/i18n.service';
       } @else if (error()) {
         <!-- Error state -->
         <div class="bg-red-50 border border-red-200 rounded-2xl p-8 text-center">
-          <div class="text-4xl mb-3">âš ï¸</div>
+          <div class="text-4xl mb-3">⚠️</div>
           <p class="text-red-800 font-semibold text-lg">Failed to load dashboard</p>
           <p class="text-red-600 text-sm mt-1 mb-4">{{ error() }}</p>
           <button (click)="load()" class="bg-black text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-neutral-800 transition-colors">
@@ -60,12 +60,12 @@ import { I18nService } from '../../../core/services/i18n.service';
         </div>
       } @else if (dashboard()) {
 
-        <!-- â•â•â• Revenue Hero Banner â•â•â• -->
+        <!-- ═══ Revenue Hero Banner ═══ -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
           <!-- Monthly Revenue - Hero Card -->
           <div class="lg:col-span-2 bg-black rounded-2xl p-6 text-white relative overflow-hidden">
-            <div class="absolute -top-16 -right-16 w-48 h-48 bg-white/5 rounded-full"></div>
-            <div class="absolute -bottom-8 -right-8 w-32 h-32 bg-white/5 rounded-full"></div>
+            <div class="absolute -top-16 -end-16 w-48 h-48 bg-white/5 rounded-full"></div>
+            <div class="absolute -bottom-8 -end-8 w-32 h-32 bg-white/5 rounded-full"></div>
             <div class="relative z-10">
               <div class="flex items-center gap-2 mb-1">
                 <div class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>
@@ -128,7 +128,7 @@ import { I18nService } from '../../../core/services/i18n.service';
           </div>
         </div>
 
-        <!-- â•â•â• KPI Stat Cards â•â•â• -->
+        <!-- ═══ KPI Stat Cards ═══ -->
         <div class="grid grid-cols-2 lg:grid-cols-5 gap-4">
           @for (stat of statCards(); track stat.label) {
             <div class="group bg-white rounded-2xl p-5 border border-neutral-200 hover:border-neutral-400 hover:shadow-lg transition-all duration-200 cursor-default">
@@ -153,7 +153,7 @@ import { I18nService } from '../../../core/services/i18n.service';
           }
         </div>
 
-        <!-- â•â•â• Revenue Chart + Quick Actions Row â•â•â• -->
+        <!-- ═══ Revenue Chart + Quick Actions Row ═══ -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
           <!-- Revenue Chart -->
           <div class="lg:col-span-2 bg-white rounded-2xl p-6 border border-neutral-200">
@@ -233,10 +233,10 @@ import { I18nService } from '../../../core/services/i18n.service';
           </div>
         </div>
 
-        <!-- â•â•â• Expiring Soon Alert â•â•â• -->
+        <!-- ═══ Expiring Soon Alert ═══ -->
         @if (dashboard()!.expiringSubscriptions > 0) {
           <div class="bg-amber-50 border border-amber-200 rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4">
-            <div class="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center text-2xl shrink-0">â°</div>
+            <div class="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center text-2xl shrink-0">⏰</div>
             <div class="flex-1">
               <p class="font-bold text-amber-900">{{ dashboard()!.expiringSubscriptions }} subscription{{ dashboard()!.expiringSubscriptions > 1 ? 's' : '' }} expiring within 7 days</p>
               <p class="text-sm text-amber-700 mt-0.5">These tenants need attention to avoid service interruption.</p>
@@ -247,7 +247,7 @@ import { I18nService } from '../../../core/services/i18n.service';
           </div>
         }
 
-        <!-- â•â•â• Recent Invoices Table â•â•â• -->
+        <!-- ═══ Recent Invoices Table ═══ -->
         <div class="bg-white rounded-2xl border border-neutral-200 overflow-hidden">
           <div class="px-6 py-5 border-b border-neutral-100 flex items-center justify-between">
             <div>
@@ -318,12 +318,12 @@ import { I18nService } from '../../../core/services/i18n.service';
             </div>
           } @else {
             <div class="px-6 py-12 text-center text-neutral-400 text-sm">
-              No invoices yet â€” they'll appear once subscriptions are activated.
+              No invoices yet — they'll appear once subscriptions are activated.
             </div>
           }
         </div>
 
-        <!-- â•â•â• Tenant Revenue Breakdown â•â•â• -->
+        <!-- ═══ Tenant Revenue Breakdown ═══ -->
         <div class="bg-white rounded-2xl border border-neutral-200 overflow-hidden">
           <div class="px-6 py-5 border-b border-neutral-100 flex items-center justify-between">
             <div>
@@ -420,13 +420,13 @@ import { I18nService } from '../../../core/services/i18n.service';
                         @if (row.subscriptionStart && row.subscriptionEnd) {
                           <div class="text-xs">
                             <span class="text-neutral-500">{{ row.subscriptionStart | date:'MMM d, yy' }}</span>
-                            <span class="text-neutral-300 mx-1">â†’</span>
+                            <span class="text-neutral-300 mx-1">→</span>
                             <span class="font-semibold" [class]="isExpiringSoon(row.subscriptionEnd) ? 'text-amber-600' : 'text-black'">
                               {{ row.subscriptionEnd | date:'MMM d, yy' }}
                             </span>
                           </div>
                         } @else {
-                          <span class="text-neutral-300 text-xs">â€”</span>
+                          <span class="text-neutral-300 text-xs">—</span>
                         }
                       </td>
                       <td class="px-5 py-3.5 text-center">
@@ -452,12 +452,12 @@ import { I18nService } from '../../../core/services/i18n.service';
             </div>
           } @else {
             <div class="px-6 py-12 text-center text-neutral-400 text-sm">
-              No revenue data â€” create tenants and activate subscriptions to see the breakdown.
+              No revenue data — create tenants and activate subscriptions to see the breakdown.
             </div>
           }
         </div>
 
-        <!-- â•â•â• Recent Tenants â•â•â• -->
+        <!-- ═══ Recent Tenants ═══ -->
         <div class="bg-white rounded-2xl border border-neutral-200 overflow-hidden">
           <div class="px-6 py-5 border-b border-neutral-100 flex items-center justify-between">
             <div>
@@ -465,7 +465,7 @@ import { I18nService } from '../../../core/services/i18n.service';
               <p class="text-xs text-neutral-500 mt-0.5">Recently onboarded stores</p>
             </div>
             <a routerLink="/superadmin/tenants" class="text-xs font-semibold text-neutral-400 hover:text-black transition-colors uppercase tracking-wider">
-              View All â†’
+              View All →
             </a>
           </div>
           @if (dashboard()!.recentTenants.length) {
@@ -505,12 +505,12 @@ import { I18nService } from '../../../core/services/i18n.service';
             </div>
           } @else {
             <div class="px-6 py-12 text-center text-neutral-400 text-sm">
-              No tenants yet â€” create your first store to get started.
+              No tenants yet — create your first store to get started.
             </div>
           }
         </div>
 
-        <!-- â•â•â• Footer Stats Bar â•â•â• -->
+        <!-- ═══ Footer Stats Bar ═══ -->
         <div class="bg-neutral-900 rounded-2xl p-5 flex flex-wrap items-center justify-between gap-4 text-white">
           <div class="flex items-center gap-3">
             <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
@@ -581,7 +581,7 @@ export class PlatformDashboardComponent implements OnInit {
 
   readonly peakMonth = computed(() => {
     const chart = this.dashboard()?.revenueChart;
-    if (!chart || chart.length === 0) return 'â€”';
+    if (!chart || chart.length === 0) return '—';
     const peak = chart.reduce((a, b) => a.amount > b.amount ? a : b);
     return `${peak.label} (${Math.round(peak.amount).toLocaleString()} EGP)`;
   });
@@ -601,11 +601,11 @@ export class PlatformDashboardComponent implements OnInit {
     const d = this.dashboard();
     if (!d) return [];
     return [
-      { icon: 'ðŸ¢', label: 'Active Tenants', value: d.activeTenants, bgClass: 'bg-emerald-50', route: '/superadmin/tenants', badge: null, badgeClass: '' },
-      { icon: 'â³', label: 'On Trial', value: d.trialTenants, bgClass: 'bg-blue-50', route: '/superadmin/subscriptions', badge: d.trialTenants > 0 ? 'NEEDS ACTION' : null, badgeClass: 'bg-blue-100 text-blue-700' },
-      { icon: 'âš ï¸', label: 'Suspended', value: d.suspendedTenants, bgClass: 'bg-red-50', route: '/superadmin/tenants', badge: d.suspendedTenants > 0 ? 'ATTENTION' : null, badgeClass: 'bg-red-100 text-red-700' },
-      { icon: 'ðŸ“…', label: 'Expiring Soon', value: d.expiringSubscriptions, bgClass: 'bg-amber-50', route: '/superadmin/subscriptions', badge: d.expiringSubscriptions > 0 ? 'WITHIN 7 DAYS' : null, badgeClass: 'bg-amber-100 text-amber-700' },
-      { icon: 'ðŸš«', label: 'Expired', value: d.expiredTenants, bgClass: 'bg-neutral-100', route: '/superadmin/tenants', badge: null, badgeClass: '' },
+      { icon: '🏢', label: 'Active Tenants', value: d.activeTenants, bgClass: 'bg-emerald-50', route: '/superadmin/tenants', badge: null, badgeClass: '' },
+      { icon: '⏳', label: 'On Trial', value: d.trialTenants, bgClass: 'bg-blue-50', route: '/superadmin/subscriptions', badge: d.trialTenants > 0 ? 'NEEDS ACTION' : null, badgeClass: 'bg-blue-100 text-blue-700' },
+      { icon: '⚠️', label: 'Suspended', value: d.suspendedTenants, bgClass: 'bg-red-50', route: '/superadmin/tenants', badge: d.suspendedTenants > 0 ? 'ATTENTION' : null, badgeClass: 'bg-red-100 text-red-700' },
+      { icon: '📅', label: 'Expiring Soon', value: d.expiringSubscriptions, bgClass: 'bg-amber-50', route: '/superadmin/subscriptions', badge: d.expiringSubscriptions > 0 ? 'WITHIN 7 DAYS' : null, badgeClass: 'bg-amber-100 text-amber-700' },
+      { icon: '🚫', label: 'Expired', value: d.expiredTenants, bgClass: 'bg-neutral-100', route: '/superadmin/tenants', badge: null, badgeClass: '' },
     ];
   });
 
@@ -641,7 +641,7 @@ export class PlatformDashboardComponent implements OnInit {
   }
 
   chartLabel(label: string): string {
-    // Convert "Jun 2025" â†’ "Jun"
+    // Convert "Jun 2025" → "Jun"
     return label?.split(' ')[0] ?? label;
   }
 

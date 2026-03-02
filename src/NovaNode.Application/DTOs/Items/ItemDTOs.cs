@@ -31,6 +31,7 @@ public class ItemDto
     public string? ChecklistJson { get; set; }
     public string? CustomFieldsJson { get; set; }
     public bool IsFeatured { get; set; }
+    public string? DeviceType { get; set; }
     public string? Color { get; set; }
     public string? Storage { get; set; }
     public string? RAM { get; set; }
@@ -63,6 +64,7 @@ public class CreateItemRequest
     public string? ChecklistJson { get; set; }
     public string? CustomFieldsJson { get; set; }
     public bool IsFeatured { get; set; }
+    public string? DeviceType { get; set; }
     public string? Color { get; set; }
     public string? Storage { get; set; }
     public string? RAM { get; set; }
@@ -93,6 +95,7 @@ public class UpdateItemRequest
     public string? ChecklistJson { get; set; }
     public string? CustomFieldsJson { get; set; }
     public bool IsFeatured { get; set; }
+    public string? DeviceType { get; set; }
     public string? Color { get; set; }
     public string? Storage { get; set; }
     public string? RAM { get; set; }

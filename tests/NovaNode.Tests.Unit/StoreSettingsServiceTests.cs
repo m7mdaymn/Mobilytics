@@ -152,10 +152,10 @@ public class StoreSettingsServiceTests
 
         Assert.Equal("Test", result.StoreName);
         Assert.True(result.IsActive);
-        // Theme 2 = Ocean Blue
-        Assert.Equal("#1e40af", result.PrimaryColor);
-        Assert.Equal("#1e3a5f", result.SecondaryColor);
-        Assert.Equal("#06b6d4", result.AccentColor);
+        // Theme 2 = Arctic Blue
+        Assert.Equal("#0369a1", result.PrimaryColor);
+        Assert.Equal("#075985", result.SecondaryColor);
+        Assert.Equal("#7dd3fc", result.AccentColor);
     }
 
     [Fact]
