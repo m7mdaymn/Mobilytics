@@ -352,6 +352,10 @@ export class InstallmentsComponent implements OnInit {
   onLogoFileSelected(event: Event): void {
     const file = (event.target as HTMLInputElement).files?.[0];
     if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      this.toast.error('Logo image must be under 5MB');
+      return;
+    }
     if (!this.editingProvider) {
       this.toast.error('Save the provider first, then upload a logo');
       return;

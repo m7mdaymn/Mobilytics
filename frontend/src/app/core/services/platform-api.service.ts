@@ -9,7 +9,7 @@ import {
   TenantFeatures, StartTrialRequest, ActivateSubscriptionRequest, RenewSubscriptionRequest,
   OnboardTenantRequest, OnboardTenantResponse, PlatformInvoice,
   StoreRequest, UpdateStoreRequestStatusRequest,
-  TenantStoreSettings, UpdateStoreSettingsRequest
+  TenantStoreSettings, UpdateStoreSettingsRequest, TenantStats
 } from '../models/platform.models';
 
 @Injectable({ providedIn: 'root' })
@@ -62,6 +62,12 @@ export class PlatformApiService {
 
   activateTenant(id: string): Observable<void> {
     return this.http.post<ApiResponse<void>>(`${this.baseUrl}/tenants/${id}/activate`, {})
+      .pipe(map(res => this.unwrap(res)));
+  }
+
+  // Tenant Stats (Analytics)
+  getTenantStats(id: string): Observable<TenantStats> {
+    return this.http.get<ApiResponse<TenantStats>>(`${this.baseUrl}/tenants/${id}/stats`)
       .pipe(map(res => this.unwrap(res)));
   }
 

@@ -13,6 +13,9 @@ public class InvoiceDto
     public decimal VatAmount { get; set; }
     public decimal Total { get; set; }
     public string? PaymentMethod { get; set; }
+    public bool IncludeTax { get; set; }
+    public string? InstallmentProviderName { get; set; }
+    public int? InstallmentMonths { get; set; }
     public string? Notes { get; set; }
     public bool IsRefund { get; set; }
     public Guid? OriginalInvoiceId { get; set; }
@@ -30,7 +33,7 @@ public class InvoiceItemDto
     public int Quantity { get; set; }
     public decimal LineTotal { get; set; }
     public TaxStatus TaxStatusSnapshot { get; set; }
-    public decimal? VatPercentSnapshot { get; set; }
+    public decimal? VatAmountSnapshot { get; set; }
 }
 
 public class CreateInvoiceRequest
@@ -39,6 +42,9 @@ public class CreateInvoiceRequest
     public string? CustomerPhone { get; set; }
     public decimal Discount { get; set; }
     public string? PaymentMethod { get; set; }
+    public bool IncludeTax { get; set; }
+    public string? InstallmentProviderName { get; set; }
+    public int? InstallmentMonths { get; set; }
     public string? Notes { get; set; }
     public List<CreateInvoiceItemRequest> Items { get; set; } = [];
 }

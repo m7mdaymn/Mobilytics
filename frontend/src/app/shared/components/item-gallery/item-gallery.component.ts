@@ -10,7 +10,7 @@ import { resolveImageUrl } from '../../../core/utils/image.utils';
       <!-- Main Image -->
       <div class="relative aspect-square rounded-xl overflow-hidden bg-gray-100 cursor-pointer" (click)="openLightbox()">
         @if (currentImage()) {
-          <img [src]="currentImage()" [alt]="alt" class="w-full h-full object-contain" loading="lazy" />
+          <img [src]="currentImage()" [alt]="alt" class="w-full h-full object-contain" loading="lazy" (error)="$any($event.target).style.display='none'" />
         } @else {
           <div class="w-full h-full flex items-center justify-center text-gray-400">
             <svg class="w-20 h-20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -35,7 +35,7 @@ import { resolveImageUrl } from '../../../core/utils/image.utils';
               (click)="selectImage(i)"
               class="shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all"
               [class]="selectedIndex() === i ? 'border-[color:var(--color-primary)] ring-1 ring-[color:var(--color-primary)]' : 'border-transparent opacity-70 hover:opacity-100'">
-              <img [src]="img" [alt]="alt + ' thumbnail ' + (i + 1)" class="w-full h-full object-cover" loading="lazy" />
+              <img [src]="img" [alt]="alt + ' thumbnail ' + (i + 1)" class="w-full h-full object-cover" loading="lazy" (error)="$any($event.target).style.display='none'" />
             </button>
           }
         </div>
@@ -54,6 +54,7 @@ import { resolveImageUrl } from '../../../core/utils/image.utils';
           [src]="currentImage()"
           [alt]="alt"
           class="max-w-full max-h-full object-contain"
+          (error)="$any($event.target).style.display='none'"
           (click)="$event.stopPropagation()" />
       </div>
     }

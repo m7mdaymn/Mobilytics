@@ -121,6 +121,16 @@ public interface IEmployeeService
     Task DeleteAsync(Guid tenantId, Guid id, CancellationToken ct = default);
     Task UpdatePermissionsAsync(Guid tenantId, Guid employeeId, UpdatePermissionsRequest request, CancellationToken ct = default);
     Task<int> GenerateSalaryExpensesAsync(Guid tenantId, string month, Guid userId, CancellationToken ct = default);
+    // Absence
+    Task<List<EmployeeAbsenceDto>> GetAbsencesAsync(Guid tenantId, Guid? employeeId, CancellationToken ct = default);
+    Task<EmployeeAbsenceDto> CreateAbsenceAsync(Guid tenantId, CreateAbsenceRequest request, CancellationToken ct = default);
+    Task DeleteAbsenceAsync(Guid tenantId, Guid id, CancellationToken ct = default);
+}
+
+public interface IAuditService
+{
+    Task<List<AuditLogDto>> GetLogsAsync(Guid tenantId, int page, int pageSize, CancellationToken ct = default);
+    Task LogAsync(Guid? tenantId, Guid actorId, string action, string entityName, string? entityId, string? before, string? after, CancellationToken ct = default);
 }
 
 public interface IStoreSettingsService
@@ -178,6 +188,9 @@ public interface IPlatformService
 
     // Dashboard
     Task<PlatformDashboardDto> GetDashboardAsync(string range, CancellationToken ct = default);
+
+    // Tenant Stats
+    Task<TenantStatsDto> GetTenantStatsAsync(Guid tenantId, CancellationToken ct = default);
 
     // Store Settings (platform-managed)
     Task<TenantStoreSettingsDto> GetStoreSettingsAsync(Guid tenantId, CancellationToken ct = default);

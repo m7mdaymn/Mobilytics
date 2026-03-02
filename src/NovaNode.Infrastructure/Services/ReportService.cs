@@ -99,7 +99,7 @@ public class ReportService : IReportService
                 CustomerName = i.CustomerName,
                 CustomerPhone = i.CustomerPhone,
                 Total = i.Total,
-                PaymentMethod = i.PaymentMethod.ToString(),
+                PaymentMethod = i.PaymentMethod ?? string.Empty,
                 IsRefund = i.IsRefund,
                 CreatedAt = i.CreatedAt
             })

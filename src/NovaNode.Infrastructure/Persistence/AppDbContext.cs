@@ -38,6 +38,7 @@ public class AppDbContext : DbContext
     public DbSet<ExpenseCategory> ExpenseCategories => Set<ExpenseCategory>();
     public DbSet<Expense> Expenses => Set<Expense>();
     public DbSet<Employee> Employees => Set<Employee>();
+    public DbSet<EmployeeAbsence> EmployeeAbsences => Set<EmployeeAbsence>();
     public DbSet<Permission> Permissions => Set<Permission>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
     public DbSet<InstallmentProvider> InstallmentProviders => Set<InstallmentProvider>();
@@ -137,7 +138,7 @@ public class AppDbContext : DbContext
             b.HasIndex(i => new { i.TenantId, i.CategoryId });
             b.Property(i => i.Price).HasPrecision(18, 2);
             b.Property(i => i.OldPrice).HasPrecision(18, 2);
-            b.Property(i => i.VatPercent).HasPrecision(5, 2);
+            b.Property(i => i.VatAmount).HasPrecision(18, 2);
             b.Property(i => i.MonthlyPayment).HasPrecision(18, 2);
             b.HasOne(i => i.ItemType).WithMany(it => it.Items).HasForeignKey(i => i.ItemTypeId).OnDelete(DeleteBehavior.SetNull);
             b.HasOne(i => i.Brand).WithMany(br => br.Items).HasForeignKey(i => i.BrandId).OnDelete(DeleteBehavior.SetNull);
@@ -184,7 +185,7 @@ public class AppDbContext : DbContext
         {
             b.Property(ii => ii.UnitPrice).HasPrecision(18, 2);
             b.Property(ii => ii.LineTotal).HasPrecision(18, 2);
-            b.Property(ii => ii.VatPercentSnapshot).HasPrecision(5, 2);
+            b.Property(ii => ii.VatAmountSnapshot).HasPrecision(18, 2);
             b.HasOne(ii => ii.Invoice).WithMany(inv => inv.Items).HasForeignKey(ii => ii.InvoiceId).OnDelete(DeleteBehavior.Cascade).IsRequired(false);
             b.HasOne(ii => ii.Item).WithMany(i => i.InvoiceItems).HasForeignKey(ii => ii.ItemId).OnDelete(DeleteBehavior.SetNull);
         });
@@ -208,6 +209,13 @@ public class AppDbContext : DbContext
         {
             b.Property(emp => emp.SalaryMonthly).HasPrecision(18, 2);
             b.HasQueryFilter(emp => _tenantContext.TenantId == null || emp.TenantId == _tenantContext.TenantId);
+        });
+
+        // EmployeeAbsence
+        modelBuilder.Entity<EmployeeAbsence>(b =>
+        {
+            b.HasOne(a => a.Employee).WithMany().HasForeignKey(a => a.EmployeeId).OnDelete(DeleteBehavior.Cascade);
+            b.HasQueryFilter(a => _tenantContext.TenantId == null || a.TenantId == _tenantContext.TenantId);
         });
 
         // Permission - Global Query Filter

@@ -17,7 +17,7 @@ public class ItemDto
     public decimal Price { get; set; }
     public decimal? OldPrice { get; set; }
     public TaxStatus TaxStatus { get; set; }
-    public decimal? VatPercent { get; set; }
+    public decimal? VatAmount { get; set; }
     public ItemCondition Condition { get; set; }
     public int? BatteryHealth { get; set; }
     public string? IMEI { get; set; }
@@ -53,7 +53,7 @@ public class CreateItemRequest
     public decimal Price { get; set; }
     public decimal? OldPrice { get; set; }
     public TaxStatus TaxStatus { get; set; }
-    public decimal? VatPercent { get; set; }
+    public decimal? VatAmount { get; set; }
     public ItemCondition Condition { get; set; }
     public int? BatteryHealth { get; set; }
     public string? IMEI { get; set; }
@@ -84,7 +84,7 @@ public class UpdateItemRequest
     public decimal Price { get; set; }
     public decimal? OldPrice { get; set; }
     public TaxStatus TaxStatus { get; set; }
-    public decimal? VatPercent { get; set; }
+    public decimal? VatAmount { get; set; }
     public ItemCondition Condition { get; set; }
     public int? BatteryHealth { get; set; }
     public string? IMEI { get; set; }

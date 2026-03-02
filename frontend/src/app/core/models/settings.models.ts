@@ -103,17 +103,15 @@ export interface SystemTheme {
 export const COLOR_THEMES: ThemePreset[] = [
   { id: 1, name: 'Classic',       primary: '#000000', secondary: '#111111', accent: '#000000', description: 'Pure black on white' },
   { id: 2, name: 'Soft Black',    primary: '#1a1a1a', secondary: '#333333', accent: '#1a1a1a', description: 'Soft black, clean look' },
-  { id: 3, name: 'Charcoal',      primary: '#222222', secondary: '#444444', accent: '#222222', description: 'Dark charcoal, minimal' },
-  { id: 4, name: 'Ink',           primary: '#0a0a0a', secondary: '#1c1c1c', accent: '#0a0a0a', description: 'Deep ink, elegant' },
 ];
 
-// System themes (UI style) — Minimal is the default
+// System themes (UI style)
 export const SYSTEM_THEMES: SystemTheme[] = [
-  { id: 4, name: 'Slate Minimal',  description: 'Ultra-clean Apple-inspired, frosted header', icon: '🍎' },
+  { id: 2, name: 'Neumorphism',    description: 'Soft extruded surfaces on matte background',            icon: '🫧' },
+  { id: 4, name: 'Slate Minimal',  description: 'Ultra-clean Apple-inspired, frosted header',             icon: '🍎' },
 ];
 
 // Backward compat alias
 export const THEME_PRESETS: ThemePreset[] = COLOR_THEMES;
 
-// Only minimal system theme is available
 export const DEFAULT_SYSTEM_THEME_ID = 4;

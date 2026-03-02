@@ -71,4 +71,8 @@ public class PlatformTenantsController : BaseApiController
     [HttpPut("{id:guid}/store-settings")]
     public async Task<IActionResult> UpdateStoreSettings(Guid id, [FromBody] UpdateStoreSettingsRequest request, CancellationToken ct) =>
         Ok(await _svc.UpdateStoreSettingsAsync(id, request, ct));
+
+    [HttpGet("{id:guid}/stats")]
+    public async Task<IActionResult> GetStats(Guid id, CancellationToken ct) =>
+        Ok(await _svc.GetTenantStatsAsync(id, ct));
 }

@@ -63,9 +63,9 @@ public class InvoiceService : IInvoiceService
 
             var title = lineReq.ItemTitleOverride ?? catalogItem?.Title ?? "Custom Item";
             var taxStatus = catalogItem?.TaxStatus ?? TaxStatus.Exempt;
-            var vatPct = catalogItem?.VatPercent ?? 0;
+            var vatAmt = catalogItem?.VatAmount ?? 0;
             var lineTotal = lineReq.UnitPrice * lineReq.Quantity;
-            var lineVat = taxStatus == TaxStatus.Taxable && vatPct > 0 ? lineTotal * vatPct / 100 : 0;
+            var lineVat = taxStatus == TaxStatus.Taxable && vatAmt > 0 ? vatAmt * lineReq.Quantity : 0;
 
             invoiceItems.Add(new InvoiceItem
             {
@@ -75,7 +75,7 @@ public class InvoiceService : IInvoiceService
                 Quantity = lineReq.Quantity,
                 LineTotal = lineTotal,
                 TaxStatusSnapshot = taxStatus,
-                VatPercentSnapshot = vatPct
+                VatAmountSnapshot = vatAmt
             });
 
             subtotal += lineTotal;
@@ -107,8 +107,11 @@ public class InvoiceService : IInvoiceService
             Subtotal = subtotal,
             Discount = request.Discount,
             VatAmount = vatAmount,
-            Total = subtotal - request.Discount + vatAmount,
+            IncludeTax = request.IncludeTax,
+            Total = subtotal - request.Discount + (request.IncludeTax ? vatAmount : 0),
             PaymentMethod = request.PaymentMethod,
+            InstallmentProviderName = request.PaymentMethod == "Installment" ? request.InstallmentProviderName : null,
+            InstallmentMonths = request.PaymentMethod == "Installment" ? request.InstallmentMonths : null,
             Notes = request.Notes,
             CreatedByUserId = userId,
             Items = invoiceItems
@@ -155,7 +158,7 @@ public class InvoiceService : IInvoiceService
                 Quantity = ri.Quantity,
                 LineTotal = lineTotal,
                 TaxStatusSnapshot = origItem.TaxStatusSnapshot,
-                VatPercentSnapshot = origItem.VatPercentSnapshot
+                VatAmountSnapshot = origItem.VatAmountSnapshot
             });
 
             // Restore inventory
@@ -203,14 +206,18 @@ public class InvoiceService : IInvoiceService
         Id = inv.Id, InvoiceNumber = inv.InvoiceNumber,
         CustomerName = inv.CustomerName, CustomerPhone = inv.CustomerPhone,
         Subtotal = inv.Subtotal, Discount = inv.Discount, VatAmount = inv.VatAmount, Total = inv.Total,
-        PaymentMethod = inv.PaymentMethod, Notes = inv.Notes,
+        PaymentMethod = inv.PaymentMethod,
+        IncludeTax = inv.IncludeTax,
+        InstallmentProviderName = inv.InstallmentProviderName,
+        InstallmentMonths = inv.InstallmentMonths,
+        Notes = inv.Notes,
         IsRefund = inv.IsRefund, OriginalInvoiceId = inv.OriginalInvoiceId,
         CreatedAt = inv.CreatedAt, CreatedByName = inv.CreatedBy?.Name,
         Items = inv.Items.Select(ii => new InvoiceItemDto
         {
             Id = ii.Id, ItemId = ii.ItemId, ItemTitleSnapshot = ii.ItemTitleSnapshot,
             UnitPrice = ii.UnitPrice, Quantity = ii.Quantity, LineTotal = ii.LineTotal,
-            TaxStatusSnapshot = ii.TaxStatusSnapshot, VatPercentSnapshot = ii.VatPercentSnapshot
+            TaxStatusSnapshot = ii.TaxStatusSnapshot, VatAmountSnapshot = ii.VatAmountSnapshot
         }).ToList()
     };
 

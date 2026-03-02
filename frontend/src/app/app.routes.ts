@@ -43,6 +43,7 @@ export const routes: Routes = [
           { path: 'installments', canActivate: [permissionGuard('settings.edit')], loadComponent: () => import('./admin/pages/installments/installments.component').then(m => m.InstallmentsComponent) },
           { path: 'approvals', loadComponent: () => import('./admin/pages/store-approvals/store-approvals.component').then(m => m.StoreApprovalsComponent) },
           { path: 'blocked', loadComponent: () => import('./admin/pages/blocked/blocked.component').then(m => m.BlockedComponent) },
+          { path: 'audit', canActivate: [permissionGuard('settings.edit')], loadComponent: () => import('./admin/pages/audit/audit.component').then(m => m.AuditComponent) },
           { path: 'onboarding', loadComponent: () => import('./admin/pages/onboarding/onboarding.component').then(m => m.OnboardingComponent) },
         ],
       },

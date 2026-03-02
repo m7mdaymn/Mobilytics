@@ -13,11 +13,13 @@ public class ExpensesController : BaseApiController
 {
     private readonly IExpenseService _svc;
     private readonly ITenantContext _tenantContext;
+    private readonly IAuditService _audit;
 
-    public ExpensesController(IExpenseService svc, ITenantContext tenantContext)
+    public ExpensesController(IExpenseService svc, ITenantContext tenantContext, IAuditService audit)
     {
         _svc = svc;
         _tenantContext = tenantContext;
+        _audit = audit;
     }
 
     private Guid GetUserId() =>
@@ -65,7 +67,9 @@ public class ExpensesController : BaseApiController
     {
         var tenantId = _tenantContext.TenantId!.Value;
         var userId = GetUserId();
-        return Created(await _svc.CreateAsync(tenantId, request, userId, ct));
+        var result = await _svc.CreateAsync(tenantId, request, userId, ct);
+        await _audit.LogAsync(tenantId, userId, "Created", "Expense", result.Id.ToString(), null, result.Title, ct);
+        return Created(result);
     }
 
     [HttpPut("{id:guid}")]
@@ -73,7 +77,9 @@ public class ExpensesController : BaseApiController
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateExpenseRequest request, CancellationToken ct)
     {
         var tenantId = _tenantContext.TenantId!.Value;
-        return Ok(await _svc.UpdateAsync(tenantId, id, request, ct));
+        var result = await _svc.UpdateAsync(tenantId, id, request, ct);
+        await _audit.LogAsync(tenantId, GetUserId(), "Updated", "Expense", id.ToString(), null, result.Title, ct);
+        return Ok(result);
     }
 
     [HttpDelete("{id:guid}")]
@@ -81,6 +87,7 @@ public class ExpensesController : BaseApiController
     public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
     {
         var tenantId = _tenantContext.TenantId!.Value;
+        await _audit.LogAsync(tenantId, GetUserId(), "Deleted", "Expense", id.ToString(), null, null, ct);
         await _svc.DeleteAsync(tenantId, id, ct);
         return Ok(true);
     }

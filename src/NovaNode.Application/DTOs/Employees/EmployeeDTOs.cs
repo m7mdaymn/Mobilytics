@@ -54,3 +54,37 @@ public class GenerateSalaryExpensesRequest
 {
     public string Month { get; set; } = string.Empty; // YYYY-MM
 }
+
+// ── Employee Absence ──
+public class EmployeeAbsenceDto
+{
+    public Guid Id { get; set; }
+    public Guid EmployeeId { get; set; }
+    public string EmployeeName { get; set; } = string.Empty;
+    public DateTime AbsenceDate { get; set; }
+    public string Reason { get; set; } = string.Empty;
+    public string? Notes { get; set; }
+    public bool IsExcused { get; set; }
+}
+
+public class CreateAbsenceRequest
+{
+    public Guid EmployeeId { get; set; }
+    public DateTime AbsenceDate { get; set; }
+    public string Reason { get; set; } = string.Empty;
+    public string? Notes { get; set; }
+    public bool IsExcused { get; set; }
+}
+
+// ── Audit ──
+public class AuditLogDto
+{
+    public Guid Id { get; set; }
+    public Guid ActorUserId { get; set; }
+    public string Action { get; set; } = string.Empty;
+    public string EntityName { get; set; } = string.Empty;
+    public string? EntityId { get; set; }
+    public string? BeforeJson { get; set; }
+    public string? AfterJson { get; set; }
+    public DateTime CreatedAt { get; set; }
+}

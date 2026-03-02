@@ -39,7 +39,7 @@ export interface Item {
 
   // Tax
   taxStatus: 'Taxable' | 'Exempt';
-  vatPercent: number;
+  vatAmount: number;
 
   // Rich content
   specs: string | null;
@@ -102,7 +102,7 @@ export interface ItemCreateDto {
   warrantyType?: string;
   warrantyMonths?: number;
   taxStatus: string;
-  vatPercent?: number;
+  vatAmount?: number;
   specs?: string;
   whatsInTheBox?: string;
   customFieldsJson?: string;
@@ -207,6 +207,9 @@ export interface Invoice {
   vatAmount: number;
   total: number;
   paymentMethod: string;
+  includeTax: boolean;
+  installmentProviderName: string | null;
+  installmentMonths: number | null;
   notes: string;
   isRefund: boolean;
   originalInvoiceId: string | null;
@@ -223,7 +226,7 @@ export interface InvoiceLine {
   unitPrice: number;
   lineTotal: number;
   taxStatusSnapshot: string;
-  vatPercentSnapshot: number | null;
+  vatAmountSnapshot: number | null;
 }
 
 export interface InvoiceCreateDto {
@@ -232,6 +235,9 @@ export interface InvoiceCreateDto {
   items: { itemId?: string; itemTitleOverride?: string; unitPrice: number; quantity: number }[];
   discount?: number;
   paymentMethod?: string;
+  includeTax?: boolean;
+  installmentProviderName?: string;
+  installmentMonths?: number;
   notes?: string;
 }
 

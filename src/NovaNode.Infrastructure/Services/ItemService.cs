@@ -86,13 +86,27 @@ public partial class ItemService : IItemService
 
     public async Task<ItemDto> CreateAsync(Guid tenantId, CreateItemRequest request, CancellationToken ct = default)
     {
+        var slug = string.IsNullOrEmpty(request.Slug)
+            ? await GenerateUniqueSlugAsync(tenantId, request.Title, null, ct)
+            : await GenerateUniqueSlugAsync(tenantId, request.Slug, null, ct);
+
+        // Tax only applies to device categories (SIM/eSIM capable devices)
+        var taxStatus = request.TaxStatus;
+        var vatAmount = request.VatAmount ?? 0m;
+        var cat = await _db.Categories.FindAsync([request.CategoryId], ct);
+        if (cat != null && !cat.IsDevice)
+        {
+            taxStatus = TaxStatus.Exempt;
+            vatAmount = 0m;
+        }
+
         var item = new Item
         {
             TenantId = tenantId, BrandId = request.BrandId,
             CategoryId = request.CategoryId, Title = request.Title,
-            Slug = string.IsNullOrEmpty(request.Slug) ? Slugify(request.Title) : request.Slug,
+            Slug = slug,
             Description = request.Description, Price = request.Price, OldPrice = request.OldPrice,
-            TaxStatus = request.TaxStatus, VatPercent = Math.Clamp(request.VatPercent ?? 0m, 0m, 100m), Condition = request.Condition,
+            TaxStatus = taxStatus, VatAmount = vatAmount, Condition = request.Condition,
             BatteryHealth = request.BatteryHealth, IMEI = request.IMEI, SerialNumber = request.SerialNumber,
             WarrantyType = request.WarrantyType, WarrantyMonths = request.WarrantyMonths,
             Quantity = request.Quantity, ChecklistJson = request.ChecklistJson,
@@ -115,9 +129,24 @@ public partial class ItemService : IItemService
 
         item.BrandId = request.BrandId;
         item.CategoryId = request.CategoryId; item.Title = request.Title;
-        item.Slug = string.IsNullOrEmpty(request.Slug) ? Slugify(request.Title) : request.Slug;
+        item.Slug = string.IsNullOrEmpty(request.Slug)
+            ? await GenerateUniqueSlugAsync(tenantId, request.Title, id, ct)
+            : await GenerateUniqueSlugAsync(tenantId, request.Slug, id, ct);
         item.Description = request.Description; item.Price = request.Price; item.OldPrice = request.OldPrice;
-        item.TaxStatus = request.TaxStatus; item.VatPercent = Math.Clamp(request.VatPercent ?? 0m, 0m, 100m); item.Condition = request.Condition;
+
+        // Tax only applies to device categories (SIM/eSIM capable devices)
+        item.TaxStatus = request.TaxStatus;
+        item.VatAmount = request.VatAmount ?? 0m;
+        {
+            var cat = await _db.Categories.FindAsync([request.CategoryId], ct);
+            if (cat != null && !cat.IsDevice)
+            {
+                item.TaxStatus = TaxStatus.Exempt;
+                item.VatAmount = 0m;
+            }
+        }
+
+        item.Condition = request.Condition;
         item.BatteryHealth = request.BatteryHealth; item.IMEI = request.IMEI; item.SerialNumber = request.SerialNumber;
         item.WarrantyType = request.WarrantyType; item.WarrantyMonths = request.WarrantyMonths;
         item.Quantity = request.Quantity; item.ChecklistJson = request.ChecklistJson;
@@ -143,6 +172,18 @@ public partial class ItemService : IItemService
     {
         var item = await _db.Items.FirstOrDefaultAsync(i => i.TenantId == tenantId && i.Id == id, ct)
             ?? throw new KeyNotFoundException("Item not found.");
+
+        // Delete associated images from storage
+        if (!string.IsNullOrEmpty(item.MainImageUrl))
+            await _fileStorage.DeleteFileAsync(item.MainImageUrl, ct);
+
+        if (!string.IsNullOrEmpty(item.GalleryImagesJson))
+        {
+            var gallery = JsonSerializer.Deserialize<List<string>>(item.GalleryImagesJson) ?? [];
+            foreach (var img in gallery)
+                await _fileStorage.DeleteFileAsync(img, ct);
+        }
+
         _db.Items.Remove(item);
         await _db.SaveChangesAsync(ct);
     }
@@ -203,7 +244,7 @@ public partial class ItemService : IItemService
         BrandId = i.BrandId, BrandName = i.Brand?.Name,
         CategoryId = i.CategoryId, CategoryName = i.Category?.Name,
         Title = i.Title, Slug = i.Slug, Description = i.Description,
-        Price = i.Price, OldPrice = i.OldPrice, TaxStatus = i.TaxStatus, VatPercent = i.VatPercent,
+        Price = i.Price, OldPrice = i.OldPrice, TaxStatus = i.TaxStatus, VatAmount = i.VatAmount,
         Condition = i.Condition, BatteryHealth = i.BatteryHealth, IMEI = i.IMEI,
         SerialNumber = i.SerialNumber, WarrantyType = i.WarrantyType, WarrantyMonths = i.WarrantyMonths,
         Quantity = i.Quantity, Status = i.Status, MainImageUrl = i.MainImageUrl,
@@ -215,6 +256,18 @@ public partial class ItemService : IItemService
         Specs = i.Specs, WhatsInTheBox = i.WhatsInTheBox,
         CreatedAt = i.CreatedAt, UpdatedAt = i.UpdatedAt
     };
+
+    private async Task<string> GenerateUniqueSlugAsync(Guid tenantId, string text, Guid? excludeItemId = null, CancellationToken ct = default)
+    {
+        var baseSlug = Slugify(text);
+        var slug = baseSlug;
+        var counter = 2;
+        while (await _db.Items.AnyAsync(i => i.TenantId == tenantId && i.Slug == slug && (!excludeItemId.HasValue || i.Id != excludeItemId.Value), ct))
+        {
+            slug = $"{baseSlug}-{counter++}";
+        }
+        return slug;
+    }
 
     private static string Slugify(string text) =>
         SlugRegex().Replace(text.ToLowerInvariant().Replace(" ", "-"), "").Trim('-');

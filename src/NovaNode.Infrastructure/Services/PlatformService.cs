@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using NovaNode.Application.DTOs;
 using NovaNode.Application.DTOs.Platform;
@@ -11,7 +12,13 @@ namespace NovaNode.Infrastructure.Services;
 public class PlatformService : IPlatformService
 {
     private readonly AppDbContext _db;
-    public PlatformService(AppDbContext db) => _db = db;
+    private readonly string _webRootPath;
+
+    public PlatformService(AppDbContext db, IWebHostEnvironment env)
+    {
+        _db = db;
+        _webRootPath = env.WebRootPath ?? Path.Combine(env.ContentRootPath, "wwwroot");
+    }
 
     // ─── Tenants ────────────────────────────────────────
 
@@ -88,8 +95,127 @@ public class PlatformService : IPlatformService
     public async Task DeleteTenantAsync(Guid id, CancellationToken ct = default)
     {
         var t = await _db.Tenants.FindAsync([id], ct) ?? throw new KeyNotFoundException("Tenant not found.");
+
+        // Cascade delete all tenant-scoped data
+        _db.Notifications.RemoveRange(await _db.Notifications.Where(n => n.TenantId == id).ToListAsync(ct));
+        _db.AuditLogs.RemoveRange(await _db.AuditLogs.Where(a => a.TenantId == id).ToListAsync(ct));
+        _db.Permissions.RemoveRange(await _db.Permissions.Where(p => p.TenantId == id).ToListAsync(ct));
+
+        // Delete invoice items then invoices
+        var invoiceIds = await _db.Invoices.Where(i => i.TenantId == id).Select(i => i.Id).ToListAsync(ct);
+        _db.InvoiceItems.RemoveRange(await _db.InvoiceItems.Where(ii => invoiceIds.Contains(ii.InvoiceId)).ToListAsync(ct));
+        _db.Invoices.RemoveRange(await _db.Invoices.Where(i => i.TenantId == id).ToListAsync(ct));
+
+        // Delete installment plans then providers
+        var providerIds = await _db.InstallmentProviders.Where(p => p.TenantId == id).Select(p => p.Id).ToListAsync(ct);
+        _db.InstallmentPlans.RemoveRange(await _db.InstallmentPlans.Where(ip => providerIds.Contains(ip.ProviderId)).ToListAsync(ct));
+        _db.InstallmentProviders.RemoveRange(await _db.InstallmentProviders.Where(p => p.TenantId == id).ToListAsync(ct));
+
+        _db.Leads.RemoveRange(await _db.Leads.Where(l => l.TenantId == id).ToListAsync(ct));
+        _db.HomeSectionItems.RemoveRange(await _db.HomeSectionItems.Where(h => _db.HomeSections.Where(s => s.TenantId == id).Select(s => s.Id).Contains(h.HomeSectionId)).ToListAsync(ct));
+        _db.HomeSections.RemoveRange(await _db.HomeSections.Where(h => h.TenantId == id).ToListAsync(ct));
+        _db.Items.RemoveRange(await _db.Items.Where(i => i.TenantId == id).ToListAsync(ct));
+        _db.CustomFieldDefinitions.RemoveRange(await _db.CustomFieldDefinitions.Where(c => c.TenantId == id).ToListAsync(ct));
+        _db.Expenses.RemoveRange(await _db.Expenses.Where(e => e.TenantId == id).ToListAsync(ct));
+        _db.ExpenseCategories.RemoveRange(await _db.ExpenseCategories.Where(e => e.TenantId == id).ToListAsync(ct));
+        _db.EmployeeAbsences.RemoveRange(await _db.EmployeeAbsences.Where(a => a.TenantId == id).ToListAsync(ct));
+        _db.Employees.RemoveRange(await _db.Employees.Where(e => e.TenantId == id).ToListAsync(ct));
+        _db.Categories.RemoveRange(await _db.Categories.Where(c => c.TenantId == id).ToListAsync(ct));
+        _db.Brands.RemoveRange(await _db.Brands.Where(b => b.TenantId == id).ToListAsync(ct));
+        _db.ItemTypes.RemoveRange(await _db.ItemTypes.Where(it => it.TenantId == id).ToListAsync(ct));
+        _db.SpecFieldTemplates.RemoveRange(await _db.SpecFieldTemplates.Where(s => s.TenantId == id).ToListAsync(ct));
+        _db.StoreSettings.RemoveRange(await _db.StoreSettings.Where(s => s.TenantId == id).ToListAsync(ct));
+        _db.TenantSlugHistories.RemoveRange(await _db.TenantSlugHistories.Where(h => h.TenantId == id).ToListAsync(ct));
+
+        // Delete subscriptions and feature toggles
+        _db.Subscriptions.RemoveRange(await _db.Subscriptions.Where(s => s.TenantId == id).ToListAsync(ct));
+        _db.TenantFeatureToggles.RemoveRange(await _db.TenantFeatureToggles.Where(f => f.TenantId == id).ToListAsync(ct));
+
+        // Delete platform invoices for this tenant
+        _db.PlatformInvoices.RemoveRange(await _db.PlatformInvoices.Where(pi => pi.TenantId == id).ToListAsync(ct));
+
         _db.Tenants.Remove(t);
         await _db.SaveChangesAsync(ct);
+
+        // Clean up uploaded files from disk
+        var uploadsDir = Path.Combine(_webRootPath, "uploads", id.ToString());
+        if (Directory.Exists(uploadsDir))
+            Directory.Delete(uploadsDir, true);
+    }
+
+    public async Task<TenantStatsDto> GetTenantStatsAsync(Guid tenantId, CancellationToken ct = default)
+    {
+        var now = DateTime.UtcNow;
+        var monthStart = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+
+        var items = _db.Items.Where(i => i.TenantId == tenantId);
+        var invoices = _db.Invoices.Where(i => i.TenantId == tenantId && !i.IsRefund);
+        var employees = _db.Employees.Where(e => e.TenantId == tenantId);
+
+        var totalProducts = await items.CountAsync(ct);
+        var availableProducts = await items.Where(i => i.Status == ItemStatus.Available).CountAsync(ct);
+        var soldProducts = await items.Where(i => i.Status == ItemStatus.Sold).CountAsync(ct);
+
+        var totalInvoices = await invoices.CountAsync(ct);
+        var totalRevenue = await invoices.SumAsync(i => i.Total, ct);
+        var monthlyRevenue = await invoices.Where(i => i.CreatedAt >= monthStart).SumAsync(i => i.Total, ct);
+
+        var totalEmployees = await employees.CountAsync(ct);
+        var activeEmployees = await employees.Where(e => e.IsActive).CountAsync(ct);
+
+        var totalBrands = await _db.Brands.Where(b => b.TenantId == tenantId).CountAsync(ct);
+        var totalCategories = await _db.Categories.Where(c => c.TenantId == tenantId).CountAsync(ct);
+        var totalLeads = await _db.Leads.Where(l => l.TenantId == tenantId).CountAsync(ct);
+
+        var totalExpenses = await _db.Expenses.Where(e => e.TenantId == tenantId).CountAsync(ct);
+        var totalExpenseAmount = await _db.Expenses.Where(e => e.TenantId == tenantId).SumAsync(e => e.Amount, ct);
+
+        // Revenue chart - last 6 months
+        var chartStart = monthStart.AddMonths(-5);
+        var allInvoices = await invoices.Where(i => i.CreatedAt >= chartStart)
+            .Select(i => new { i.CreatedAt, i.Total }).ToListAsync(ct);
+        var revenueChart = Enumerable.Range(0, 6).Select(offset =>
+        {
+            var m = chartStart.AddMonths(offset);
+            return new RevenueChartPoint
+            {
+                Label = m.ToString("MMM yyyy"),
+                Amount = allInvoices.Where(i => i.CreatedAt.Year == m.Year && i.CreatedAt.Month == m.Month).Sum(i => i.Total)
+            };
+        }).ToList();
+
+        // Top sold products
+        var topProducts = await _db.InvoiceItems
+            .Where(ii => _db.Invoices.Where(inv => inv.TenantId == tenantId && !inv.IsRefund).Select(inv => inv.Id).Contains(ii.InvoiceId))
+            .GroupBy(ii => ii.ItemTitleSnapshot)
+            .Select(g => new TopProductDto
+            {
+                Title = g.Key,
+                QuantitySold = g.Sum(x => x.Quantity),
+                Price = g.Average(x => x.UnitPrice)
+            })
+            .OrderByDescending(x => x.QuantitySold)
+            .Take(5)
+            .ToListAsync(ct);
+
+        return new TenantStatsDto
+        {
+            TotalProducts = totalProducts,
+            AvailableProducts = availableProducts,
+            SoldProducts = soldProducts,
+            TotalInvoices = totalInvoices,
+            TotalRevenue = totalRevenue,
+            MonthlyRevenue = monthlyRevenue,
+            TotalEmployees = totalEmployees,
+            ActiveEmployees = activeEmployees,
+            TotalBrands = totalBrands,
+            TotalCategories = totalCategories,
+            TotalLeads = totalLeads,
+            TotalExpenses = totalExpenses,
+            TotalExpenseAmount = totalExpenseAmount,
+            RevenueChart = revenueChart,
+            TopProducts = topProducts
+        };
     }
 
     public async Task SuspendTenantAsync(Guid id, CancellationToken ct = default)

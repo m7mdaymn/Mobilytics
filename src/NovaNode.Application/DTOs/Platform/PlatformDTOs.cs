@@ -322,3 +322,32 @@ public class ExpiringSubscriptionDto
     public DateTime EndDate { get; set; }
     public int DaysRemaining { get; set; }
 }
+
+// ─── Tenant Stats DTOs ──────────────────────────────────
+
+public class TenantStatsDto
+{
+    public int TotalProducts { get; set; }
+    public int AvailableProducts { get; set; }
+    public int SoldProducts { get; set; }
+    public int TotalInvoices { get; set; }
+    public decimal TotalRevenue { get; set; }
+    public decimal MonthlyRevenue { get; set; }
+    public int TotalEmployees { get; set; }
+    public int ActiveEmployees { get; set; }
+    public int TotalBrands { get; set; }
+    public int TotalCategories { get; set; }
+    public int TotalLeads { get; set; }
+    public int TotalExpenses { get; set; }
+    public decimal TotalExpenseAmount { get; set; }
+    public List<RevenueChartPoint> RevenueChart { get; set; } = [];
+    public List<TopProductDto> TopProducts { get; set; } = [];
+}
+
+public class TopProductDto
+{
+    public string Title { get; set; } = string.Empty;
+    public decimal Price { get; set; }
+    public int QuantitySold { get; set; }
+    public string? CategoryName { get; set; }
+}

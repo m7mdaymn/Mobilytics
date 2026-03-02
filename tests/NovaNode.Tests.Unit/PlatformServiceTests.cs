@@ -1,34 +1,39 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using NovaNode.Domain.Entities;
 using NovaNode.Infrastructure.MultiTenancy;
 using NovaNode.Infrastructure.Persistence;
 using NovaNode.Infrastructure.Services;
+using Microsoft.AspNetCore.Hosting;
 using Xunit;
 
 namespace NovaNode.Tests.Unit;
 
 public class PlatformServiceTests
 {
-    private static AppDbContext CreateDb()
+    private static (AppDbContext db, IWebHostEnvironment env) CreateDb()
     {
         var tenantCtx = new TenantContext();
         var options = new DbContextOptionsBuilder<AppDbContext>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .Options;
 
-        return new AppDbContext(options, tenantCtx);
+        var db = new AppDbContext(options, tenantCtx);
+        var tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        Directory.CreateDirectory(tempDir);
+        var env = new TestWebHostEnvironment(tempDir);
+        return (db, env);
     }
 
     [Fact]
     public async Task CreateTenantAsync_ShouldCreateTenantWithOwner()
     {
-        var db = CreateDb();
+        var (db, env) = CreateDb();
         // First add a plan (needed for test data)
         var plan = new Plan { Name = "Standard", PriceMonthly = 500 };
         db.Plans.Add(plan);
         await db.SaveChangesAsync();
 
-        var svc = new PlatformService(db);
+        var svc = new PlatformService(db, env);
         var result = await svc.CreateTenantAsync(new Application.DTOs.Platform.CreateTenantRequest
         {
             Name = "Test Store",
@@ -51,11 +56,11 @@ public class PlatformServiceTests
     [Fact]
     public async Task CreateTenantAsync_DuplicateSlug_ShouldThrow()
     {
-        var db = CreateDb();
+        var (db, env) = CreateDb();
         db.Tenants.Add(new Tenant { Name = "Existing", Slug = "test-store" });
         await db.SaveChangesAsync();
 
-        var svc = new PlatformService(db);
+        var svc = new PlatformService(db, env);
 
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
             svc.CreateTenantAsync(new Application.DTOs.Platform.CreateTenantRequest
@@ -71,12 +76,12 @@ public class PlatformServiceTests
     [Fact]
     public async Task SuspendTenantAsync_ShouldDeactivate()
     {
-        var db = CreateDb();
+        var (db, env) = CreateDb();
         var tenant = new Tenant { Name = "Test", Slug = "test", IsActive = true };
         db.Tenants.Add(tenant);
         await db.SaveChangesAsync();
 
-        var svc = new PlatformService(db);
+        var svc = new PlatformService(db, env);
         await svc.SuspendTenantAsync(tenant.Id);
 
         var updated = await db.Tenants.FindAsync(tenant.Id);
@@ -86,8 +91,8 @@ public class PlatformServiceTests
     [Fact]
     public async Task CreatePlanAsync_ShouldCreatePlan()
     {
-        var db = CreateDb();
-        var svc = new PlatformService(db);
+        var (db, env) = CreateDb();
+        var svc = new PlatformService(db, env);
 
         var result = await svc.CreatePlanAsync(new Application.DTOs.Platform.CreatePlanRequest
         {
@@ -101,15 +106,28 @@ public class PlatformServiceTests
     [Fact]
     public async Task GetDashboardAsync_ShouldReturnCounts()
     {
-        var db = CreateDb();
+        var (db, env) = CreateDb();
         db.Tenants.Add(new Tenant { Name = "T1", Slug = "t1", IsActive = true });
         db.Tenants.Add(new Tenant { Name = "T2", Slug = "t2", IsActive = false });
         await db.SaveChangesAsync();
 
-        var svc = new PlatformService(db);
+        var svc = new PlatformService(db, env);
         var result = await svc.GetDashboardAsync("month");
 
         Assert.Equal(2, result.TotalTenants);
         Assert.Equal(1, result.ActiveTenants);
     }
 }
+
+
+public class TestWebHostEnvironment : IWebHostEnvironment
+{
+    public TestWebHostEnvironment(string path) { WebRootPath = path; ContentRootPath = path; }
+    public string WebRootPath { get; set; }
+    public string ContentRootPath { get; set; }
+    public string EnvironmentName { get; set; } = "Test";
+    public string ApplicationName { get; set; } = "Test";
+    public Microsoft.Extensions.FileProviders.IFileProvider WebRootFileProvider { get; set; } = null!;
+    public Microsoft.Extensions.FileProviders.IFileProvider ContentRootFileProvider { get; set; } = null!;
+}
+

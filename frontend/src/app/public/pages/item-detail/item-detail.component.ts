@@ -39,9 +39,9 @@ interface InstallmentPlan {
         </div>
       </div>
     } @else if (item()) {
-      <div class="max-w-7xl mx-auto px-4 py-8">
+      <div class="max-w-7xl mx-auto px-4 py-8 page-enter">
         <!-- Breadcrumb -->
-        <nav class="flex items-center gap-1.5 text-sm text-gray-400 mb-6">
+        <nav class="flex items-center gap-1.5 text-sm text-gray-400 mb-6 animate-fade-in">
           <a [routerLink]="tenantService.storeUrl()" class="hover:text-[color:var(--color-primary)] transition">{{ i18n.t('store.home') }}</a>
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
           <a [routerLink]="tenantService.storeUrl() + '/catalog'" class="hover:text-[color:var(--color-primary)] transition">{{ i18n.t('store.catalog') }}</a>
@@ -51,13 +51,15 @@ interface InstallmentPlan {
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
           <!-- Gallery -->
+          <div class="animate-fade-in-left">
           <app-item-gallery
             [mainImage]="item()!.mainImageUrl"
             [gallery]="parsedGallery()"
             [alt]="item()!.title" />
+          </div>
 
           <!-- Details -->
-          <div class="space-y-6">
+          <div class="space-y-6 animate-fade-in-right">
             <!-- Brand & Title -->
             <div>
               @if (item()!.brandName) {
@@ -105,10 +107,10 @@ interface InstallmentPlan {
                 }
               </div>
               <!-- Tax status indicator -->
-              @if (item()!.taxStatus === 'Taxable' && item()!.vatPercent) {
+              @if (item()!.taxStatus === 'Taxable' && item()!.vatAmount) {
                 <div class="mt-3 pt-3 border-t border-gray-200 space-y-1.5">
                   <div class="flex items-center gap-2">
-                    <span class="text-xs font-medium text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md">{{ i18n.t('store.exclVat') }} {{ item()!.vatPercent }}%</span>
+                    <span class="text-xs font-medium text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md">{{ i18n.t('store.govTax') }}: {{ item()!.vatAmount | currency: settingsStore.currency() : 'symbol-narrow' : '1.0-0' }}</span>
                   </div>
                   <div class="flex justify-between text-xs text-gray-500">
                     <span>{{ i18n.t('store.estimatedTax') }}</span>
@@ -294,7 +296,7 @@ interface InstallmentPlan {
                   @if (item()!.taxStatus === 'Taxable') {
                     <div class="flex px-5 py-3 text-sm">
                       <span class="w-44 shrink-0 text-gray-500 font-medium">{{ i18n.t('store.tax') }}</span>
-                      <span class="font-semibold text-gray-900">{{ i18n.t('store.vat') }} {{ item()!.vatPercent }}%</span>
+                      <span class="font-semibold text-gray-900">{{ item()!.vatAmount | currency: settingsStore.currency() : 'symbol-narrow' : '1.0-0' }}</span>
                     </div>
                   }
                   @for (field of parsedCustomFields(); track field.fieldId; let odd = $odd) {
@@ -357,7 +359,7 @@ interface InstallmentPlan {
                   <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden">
                     <div class="flex items-center gap-3 px-5 py-4 bg-gray-50 border-b border-gray-100">
                       @if (group.logoUrl) {
-                        <img [src]="resolveImg(group.logoUrl)" [alt]="group.name" class="h-8 w-auto object-contain">
+                        <img [src]="resolveImg(group.logoUrl)" [alt]="group.name" class="h-8 w-auto object-contain" (error)="$any($event.target).style.display='none'">
                       } @else {
                         <div class="w-8 h-8 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center text-xs font-bold">{{ group.name.charAt(0) }}</div>
                       }
@@ -394,6 +396,35 @@ interface InstallmentPlan {
           </div>
         </div>
       </div>
+
+      <!-- Related Products -->
+      @if (relatedItems().length) {
+        <section class="max-w-7xl mx-auto px-4 py-12 animate-fade-in-up delay-300">
+          <h2 class="text-xl font-bold text-gray-900 mb-6">{{ i18n.t('store.relatedProducts') }}</h2>
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            @for (rel of relatedItems(); track rel.id) {
+              <a [routerLink]="tenantService.storeUrl() + '/catalog/' + rel.slug"
+                 class="group card-animate rounded-2xl overflow-hidden border border-gray-100 hover:shadow-lg transition-all duration-300 bg-white">
+                <div class="relative aspect-square bg-gray-50 overflow-hidden">
+                  @if (rel.mainImageUrl) {
+                    <img [src]="resolveImg(rel.mainImageUrl)" [alt]="rel.title"
+                         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                         loading="lazy" (error)="$any($event.target).style.display='none'">
+                  } @else {
+                    <div class="w-full h-full flex items-center justify-center text-gray-300">
+                      <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                    </div>
+                  }
+                </div>
+                <div class="p-3">
+                  <h3 class="text-sm font-semibold text-gray-900 line-clamp-2 group-hover:text-[color:var(--color-primary)] transition">{{ rel.title }}</h3>
+                  <p class="text-sm font-bold text-[color:var(--color-primary)] mt-1">{{ rel.price | currency: settingsStore.currency() : 'symbol-narrow' : '1.0-0' }}</p>
+                </div>
+              </a>
+            }
+          </div>
+        </section>
+      }
     } @else {
       <div class="max-w-7xl mx-auto px-4 py-20 text-center">
         <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
@@ -480,6 +511,7 @@ export class ItemDetailComponent implements OnInit {
   readonly item = signal<Item | null>(null);
   readonly loading = signal(true);
   readonly installmentPlans = signal<InstallmentPlan[]>([]);
+  readonly relatedItems = signal<Item[]>([]);
 
   followUpOpen = false;
   showInstallmentModal = false;
@@ -493,8 +525,8 @@ export class ItemDetailComponent implements OnInit {
 
   readonly taxAmount = computed(() => {
     const i = this.item();
-    if (!i || i.taxStatus !== 'Taxable' || !i.vatPercent) return 0;
-    return Math.round(i.price * i.vatPercent / 100);
+    if (!i || i.taxStatus !== 'Taxable' || !i.vatAmount) return 0;
+    return i.vatAmount;
   });
 
   readonly priceWithTax = computed(() => {
@@ -580,6 +612,15 @@ export class ItemDetailComponent implements OnInit {
         next: data => {
           this.item.set(data);
           this.loading.set(false);
+
+          // Load related items from same category
+          this.api.get<any>(`/Public/items`, { categoryId: data.categoryId, pageSize: 5 }).subscribe({
+            next: (res: any) => {
+              const items = (res.items || res || []) as Item[];
+              this.relatedItems.set(items.filter((r: Item) => r.id !== data.id).slice(0, 4));
+            },
+            error: () => this.relatedItems.set([]),
+          });
 
           // Load installment plans if available
           if (data.installmentAvailable) {

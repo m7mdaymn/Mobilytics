@@ -275,6 +275,44 @@ namespace NovaNode.Infrastructure.Persistence.Migrations
                     b.ToTable("Employees");
                 });
 
+            modelBuilder.Entity("NovaNode.Domain.Entities.EmployeeAbsence", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("AbsenceDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("EmployeeId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsExcused")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EmployeeId");
+
+                    b.ToTable("EmployeeAbsences");
+                });
+
             modelBuilder.Entity("NovaNode.Domain.Entities.Expense", b =>
                 {
                     b.Property<Guid>("Id")
@@ -552,6 +590,15 @@ namespace NovaNode.Infrastructure.Persistence.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<bool>("IncludeTax")
+                        .HasColumnType("bit");
+
+                    b.Property<int?>("InstallmentMonths")
+                        .HasColumnType("int");
+
+                    b.Property<string>("InstallmentProviderName")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("InvoiceNumber")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -627,9 +674,9 @@ namespace NovaNode.Infrastructure.Persistence.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<decimal?>("VatPercentSnapshot")
-                        .HasPrecision(5, 2)
-                        .HasColumnType("decimal(5,2)");
+                    b.Property<decimal?>("VatAmountSnapshot")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
 
@@ -695,6 +742,7 @@ namespace NovaNode.Infrastructure.Persistence.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal?>("MonthlyPayment")
+                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal?>("OldPrice")
@@ -740,9 +788,9 @@ namespace NovaNode.Infrastructure.Persistence.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<decimal?>("VatPercent")
-                        .HasPrecision(5, 2)
-                        .HasColumnType("decimal(5,2)");
+                    b.Property<decimal?>("VatAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<int?>("WarrantyMonths")
                         .HasColumnType("int");
@@ -1458,6 +1506,17 @@ namespace NovaNode.Infrastructure.Persistence.Migrations
                         .HasForeignKey("ItemTypeId");
 
                     b.Navigation("Category");
+                });
+
+            modelBuilder.Entity("NovaNode.Domain.Entities.EmployeeAbsence", b =>
+                {
+                    b.HasOne("NovaNode.Domain.Entities.Employee", "Employee")
+                        .WithMany()
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Employee");
                 });
 
             modelBuilder.Entity("NovaNode.Domain.Entities.Expense", b =>

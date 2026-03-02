@@ -58,14 +58,15 @@ public class StoreSettings : BaseEntity
     {
         [1] = new("Classic",    "#000000", "#111111", "#000000"),
         [2] = new("Soft Black", "#1a1a1a", "#333333", "#1a1a1a"),
-        [3] = new("Charcoal",   "#222222", "#444444", "#222222"),
+        [3] = new("Charcoal",   "#000000", "#ffffff", "#222222"),
         [4] = new("Ink",        "#0a0a0a", "#1c1c1c", "#0a0a0a"),
     };
 
     // ── System Presets (static lookup - UI style, only Minimal available) ──
     public static readonly Dictionary<int, SystemPreset> SystemPresets = new()
     {
-        [4] = new("Slate Minimal", "Ultra-clean Apple-inspired, frosted header"),
+        [1] = new("Liquid Glass",   "Dark glassmorphism with frosted surfaces & glow accents"),
+        [4] = new("Slate Minimal",  "Ultra-clean Apple-inspired, frosted header"),
     };
 
     // Keep backward-compat: old Presets maps to ColorPresets

@@ -357,8 +357,8 @@ const COLOR_OPTIONS = [
             </div>
             @if (form.taxStatus === 'Taxable') {
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">{{ i18n.t('items.vatPercent') || 'VAT %' }}</label>
-                <input [(ngModel)]="form.vatPercent" type="number" min="0" max="100" class="w-full px-3.5 py-2 border border-gray-300 rounded-xl text-sm outline-none bg-white transition" placeholder="e.g. 14" />
+                <label class="block text-sm font-medium text-gray-700 mb-1">{{ i18n.t('items.vatAmount') || 'VAT Amount' }}</label>
+                <input [(ngModel)]="form.vatAmount" type="number" min="0" class="w-full px-3.5 py-2 border border-gray-300 rounded-xl text-sm outline-none bg-white transition" placeholder="e.g. 100" />
               </div>
             }
           </div>
@@ -872,7 +872,7 @@ export class ItemFormComponent implements OnInit {
     brandId: string; categoryId: string;
     quantity: number; lowStockThreshold: number;
     imei: string; serialNumber: string;
-    taxStatus: string; vatPercent: number;
+    taxStatus: string; vatAmount: number;
     deviceType: string; color: string; storage: string; ram: string;
     batteryHealth: number | null; warrantyType: string; warrantyMonths: number | null;
     installmentAvailable: boolean;
@@ -883,7 +883,7 @@ export class ItemFormComponent implements OnInit {
     brandId: '', categoryId: '',
     quantity: 1, lowStockThreshold: 2,
     imei: '', serialNumber: '',
-    taxStatus: 'Taxable', vatPercent: 0,
+    taxStatus: 'Taxable', vatAmount: 0,
     deviceType: '', color: '', storage: '', ram: '',
     batteryHealth: null, warrantyType: '', warrantyMonths: null,
     installmentAvailable: false,
@@ -940,7 +940,7 @@ export class ItemFormComponent implements OnInit {
         this.form.imei = item.imei || '';
         this.form.serialNumber = item.serialNumber || '';
         this.form.taxStatus = item.taxStatus || 'Taxable';
-        this.form.vatPercent = item.vatPercent ?? 14;
+        this.form.vatAmount = item.vatAmount ?? 0;
         this.form.deviceType = item.deviceType || '';
         this.form.color = item.color || '';
         this.form.storage = item.storage || '';
@@ -1014,7 +1014,7 @@ export class ItemFormComponent implements OnInit {
   // Helpers
 
   onTaxChange(): void {
-    if (this.form.taxStatus === 'Exempt') this.form.vatPercent = 0;
+    if (this.form.taxStatus === 'Exempt') this.form.vatAmount = 0;
   }
 
   autoSlug(): void {
@@ -1248,9 +1248,15 @@ export class ItemFormComponent implements OnInit {
     ];
   }
 
+  private readonly MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+
   onMainImageChange(event: Event): void {
     const file = (event.target as HTMLInputElement).files?.[0];
     if (file) {
+      if (file.size > this.MAX_FILE_SIZE) {
+        this.toastService.error('Image must be under 5MB');
+        return;
+      }
       this.mainImageFile = file;
       const reader = new FileReader();
       reader.onload = () => this.mainImagePreview.set(reader.result as string);
@@ -1261,7 +1267,14 @@ export class ItemFormComponent implements OnInit {
   onGalleryChange(event: Event): void {
     const files = (event.target as HTMLInputElement).files;
     if (files) {
-      this.galleryFiles = Array.from(files).slice(0, 5);
+      const validFiles = Array.from(files).filter(f => {
+        if (f.size > this.MAX_FILE_SIZE) {
+          this.toastService.error(`${f.name} exceeds 5MB limit`);
+          return false;
+        }
+        return true;
+      });
+      this.galleryFiles = validFiles.slice(0, 5);
       const previews: string[] = [];
       for (const f of this.galleryFiles) {
         const reader = new FileReader();
@@ -1336,7 +1349,7 @@ export class ItemFormComponent implements OnInit {
       imei: this.form.imei?.trim() || undefined,
       serialNumber: this.form.serialNumber?.trim() || undefined,
       taxStatus: this.form.taxStatus || 'Taxable',
-      vatPercent: Math.min(Math.max(this.form.vatPercent ?? 0, 0), 100),
+      vatAmount: Math.max(this.form.vatAmount ?? 0, 0),
       deviceType: this.form.deviceType?.trim() || undefined,
       color: this.form.color?.trim() || undefined,
       storage: this.form.storage?.trim() || undefined,

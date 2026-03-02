@@ -15,6 +15,9 @@ public class Invoice : TenantEntity
     public decimal VatAmount { get; set; }
     public decimal Total { get; set; }
     public string? PaymentMethod { get; set; }
+    public bool IncludeTax { get; set; }
+    public string? InstallmentProviderName { get; set; }
+    public int? InstallmentMonths { get; set; }
     public string? Notes { get; set; }
     public Guid CreatedByUserId { get; set; }
     public bool IsRefund { get; set; }

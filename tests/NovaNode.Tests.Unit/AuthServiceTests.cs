@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using NovaNode.Application.DTOs.Auth;
 using NovaNode.Domain.Entities;
 using NovaNode.Infrastructure.MultiTenancy;
@@ -50,7 +50,7 @@ public class AuthServiceTests
         });
         await db.SaveChangesAsync();
 
-        var svc = new AuthService(db, config);
+        var svc = new AuthService(db, config, new AuditService(db));
         var result = await svc.LoginAsync(tenantId, new LoginRequest { Email = "owner@test.com", Password = "Pass123" });
 
         Assert.NotNull(result.Token);
@@ -71,7 +71,7 @@ public class AuthServiceTests
         });
         await db.SaveChangesAsync();
 
-        var svc = new AuthService(db, config);
+        var svc = new AuthService(db, config, new AuditService(db));
 
         await Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
             svc.LoginAsync(tenantId, new LoginRequest { Email = "owner@test.com", Password = "WrongPass" }));
@@ -81,7 +81,7 @@ public class AuthServiceTests
     public async Task LoginAsync_ShouldThrow_WhenEmployeeNotFound()
     {
         var (db, tenantId, config) = CreateDb();
-        var svc = new AuthService(db, config);
+        var svc = new AuthService(db, config, new AuditService(db));
 
         await Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
             svc.LoginAsync(tenantId, new LoginRequest { Email = "nonexistent@test.com", Password = "Pass123" }));
@@ -99,7 +99,7 @@ public class AuthServiceTests
         });
         await db.SaveChangesAsync();
 
-        var svc = new AuthService(db, config);
+        var svc = new AuthService(db, config, new AuditService(db));
 
         await Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
             svc.LoginAsync(tenantId, new LoginRequest { Email = "inactive@test.com", Password = "Pass123" }));
@@ -120,7 +120,7 @@ public class AuthServiceTests
         });
         await db.SaveChangesAsync();
 
-        var svc = new AuthService(db, config);
+        var svc = new AuthService(db, config, new AuditService(db));
 
         // Login with tenantId should not find employee from other tenant
         await Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
@@ -139,7 +139,7 @@ public class AuthServiceTests
         });
         await db.SaveChangesAsync();
 
-        var svc = new AuthService(db, config);
+        var svc = new AuthService(db, config, new AuditService(db));
         var result = await svc.UnifiedLoginAsync(new LoginRequest { Email = "owner@test.com", Password = "Pass123" });
 
         Assert.Equal("test", result.TenantSlug);
@@ -166,7 +166,7 @@ public class AuthServiceTests
         db.Permissions.Add(new Permission { TenantId = tenantId, EmployeeId = emp.Id, Key = "brands.manage", IsEnabled = false });
         await db.SaveChangesAsync();
 
-        var svc = new AuthService(db, config);
+        var svc = new AuthService(db, config, new AuditService(db));
         var result = await svc.UnifiedLoginAsync(new LoginRequest { Email = "mgr@test.com", Password = "Pass123" });
 
         Assert.Contains("items.create", result.User.Permissions);
@@ -187,7 +187,7 @@ public class AuthServiceTests
         db.Employees.Add(emp);
         await db.SaveChangesAsync();
 
-        var svc = new AuthService(db, config);
+        var svc = new AuthService(db, config, new AuditService(db));
         await svc.ChangePasswordAsync(tenantId, emp.Id, new ChangePasswordRequest
         {
             CurrentPassword = "OldPass123",
@@ -212,7 +212,7 @@ public class AuthServiceTests
         db.Employees.Add(emp);
         await db.SaveChangesAsync();
 
-        var svc = new AuthService(db, config);
+        var svc = new AuthService(db, config, new AuditService(db));
 
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
             svc.ChangePasswordAsync(tenantId, emp.Id, new ChangePasswordRequest
@@ -235,7 +235,7 @@ public class AuthServiceTests
         });
         await db.SaveChangesAsync();
 
-        var svc = new AuthService(db, config);
+        var svc = new AuthService(db, config, new AuditService(db));
         var result = await svc.PlatformLoginAsync(new PlatformLoginRequest
         {
             Email = "admin@novanode.com",

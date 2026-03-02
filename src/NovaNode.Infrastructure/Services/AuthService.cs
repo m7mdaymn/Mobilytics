@@ -18,6 +18,7 @@ public class AuthService : IAuthService
 {
     private readonly AppDbContext _db;
     private readonly IConfiguration _config;
+    private readonly IAuditService _audit;
 
     private static readonly string[] DefaultPermissionKeys =
     [
@@ -28,10 +29,11 @@ public class AuthService : IAuthService
         "leads.manage", "settings.edit"
     ];
 
-    public AuthService(AppDbContext db, IConfiguration config)
+    public AuthService(AppDbContext db, IConfiguration config, IAuditService audit)
     {
         _db = db;
         _config = config;
+        _audit = audit;
     }
 
     /// <summary>Auto-seed default permissions for employees with none.</summary>
@@ -67,6 +69,9 @@ public class AuthService : IAuthService
         var permissions = employee.Permissions.Where(p => p.IsEnabled).Select(p => p.Key).ToList();
         var token = GenerateJwt(employee.Id, employee.Name, employee.Email, employee.Role, tenantId, permissions);
         var refreshToken = GenerateRefreshToken();
+
+        // Audit: log successful login
+        await _audit.LogAsync(tenantId, employee.Id, "Login", "Employee", employee.Id.ToString(), null, null, ct);
 
         return new LoginResponse
         {
@@ -107,6 +112,9 @@ public class AuthService : IAuthService
         var token = GenerateJwt(employee.Id, employee.Name, employee.Email, employee.Role, employee.TenantId, permissions);
         var refreshToken = GenerateRefreshToken();
 
+        // Audit: log successful login
+        await _audit.LogAsync(employee.TenantId, employee.Id, "Login", "Employee", employee.Id.ToString(), null, null, ct);
+
         return new UnifiedLoginResponse
         {
             Token = token,
@@ -126,7 +134,7 @@ public class AuthService : IAuthService
         };
     }
 
-    public async Task<LoginResponse> RefreshTokenAsync(Guid tenantId, string refreshToken, CancellationToken ct = default)
+    public Task<LoginResponse> RefreshTokenAsync(Guid tenantId, string refreshToken, CancellationToken ct = default)
     {
         // Simplified: in production, store refresh tokens in DB
         // For now, re-issue a token for the first active owner/manager

@@ -295,6 +295,33 @@ export interface UpdateStoreRequestStatusRequest {
   notes?: string;
 }
 
+// ── Tenant Stats (Analytics) ────────────────────────────────
+
+export interface TenantStats {
+  totalProducts: number;
+  availableProducts: number;
+  soldProducts: number;
+  totalInvoices: number;
+  totalRevenue: number;
+  monthlyRevenue: number;
+  totalEmployees: number;
+  activeEmployees: number;
+  totalBrands: number;
+  totalCategories: number;
+  totalLeads: number;
+  totalExpenses: number;
+  totalExpenseAmount: number;
+  revenueChart: RevenueChartPoint[];
+  topProducts: TopProductDto[];
+}
+
+export interface TopProductDto {
+  title: string;
+  price: number;
+  quantitySold: number;
+  categoryName: string;
+}
+
 export type PaymentMethod = 'Cash' | 'Instapay' | 'BankTransfer' | 'Other';
 export type PaymentStatus = 'Paid' | 'Unpaid' | 'Partial';
 export type RegistrationStatus = 'PendingApproval' | 'Approved' | 'Rejected' | 'OnHold';

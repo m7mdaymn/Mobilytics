@@ -8,6 +8,7 @@ import { I18nService } from '../../../core/services/i18n.service';
 import { InvoiceCreateDto, Item } from '../../../core/models/item.models';
 import { SettingsStore } from '../../../core/stores/settings.store';
 import { TenantService } from '../../../core/services/tenant.service';
+import { resolveImageUrl } from '../../../core/utils/image.utils';
 
 @Component({
   selector: 'app-invoice-form',
@@ -82,7 +83,7 @@ import { TenantService } from '../../../core/services/tenant.service';
                   <!-- Image or Icon -->
                   <div class="w-10 h-10 rounded-lg bg-gray-100 flex-shrink-0 overflow-hidden flex items-center justify-center">
                     @if (item.mainImageUrl) {
-                      <img [src]="item.mainImageUrl" class="w-full h-full object-cover" />
+                      <img [src]="resolveImg(item.mainImageUrl)" class="w-full h-full object-cover" />
                     } @else {
                       <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
                     }
@@ -184,15 +185,34 @@ import { TenantService } from '../../../core/services/tenant.service';
         </div>
 
         @if (form.paymentMethod === 'Installment') {
-          <div class="bg-indigo-50 rounded-xl p-4 border border-indigo-100">
+          <div class="bg-indigo-50 rounded-xl p-4 border border-indigo-100 space-y-4">
             <p class="text-sm text-indigo-700 font-medium">{{ i18n.t('invoices.installmentInfo') }}</p>
-            <p class="text-xs text-indigo-600 mt-1">{{ i18n.t('invoices.installmentInfoDetail') }}</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-indigo-700 mb-1">{{ i18n.t('invoices.installmentProvider') }}</label>
+                <select [(ngModel)]="form.installmentProviderName" class="w-full px-4 py-2.5 border border-indigo-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-indigo-400/30 bg-white">
+                  <option value="">{{ i18n.t('invoices.selectProvider') }}</option>
+                  @for (p of installmentProviders(); track p.id) {
+                    <option [value]="p.name">{{ p.name }}</option>
+                  }
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-indigo-700 mb-1">{{ i18n.t('invoices.installmentMonths') }}</label>
+                <select [(ngModel)]="form.installmentMonths" class="w-full px-4 py-2.5 border border-indigo-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-indigo-400/30 bg-white">
+                  <option [ngValue]="0">{{ i18n.t('invoices.selectMonths') }}</option>
+                  @for (m of [3, 6, 9, 12, 18, 24, 36]; track m) {
+                    <option [ngValue]="m">{{ m }} {{ i18n.t('invoices.months') }}</option>
+                  }
+                </select>
+              </div>
+            </div>
           </div>
         }
 
         <!-- Totals Summary -->
         <div class="flex justify-end">
-          <div class="w-72 space-y-2.5 text-sm">
+          <div class="w-80 space-y-2.5 text-sm">
             <div class="flex justify-between text-gray-500">
               <span>{{ i18n.t('invoices.subtotal') }}</span>
               <span class="text-gray-900 font-medium">{{ subtotal() | currency: settingsStore.currency() : 'symbol-narrow' : '1.0-0' }}</span>
@@ -204,9 +224,21 @@ import { TenantService } from '../../../core/services/tenant.service';
               </div>
             }
             @if (taxAmount() > 0) {
-              <div class="flex justify-between text-gray-500">
-                <span>{{ i18n.t('invoices.tax') }}</span>
-                <span class="text-gray-900 font-medium">{{ taxAmount() | currency: settingsStore.currency() : 'symbol-narrow' : '1.0-0' }}</span>
+              <div class="flex justify-between items-center text-gray-500">
+                <div class="flex items-center gap-2">
+                  <span>{{ i18n.t('invoices.tax') }}</span>
+                  <span class="text-xs text-gray-400">({{ taxAmount() | currency: settingsStore.currency() : 'symbol-narrow' : '1.0-0' }})</span>
+                </div>
+                <button (click)="toggleTax()" class="flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-lg transition"
+                  [class]="form.includeTax ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'">
+                  @if (form.includeTax) {
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    {{ i18n.t('invoices.taxIncluded') }}
+                  } @else {
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    {{ i18n.t('invoices.addTax') }}
+                  }
+                </button>
               </div>
             }
             <div class="flex justify-between font-bold text-lg border-t border-gray-200 pt-3">
@@ -247,12 +279,13 @@ export class InvoiceFormComponent implements OnInit {
   readonly loadingItems = signal(true);
   readonly saving = signal(false);
   readonly subtotal = signal(0);
+  readonly installmentProviders = signal<{ id: string; name: string }[]>([]);
   readonly taxAmount = signal(0);
   readonly total = signal(0);
   readonly hasMore = signal(false);
 
   itemSearch = '';
-  lines: { itemId: string; itemTitle: string; quantity: number; unitPrice: number; vatPercent: number }[] = [];
+  lines: { itemId: string; itemTitle: string; quantity: number; unitPrice: number; vatAmount: number }[] = [];
   private searchTimeout: any;
   private currentPage = 1;
   private readonly pageSize = 50;
@@ -260,10 +293,20 @@ export class InvoiceFormComponent implements OnInit {
   form = {
     customerName: '', customerPhone: '',
     discount: 0, paymentMethod: 'Cash', notes: '',
+    installmentProviderName: '', installmentMonths: 0,
+    includeTax: false,
   };
 
   ngOnInit(): void {
     this.loadItems();
+    this.loadInstallmentProviders();
+  }
+
+  loadInstallmentProviders(): void {
+    this.api.get<any[]>('/Installments/providers').subscribe({
+      next: (providers) => this.installmentProviders.set(providers || []),
+      error: () => {},
+    });
   }
 
   loadItems(): void {
@@ -317,9 +360,18 @@ export class InvoiceFormComponent implements OnInit {
     return (item.quantity ?? 0) > 1;
   }
 
+  resolveImg(url: string): string {
+    return resolveImageUrl(url);
+  }
+
   addLineItem(item: Item): void {
     const existing = this.lines.find(l => l.itemId === item.id);
     if (existing) {
+      // Stock validation
+      if (item.quantity != null && item.quantity > 0 && existing.quantity >= item.quantity) {
+        this.toastService.error(`Max stock is ${item.quantity}`);
+        return;
+      }
       existing.quantity++;
     } else {
       this.lines.push({
@@ -327,7 +379,7 @@ export class InvoiceFormComponent implements OnInit {
         itemTitle: item.title,
         quantity: 1,
         unitPrice: item.price,
-        vatPercent: item.taxStatus === 'Taxable' ? (item.vatPercent || 0) : 0,
+        vatAmount: item.taxStatus === 'Taxable' ? (item.vatAmount || 0) : 0,
       });
     }
     this.recalc();
@@ -351,10 +403,15 @@ export class InvoiceFormComponent implements OnInit {
 
   recalc(): void {
     const sub = this.lines.reduce((s, l) => s + l.quantity * l.unitPrice, 0);
-    const tax = this.lines.reduce((s, l) => s + (l.quantity * l.unitPrice * l.vatPercent / 100), 0);
+    const tax = this.lines.reduce((s, l) => s + (l.vatAmount * l.quantity), 0);
     this.subtotal.set(sub);
     this.taxAmount.set(Math.round(tax * 100) / 100);
-    this.total.set(Math.max(0, sub + tax - (this.form.discount || 0)));
+    this.total.set(Math.max(0, sub + (this.form.includeTax ? tax : 0) - (this.form.discount || 0)));
+  }
+
+  toggleTax(): void {
+    this.form.includeTax = !this.form.includeTax;
+    this.recalc();
   }
 
   submit(): void {
@@ -365,7 +422,10 @@ export class InvoiceFormComponent implements OnInit {
       customerPhone: this.form.customerPhone,
       discount: this.form.discount,
       paymentMethod: this.form.paymentMethod,
+      includeTax: this.form.includeTax,
       notes: this.form.notes,
+      installmentProviderName: this.form.paymentMethod === 'Installment' ? this.form.installmentProviderName : undefined,
+      installmentMonths: this.form.paymentMethod === 'Installment' && this.form.installmentMonths ? this.form.installmentMonths : undefined,
       items: this.lines.map(l => ({ itemId: l.itemId, unitPrice: l.unitPrice, quantity: l.quantity })),
     };
     this.api.post<any>('/Invoices', body).subscribe({

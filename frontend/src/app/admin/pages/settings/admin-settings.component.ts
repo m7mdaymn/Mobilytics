@@ -12,6 +12,8 @@ interface StorePolicies {
   returnPolicy: string;
   warrantyPolicy: string;
   privacyPolicy: string;
+  shippingPolicy: string;
+  termsOfService: string;
 }
 
 @Component({
@@ -381,6 +383,18 @@ interface StorePolicies {
                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-gray-900/10 focus:border-gray-400 outline-none"
                   [placeholder]="i18n.t('settings.privacyPolicyPlaceholder')"></textarea>
               </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">{{ i18n.t('settings.shippingPolicy') || 'Shipping Policy' }}</label>
+                <textarea [(ngModel)]="policies.shippingPolicy" rows="4"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-gray-900/10 focus:border-gray-400 outline-none"
+                  placeholder="Describe your shipping & delivery policy..."></textarea>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">{{ i18n.t('settings.termsOfService') || 'Terms of Service' }}</label>
+                <textarea [(ngModel)]="policies.termsOfService" rows="4"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-gray-900/10 focus:border-gray-400 outline-none"
+                  placeholder="Describe your terms of service..."></textarea>
+              </div>
             </div>
             <button (click)="savePolicies()" [disabled]="saving()" class="bg-gray-900 hover:bg-black text-white px-5 py-2 rounded-lg text-sm font-semibold transition disabled:opacity-50">
               {{ saving() ? i18n.t('common.saving') : i18n.t('common.save') }}
@@ -536,40 +550,6 @@ interface StorePolicies {
           </div>
         }
 
-        <!-- PWA -->
-        @if (activeTab() === 'pwa') {
-          <div class="bg-white rounded-2xl border border-gray-200 p-6 space-y-5">
-            <h2 class="font-semibold text-lg text-gray-900">{{ i18n.t('settings.pwa') }}</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">{{ i18n.t('settings.pwaAppName') }}</label>
-                <input [(ngModel)]="pwaSettings.appName" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-gray-900/10 focus:border-gray-400 outline-none" />
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">{{ i18n.t('settings.pwaShortName') }}</label>
-                <input [(ngModel)]="pwaSettings.shortName" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-gray-900/10 focus:border-gray-400 outline-none" />
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">{{ i18n.t('settings.pwaThemeColor') }}</label>
-                <div class="flex gap-2 items-center">
-                  <input [(ngModel)]="pwaSettings.themeColor" type="color" class="w-10 h-10 rounded cursor-pointer border" />
-                  <input [(ngModel)]="pwaSettings.themeColor" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none" />
-                </div>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">{{ i18n.t('settings.secondaryColor') }}</label>
-                <div class="flex gap-2 items-center">
-                  <input [(ngModel)]="pwaSettings.backgroundColor" type="color" class="w-10 h-10 rounded cursor-pointer border" />
-                  <input [(ngModel)]="pwaSettings.backgroundColor" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none" />
-                </div>
-              </div>
-            </div>
-            <button (click)="savePwa()" [disabled]="saving()" class="bg-gray-900 hover:bg-black text-white px-5 py-2 rounded-lg text-sm font-semibold transition disabled:opacity-50">
-              {{ saving() ? i18n.t('common.saving') : i18n.t('common.save') }}
-            </button>
-          </div>
-        }
-
         <!-- Security (Change Password) -->
         @if (activeTab() === 'security') {
           <div class="bg-white rounded-2xl border border-gray-200 p-6 space-y-5 max-w-lg">
@@ -633,7 +613,7 @@ export class AdminSettingsComponent implements OnInit {
   aboutTitle = '';
   aboutDescription = '';
   aboutImageUrl = '';
-  policies: StorePolicies = { returnPolicy: '', warrantyPolicy: '', privacyPolicy: '' };
+  policies: StorePolicies = { returnPolicy: '', warrantyPolicy: '', privacyPolicy: '', shippingPolicy: '', termsOfService: '' };
 
   // Password change
   currentPassword = '';
@@ -652,7 +632,6 @@ export class AdminSettingsComponent implements OnInit {
     { key: 'whatsapp', label: 'settings.tabs.whatsapp' },
     { key: 'faq', label: 'settings.tabs.faq' },
     { key: 'trustbadges', label: 'settings.tabs.trustBadges' },
-    { key: 'pwa', label: 'settings.tabs.advanced' },
     { key: 'security', label: 'settings.tabs.security' },
   ];
 
@@ -672,7 +651,16 @@ export class AdminSettingsComponent implements OnInit {
         try { this.pwaSettings = d.pwaSettingsJson ? JSON.parse(d.pwaSettingsJson) : { appName: '', shortName: '', themeColor: '#000000', backgroundColor: '#ffffff' }; } catch { this.pwaSettings = { appName: '', shortName: '', themeColor: '#000000', backgroundColor: '#ffffff' }; }
         try { this.heroBanners = d.heroBannersJson ? JSON.parse(d.heroBannersJson) : []; } catch { this.heroBanners = []; }
         try { this.testimonials = d.testimonialsJson ? JSON.parse(d.testimonialsJson) : []; } catch { this.testimonials = []; }
-        try { this.policies = d.policiesJson ? JSON.parse(d.policiesJson) : { returnPolicy: '', warrantyPolicy: '', privacyPolicy: '' }; } catch { this.policies = { returnPolicy: '', warrantyPolicy: '', privacyPolicy: '' }; }
+        try {
+          const raw = d.policiesJson ? JSON.parse(d.policiesJson) : {};
+          this.policies = {
+            returnPolicy: raw['return'] || raw['returnPolicy'] || '',
+            warrantyPolicy: raw['warranty'] || raw['warrantyPolicy'] || '',
+            privacyPolicy: raw['privacy'] || raw['privacyPolicy'] || '',
+            shippingPolicy: raw['shipping'] || raw['shippingPolicy'] || '',
+            termsOfService: raw['terms'] || raw['termsOfService'] || '',
+          };
+        } catch { this.policies = { returnPolicy: '', warrantyPolicy: '', privacyPolicy: '', shippingPolicy: '', termsOfService: '' }; }
 
         try { this.faqItems = d.faqJson ? JSON.parse(d.faqJson) : []; } catch { this.faqItems = []; }
         try { this.trustBadges = d.trustBadgesJson ? JSON.parse(d.trustBadgesJson) : []; } catch { this.trustBadges = []; }
@@ -792,11 +780,18 @@ export class AdminSettingsComponent implements OnInit {
 
   savePolicies(): void {
     this.saving.set(true);
+    const policiesObj: Record<string, string> = {
+      return: this.policies.returnPolicy,
+      warranty: this.policies.warrantyPolicy,
+      privacy: this.policies.privacyPolicy,
+      shipping: this.policies.shippingPolicy,
+      terms: this.policies.termsOfService,
+    };
     this.api.put('/Settings/footer', {
       footerAddress: this.footerAddress,
       workingHours: this.workingHours,
       socialLinksJson: JSON.stringify(this.socialLinks),
-      policiesJson: JSON.stringify(this.policies),
+      policiesJson: JSON.stringify(policiesObj),
       mapUrl: this.mapUrl,
     }).subscribe({
       next: () => {

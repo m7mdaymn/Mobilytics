@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { DatePipe, DecimalPipe } from '@angular/common';
 import { PlatformApiService } from '../../../core/services/platform-api.service';
 import { ToastService } from '../../../core/services/toast.service';
-import { Tenant, TenantStoreSettings, UpdateStoreSettingsRequest, PlatformInvoice } from '../../../core/models/platform.models';
+import { Tenant, TenantStoreSettings, UpdateStoreSettingsRequest, PlatformInvoice, TenantStats } from '../../../core/models/platform.models';
 import { environment } from '../../../../environments/environment';
 
 @Component({
@@ -146,6 +146,104 @@ import { environment } from '../../../../environments/environment';
                   </div>
                 </div>
               </div>
+            }
+
+            <!-- ─── TAB: Analytics ─── -->
+            @if (activePageTab() === 'analytics') {
+              @if (loadingStats()) {
+                <div class="flex justify-center py-12">
+                  <div class="animate-spin h-8 w-8 border-4 border-indigo-500 border-t-transparent rounded-full"></div>
+                </div>
+              } @else if (stats()) {
+                <div class="space-y-6">
+                  <!-- KPI Cards -->
+                  <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-xl p-4">
+                      <p class="text-xs text-indigo-600 font-semibold uppercase mb-1">Total Products</p>
+                      <p class="text-2xl font-black text-indigo-900">{{ stats()!.totalProducts }}</p>
+                      <p class="text-xs text-indigo-500 mt-1">{{ stats()!.availableProducts }} available &middot; {{ stats()!.soldProducts }} sold</p>
+                    </div>
+                    <div class="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-xl p-4">
+                      <p class="text-xs text-emerald-600 font-semibold uppercase mb-1">Revenue</p>
+                      <p class="text-2xl font-black text-emerald-900">{{ stats()!.totalRevenue | number:'1.0-0' }}</p>
+                      <p class="text-xs text-emerald-500 mt-1">{{ stats()!.monthlyRevenue | number:'1.0-0' }} this month</p>
+                    </div>
+                    <div class="bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl p-4">
+                      <p class="text-xs text-amber-600 font-semibold uppercase mb-1">Invoices</p>
+                      <p class="text-2xl font-black text-amber-900">{{ stats()!.totalInvoices }}</p>
+                    </div>
+                    <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-4">
+                      <p class="text-xs text-purple-600 font-semibold uppercase mb-1">Employees</p>
+                      <p class="text-2xl font-black text-purple-900">{{ stats()!.totalEmployees }}</p>
+                      <p class="text-xs text-purple-500 mt-1">{{ stats()!.activeEmployees }} active</p>
+                    </div>
+                  </div>
+
+                  <!-- Second Row -->
+                  <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="bg-slate-50 rounded-xl p-4 text-center">
+                      <p class="text-2xl font-bold text-slate-800">{{ stats()!.totalBrands }}</p>
+                      <p class="text-xs text-slate-500 mt-1">Brands</p>
+                    </div>
+                    <div class="bg-slate-50 rounded-xl p-4 text-center">
+                      <p class="text-2xl font-bold text-slate-800">{{ stats()!.totalCategories }}</p>
+                      <p class="text-xs text-slate-500 mt-1">Categories</p>
+                    </div>
+                    <div class="bg-slate-50 rounded-xl p-4 text-center">
+                      <p class="text-2xl font-bold text-slate-800">{{ stats()!.totalLeads }}</p>
+                      <p class="text-xs text-slate-500 mt-1">Leads</p>
+                    </div>
+                    <div class="bg-slate-50 rounded-xl p-4 text-center">
+                      <p class="text-2xl font-bold text-slate-800">{{ stats()!.totalExpenses }} <span class="text-sm font-normal text-slate-400">({{ stats()!.totalExpenseAmount | number:'1.0-0' }})</span></p>
+                      <p class="text-xs text-slate-500 mt-1">Expenses</p>
+                    </div>
+                  </div>
+
+                  <!-- Revenue Chart (Bar) -->
+                  @if (stats()!.revenueChart && stats()!.revenueChart.length > 0) {
+                    <div class="bg-white rounded-xl border border-slate-200 p-5">
+                      <h4 class="font-semibold text-slate-800 mb-4">Revenue — Last 6 Months</h4>
+                      <div class="flex items-end gap-3 h-48">
+                        @for (point of stats()!.revenueChart; track point.label) {
+                          @let maxVal = getMaxRevenue();
+                          @let barH = maxVal > 0 ? (point.amount / maxVal) * 100 : 0;
+                          <div class="flex-1 flex flex-col items-center gap-1">
+                            <span class="text-[10px] text-slate-500 font-medium">{{ point.amount | number:'1.0-0' }}</span>
+                            <div class="w-full rounded-t-lg bg-indigo-500 transition-all" [style.height.%]="barH < 5 && point.amount > 0 ? 5 : barH"></div>
+                            <span class="text-[10px] text-slate-400">{{ point.label }}</span>
+                          </div>
+                        }
+                      </div>
+                    </div>
+                  }
+
+                  <!-- Top Products -->
+                  @if (stats()!.topProducts && stats()!.topProducts.length > 0) {
+                    <div class="bg-white rounded-xl border border-slate-200 p-5">
+                      <h4 class="font-semibold text-slate-800 mb-3">Top 5 Products (by Sales)</h4>
+                      <div class="space-y-2">
+                        @for (p of stats()!.topProducts; track p.title; let i = $index) {
+                          <div class="flex items-center gap-3 bg-slate-50 rounded-lg p-3">
+                            <span class="w-7 h-7 rounded-full bg-indigo-100 text-indigo-700 text-xs font-bold flex items-center justify-center">{{ i + 1 }}</span>
+                            <div class="flex-1 min-w-0">
+                              <p class="text-sm font-medium text-slate-800 truncate">{{ p.title }}</p>
+                              <p class="text-xs text-slate-400">{{ p.categoryName }}</p>
+                            </div>
+                            <div class="text-end">
+                              <p class="text-sm font-bold text-slate-800">{{ p.quantitySold }} sold</p>
+                              <p class="text-xs text-slate-400">{{ p.price | number:'1.0-0' }} EGP</p>
+                            </div>
+                          </div>
+                        }
+                      </div>
+                    </div>
+                  }
+                </div>
+              } @else {
+                <div class="text-center py-10 text-slate-400">
+                  <p>No analytics data available.</p>
+                </div>
+              }
             }
 
             <!-- ─── TAB: Subscription ─── -->
@@ -577,10 +675,13 @@ export class TenantDetailComponent implements OnInit {
   readonly editingSubscription = signal(false);
   readonly activeSettingsTab = signal('general');
   readonly activePageTab = signal('overview');
+  readonly stats = signal<TenantStats | null>(null);
+  readonly loadingStats = signal(false);
   subEditMonths = 1;
 
   readonly pageTabs = [
     { key: 'overview', icon: '📋', label: 'Overview' },
+    { key: 'analytics', icon: '📊', label: 'Analytics' },
     { key: 'subscription', icon: '💎', label: 'Subscription' },
     { key: 'settings', icon: '⚙️', label: 'Store Settings' },
     { key: 'invoices', icon: '🧾', label: 'Invoices' },
@@ -616,6 +717,7 @@ export class TenantDetailComponent implements OnInit {
         this.tenant.set(data);
         this.loading.set(false);
         this.loadInvoices();
+        this.loadStats();
       },
       error: () => {
         this.tenant.set(null);
@@ -634,6 +736,19 @@ export class TenantDetailComponent implements OnInit {
         this.loadingInvoices.set(false);
       },
       error: () => this.loadingInvoices.set(false),
+    });
+  }
+
+  loadStats(): void {
+    const t = this.tenant();
+    if (!t) return;
+    this.loadingStats.set(true);
+    this.api.getTenantStats(t.id).subscribe({
+      next: data => {
+        this.stats.set(data);
+        this.loadingStats.set(false);
+      },
+      error: () => this.loadingStats.set(false),
     });
   }
 
@@ -907,6 +1022,12 @@ export class TenantDetailComponent implements OnInit {
     if (!json) return 0;
     try { const arr = JSON.parse(json); return Array.isArray(arr) ? arr.length : 0; }
     catch { return 0; }
+  }
+
+  getMaxRevenue(): number {
+    const chart = this.stats()?.revenueChart;
+    if (!chart || chart.length === 0) return 0;
+    return Math.max(...chart.map(p => p.amount));
   }
 
   getPolicyKeys(json?: string): string {

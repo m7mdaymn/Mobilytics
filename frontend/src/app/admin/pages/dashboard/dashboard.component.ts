@@ -25,7 +25,7 @@ interface SubscriptionInfo {
   standalone: true,
   imports: [RouterLink, CurrencyPipe, DatePipe, FormsModule],
   template: `
-    <div class="space-y-6">
+    <div class="space-y-6 page-enter">
       <!-- Header -->
       <div class="flex items-center justify-between">
         <div>

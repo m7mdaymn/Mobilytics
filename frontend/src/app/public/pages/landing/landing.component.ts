@@ -44,12 +44,14 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
     storeName: '',
     ownerName: '',
     email: '',
+    countryCode: '+20',
     phone: '',
     whatsApp: '',
     password: '',
     city: '',
     address: '',
     storeType: 'phones',
+    currency: 'EGP',
     agreeTerms: false
   };
 
@@ -225,18 +227,21 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
     this.isSubmittingForm.set(true);
     this.signupError.set(null);
 
+    const fullPhone = this.signupForm.countryCode + this.signupForm.phone.replace(/^0+/, '');
+
     const payload = {
       storeName: this.signupForm.storeName,
       category: this.signupForm.storeType,
       location: this.signupForm.city || '',
       ownerName: this.signupForm.ownerName,
       email: this.signupForm.email,
-      phone: this.signupForm.phone,
-      whatsApp: this.signupForm.whatsApp || this.signupForm.phone,
+      phone: fullPhone,
+      whatsApp: this.signupForm.whatsApp || fullPhone,
       address: this.signupForm.address,
       password: this.signupForm.password,
       numberOfStores: '1',
       source: 'landing-page',
+      currency: this.signupForm.currency,
       agreeTerms: this.signupForm.agreeTerms
     };
 
@@ -256,8 +261,8 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private resetForm(): void {
     this.signupForm = {
-      storeName: '', ownerName: '', email: '', phone: '', whatsApp: '',
-      password: '', city: '', address: '', storeType: 'phones', agreeTerms: false
+      storeName: '', ownerName: '', email: '', countryCode: '+20', phone: '', whatsApp: '',
+      password: '', city: '', address: '', storeType: 'phones', currency: 'EGP', agreeTerms: false
     };
   }
 }

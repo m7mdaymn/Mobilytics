@@ -711,13 +711,46 @@
             <div class="grid grid-cols-2 gap-4">
               <div>
                 <label class="block text-sm font-semibold text-neutral-700 mb-1.5">{{ i18n.t('signup.phone') }} <span class="text-red-400">*</span></label>
-                <input type="tel" [(ngModel)]="signupForm.phone" class="modal-input" placeholder="+201xxxxxxxxx" />
+                <div class="flex gap-2">
+                  <select [(ngModel)]="signupForm.countryCode" class="modal-input !w-28 shrink-0 bg-white">
+                    <option value="+20">🇪🇬 +20</option>
+                    <option value="+966">🇸🇦 +966</option>
+                    <option value="+971">🇦🇪 +971</option>
+                    <option value="+965">🇰🇼 +965</option>
+                    <option value="+974">🇶🇦 +974</option>
+                    <option value="+973">🇧🇭 +973</option>
+                    <option value="+968">🇴🇲 +968</option>
+                    <option value="+962">🇯🇴 +962</option>
+                    <option value="+964">🇮🇶 +964</option>
+                    <option value="+212">🇲🇦 +212</option>
+                    <option value="+216">🇹🇳 +216</option>
+                    <option value="+218">🇱🇾 +218</option>
+                    <option value="+249">🇸🇩 +249</option>
+                    <option value="+1">🇺🇸 +1</option>
+                    <option value="+44">🇬🇧 +44</option>
+                  </select>
+                  <input type="tel" [(ngModel)]="signupForm.phone" class="modal-input flex-1" [placeholder]="i18n.lang() === 'ar' ? '1xxxxxxxxx' : '1xxxxxxxxx'" />
+                </div>
               </div>
               <div>
                 <label class="block text-sm font-semibold text-neutral-700 mb-1.5">{{ i18n.lang() === 'ar' ? 'واتساب' : 'WhatsApp' }}</label>
                 <input type="tel" [(ngModel)]="signupForm.whatsApp" class="modal-input" [placeholder]="i18n.lang() === 'ar' ? 'نفس رقم الهاتف إن لم يختلف' : 'Same as phone if empty'" />
               </div>
             </div>
+
+            <!-- Currency -->
+            <div>
+              <label class="block text-sm font-semibold text-neutral-700 mb-1.5">{{ i18n.lang() === 'ar' ? 'العملة' : 'Currency' }}</label>
+              <select [(ngModel)]="signupForm.currency" class="modal-input bg-white">
+                <option value="EGP">🇪🇬 EGP — {{ i18n.lang() === 'ar' ? 'جنيه مصري' : 'Egyptian Pound' }}</option>
+                <option value="SAR">🇸🇦 SAR — {{ i18n.lang() === 'ar' ? 'ريال سعودي' : 'Saudi Riyal' }}</option>
+                <option value="AED">🇦🇪 AED — {{ i18n.lang() === 'ar' ? 'درهم إماراتي' : 'UAE Dirham' }}</option>
+                <option value="KWD">🇰🇼 KWD — {{ i18n.lang() === 'ar' ? 'دينار كويتي' : 'Kuwaiti Dinar' }}</option>
+                <option value="QAR">🇶🇦 QAR — {{ i18n.lang() === 'ar' ? 'ريال قطري' : 'Qatari Riyal' }}</option>
+                <option value="USD">🇺🇸 USD — {{ i18n.lang() === 'ar' ? 'دولار أمريكي' : 'US Dollar' }}</option>
+              </select>
+            </div>
+
             <div>
               <label class="block text-sm font-semibold text-neutral-700 mb-1.5">{{ i18n.lang() === 'ar' ? 'كلمة المرور' : 'Password' }} <span class="text-red-400">*</span></label>
               <input type="password" [(ngModel)]="signupForm.password" class="modal-input" [placeholder]="i18n.lang() === 'ar' ? '6 أحرف على الأقل' : 'At least 6 characters'" />

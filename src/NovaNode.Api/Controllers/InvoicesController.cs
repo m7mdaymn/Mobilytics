@@ -13,11 +13,13 @@ public class InvoicesController : BaseApiController
 {
     private readonly IInvoiceService _svc;
     private readonly ITenantContext _tenantContext;
+    private readonly IAuditService _audit;
 
-    public InvoicesController(IInvoiceService svc, ITenantContext tenantContext)
+    public InvoicesController(IInvoiceService svc, ITenantContext tenantContext, IAuditService audit)
     {
         _svc = svc;
         _tenantContext = tenantContext;
+        _audit = audit;
     }
 
     private Guid GetUserId() =>
@@ -43,7 +45,9 @@ public class InvoicesController : BaseApiController
     {
         var tenantId = _tenantContext.TenantId!.Value;
         var userId = GetUserId();
-        return Created(await _svc.CreateAsync(tenantId, request, userId, ct));
+        var result = await _svc.CreateAsync(tenantId, request, userId, ct);
+        await _audit.LogAsync(tenantId, userId, "Created", "Invoice", result.Id.ToString(), null, result.InvoiceNumber, ct);
+        return Created(result);
     }
 
     [HttpPost("{id:guid}/refund")]
@@ -52,7 +56,9 @@ public class InvoicesController : BaseApiController
     {
         var tenantId = _tenantContext.TenantId!.Value;
         var userId = GetUserId();
-        return Ok(await _svc.RefundAsync(tenantId, id, request, userId, ct));
+        var result = await _svc.RefundAsync(tenantId, id, request, userId, ct);
+        await _audit.LogAsync(tenantId, userId, "Refunded", "Invoice", id.ToString(), null, result.InvoiceNumber, ct);
+        return Ok(result);
     }
 
     [HttpDelete("{id:guid}")]
@@ -60,7 +66,9 @@ public class InvoicesController : BaseApiController
     public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
     {
         var tenantId = _tenantContext.TenantId!.Value;
+        var userId = GetUserId();
         await _svc.DeleteAsync(tenantId, id, ct);
+        await _audit.LogAsync(tenantId, userId, "Deleted", "Invoice", id.ToString(), null, null, ct);
         return NoContent();
     }
 }

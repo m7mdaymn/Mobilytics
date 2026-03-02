@@ -50,7 +50,7 @@ import { resolveImageUrl } from '../../../core/utils/image.utils';
               [class.prev]="activeSlide() !== i">
               @if (banner.imageUrl) {
                 <img [src]="resolveImg(banner.imageUrl)" [alt]="banner.title"
-                  class="hero-slide__img" loading="lazy" />
+                  class="hero-slide__img" loading="lazy" (error)="$any($event.target).style.display='none'" />
               }
               <div class="hero-slide__gradient"></div>
               <div class="hero-slide__content">
@@ -95,7 +95,7 @@ import { resolveImageUrl } from '../../../core/utils/image.utils';
           <div class="hero-orb hero-orb--accent"></div>
           <div class="hero-grain"></div>
           @if (settingsStore.settings()?.bannerUrl) {
-            <img [src]="resolveImg(settingsStore.settings()!.bannerUrl!)" alt="" class="hero-slide__img" style="opacity: 0.2" />
+            <img [src]="resolveImg(settingsStore.settings()!.bannerUrl!)" alt="" class="hero-slide__img" style="opacity: 0.2" (error)="$any($event.target).style.display='none'" />
           }
           <div class="hero-slide__content" style="position: relative; z-index: 10">
             <div class="hero-slide__inner reveal-hero">
@@ -134,7 +134,7 @@ import { resolveImageUrl } from '../../../core/utils/image.utils';
                 class="cat-card reveal-item" [style.animation-delay.ms]="idx * 60">
                 <div class="cat-card__icon-wrap">
                   @if (cat.imageUrl) {
-                    <img [src]="resolveImg(cat.imageUrl)" [alt]="cat.name" class="cat-card__img" loading="lazy" />
+                    <img [src]="resolveImg(cat.imageUrl)" [alt]="cat.name" class="cat-card__img" loading="lazy" (error)="$any($event.target).style.display='none'" />
                   } @else {
                     <div class="cat-card__placeholder">
                       <svg width="28" height="28" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
@@ -206,7 +206,7 @@ import { resolveImageUrl } from '../../../core/utils/image.utils';
                 @for (brand of brands(); track brand.id) {
                   <a [routerLink]="tenantService.storeUrl() + '/catalog'" [queryParams]="{brandSlug: brand.slug}" class="brand-pill">
                     @if (brand.logoUrl) {
-                      <img [src]="resolveImg(brand.logoUrl)" [alt]="brand.name" class="brand-pill__img" loading="lazy" />
+                      <img [src]="resolveImg(brand.logoUrl)" [alt]="brand.name" class="brand-pill__img" loading="lazy" (error)="$any($event.target).style.display='none'" />
                     } @else {
                       <span class="brand-pill__text">{{ brand.name }}</span>
                     }
@@ -215,7 +215,7 @@ import { resolveImageUrl } from '../../../core/utils/image.utils';
                 @for (brand of brands(); track 'dup-' + brand.id) {
                   <a [routerLink]="tenantService.storeUrl() + '/catalog'" [queryParams]="{brandSlug: brand.slug}" class="brand-pill">
                     @if (brand.logoUrl) {
-                      <img [src]="resolveImg(brand.logoUrl)" [alt]="brand.name" class="brand-pill__img" loading="lazy" />
+                      <img [src]="resolveImg(brand.logoUrl)" [alt]="brand.name" class="brand-pill__img" loading="lazy" (error)="$any($event.target).style.display='none'" />
                     } @else {
                       <span class="brand-pill__text">{{ brand.name }}</span>
                     }
@@ -229,7 +229,7 @@ import { resolveImageUrl } from '../../../core/utils/image.utils';
               @for (brand of brands(); track brand.id) {
                 <a [routerLink]="tenantService.storeUrl() + '/catalog'" [queryParams]="{brandSlug: brand.slug}" class="brand-pill brand-pill--static">
                   @if (brand.logoUrl) {
-                    <img [src]="resolveImg(brand.logoUrl)" [alt]="brand.name" class="brand-pill__img" loading="lazy" />
+                    <img [src]="resolveImg(brand.logoUrl)" [alt]="brand.name" class="brand-pill__img" loading="lazy" (error)="$any($event.target).style.display='none'" />
                   } @else {
                     <span class="brand-pill__text">{{ brand.name }}</span>
                   }

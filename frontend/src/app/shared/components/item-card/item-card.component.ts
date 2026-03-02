@@ -28,6 +28,7 @@ import { resolveImageUrl } from '../../../core/utils/image.utils';
             [src]="resolveImg(item.mainImageUrl)"
             [alt]="item.title"
             loading="lazy"
+            (error)="$any($event.target).style.display='none'"
             class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
         } @else {
           <div class="w-full h-full flex items-center justify-center text-gray-300">
@@ -93,8 +94,8 @@ import { resolveImageUrl } from '../../../core/utils/image.utils';
               {{ item.oldPrice | currency: settingsStore.currency() : 'symbol-narrow' : '1.0-0' }}
             </span>
           }
-          @if (item.taxStatus === 'Taxable' && item.vatPercent) {
-            <span class="text-[10px] text-amber-600 font-medium">{{ i18n.t('store.exclVat') }}</span>
+          @if (item.taxStatus === 'Taxable' && item.vatAmount) {
+            <span class="text-[10px] text-amber-600 font-medium">+ {{ item.vatAmount | currency: settingsStore.currency() : 'symbol-narrow' : '1.0-0' }} {{ i18n.t('store.tax') }}</span>
           }
         </div>
 

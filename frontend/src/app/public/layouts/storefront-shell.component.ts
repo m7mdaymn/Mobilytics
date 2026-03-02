@@ -551,6 +551,22 @@ import { resolveImageUrl } from '../../core/utils/image.utils';
                 {{ i18n.t('store.privacy') || 'Privacy Policy' }}
               </a>
             }
+            @if (settingsStore.policies()['shipping']) {
+              <a [routerLink]="tenantService.storeUrl() + '/policies/shipping'" class="flex items-center gap-2.5 hover:text-white transition group">
+                <span class="w-7 h-7 rounded-lg bg-white/5 group-hover:bg-white/10 flex items-center justify-center shrink-0 transition">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 0 1-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0H21M3.375 14.25h3.375c.621 0 1.125-.504 1.125-1.125V5.25c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v7.875c0 .621.504 1.125 1.125 1.125Zm4.5-7.875h6.75c.621 0 1.125.504 1.125 1.125v5.625c0 .621-.504 1.125-1.125 1.125h-6.75c-.621 0-1.125-.504-1.125-1.125V7.5c0-.621.504-1.125 1.125-1.125Z"/></svg>
+                </span>
+                {{ i18n.t('store.shippingPolicy') || 'Shipping Policy' }}
+              </a>
+            }
+            @if (settingsStore.policies()['terms']) {
+              <a [routerLink]="tenantService.storeUrl() + '/policies/terms'" class="flex items-center gap-2.5 hover:text-white transition group">
+                <span class="w-7 h-7 rounded-lg bg-white/5 group-hover:bg-white/10 flex items-center justify-center shrink-0 transition">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/></svg>
+                </span>
+                {{ i18n.t('store.termsOfService') || 'Terms of Service' }}
+              </a>
+            }
           </div>
         </div>
 

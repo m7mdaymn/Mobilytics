@@ -132,4 +132,44 @@ public class EmployeeService : IEmployeeService
         Role = e.Role, SalaryMonthly = e.SalaryMonthly, IsActive = e.IsActive,
         Permissions = e.Permissions.Select(p => new PermissionDto { Id = p.Id, Key = p.Key, IsEnabled = p.IsEnabled }).ToList()
     };
+
+    // ── Absence ──
+    public async Task<List<EmployeeAbsenceDto>> GetAbsencesAsync(Guid tenantId, Guid? employeeId, CancellationToken ct = default)
+    {
+        var query = _db.EmployeeAbsences.Include(a => a.Employee).Where(a => a.TenantId == tenantId);
+        if (employeeId.HasValue) query = query.Where(a => a.EmployeeId == employeeId.Value);
+        return await query.OrderByDescending(a => a.AbsenceDate)
+            .Select(a => new EmployeeAbsenceDto
+            {
+                Id = a.Id, EmployeeId = a.EmployeeId, EmployeeName = a.Employee.Name,
+                AbsenceDate = a.AbsenceDate, Reason = a.Reason, Notes = a.Notes, IsExcused = a.IsExcused
+            }).ToListAsync(ct);
+    }
+
+    public async Task<EmployeeAbsenceDto> CreateAbsenceAsync(Guid tenantId, CreateAbsenceRequest request, CancellationToken ct = default)
+    {
+        var absence = new EmployeeAbsence
+        {
+            TenantId = tenantId, EmployeeId = request.EmployeeId,
+            AbsenceDate = request.AbsenceDate, Reason = request.Reason,
+            Notes = request.Notes, IsExcused = request.IsExcused
+        };
+        _db.EmployeeAbsences.Add(absence);
+        await _db.SaveChangesAsync(ct);
+
+        var emp = await _db.Employees.FindAsync([request.EmployeeId], ct);
+        return new EmployeeAbsenceDto
+        {
+            Id = absence.Id, EmployeeId = absence.EmployeeId, EmployeeName = emp?.Name ?? "",
+            AbsenceDate = absence.AbsenceDate, Reason = absence.Reason, Notes = absence.Notes, IsExcused = absence.IsExcused
+        };
+    }
+
+    public async Task DeleteAbsenceAsync(Guid tenantId, Guid id, CancellationToken ct = default)
+    {
+        var absence = await _db.EmployeeAbsences.FirstOrDefaultAsync(a => a.TenantId == tenantId && a.Id == id, ct)
+            ?? throw new KeyNotFoundException("Absence not found.");
+        _db.EmployeeAbsences.Remove(absence);
+        await _db.SaveChangesAsync(ct);
+    }
 }

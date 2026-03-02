@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NovaNode.Api.Middleware;
@@ -12,12 +13,17 @@ public class ItemsController : BaseApiController
 {
     private readonly IItemService _svc;
     private readonly ITenantContext _tenantContext;
+    private readonly IAuditService _audit;
 
-    public ItemsController(IItemService svc, ITenantContext tenantContext)
+    public ItemsController(IItemService svc, ITenantContext tenantContext, IAuditService audit)
     {
         _svc = svc;
         _tenantContext = tenantContext;
+        _audit = audit;
     }
+
+    private Guid GetUserId() =>
+        Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? throw new UnauthorizedAccessException());
 
     [HttpGet]
     public async Task<IActionResult> GetAll([FromQuery] ItemFilterRequest filter, CancellationToken ct)
@@ -45,7 +51,9 @@ public class ItemsController : BaseApiController
     public async Task<IActionResult> Create([FromBody] CreateItemRequest request, CancellationToken ct)
     {
         var tenantId = _tenantContext.TenantId!.Value;
-        return Created(await _svc.CreateAsync(tenantId, request, ct));
+        var result = await _svc.CreateAsync(tenantId, request, ct);
+        await _audit.LogAsync(tenantId, GetUserId(), "Created", "Item", result.Id.ToString(), null, result.Title, ct);
+        return Created(result);
     }
 
     [HttpPut("{id:guid}")]
@@ -53,7 +61,9 @@ public class ItemsController : BaseApiController
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateItemRequest request, CancellationToken ct)
     {
         var tenantId = _tenantContext.TenantId!.Value;
-        return Ok(await _svc.UpdateAsync(tenantId, id, request, ct));
+        var result = await _svc.UpdateAsync(tenantId, id, request, ct);
+        await _audit.LogAsync(tenantId, GetUserId(), "Updated", "Item", id.ToString(), null, result.Title, ct);
+        return Ok(result);
     }
 
     [HttpPatch("{id:guid}/status")]
@@ -61,6 +71,7 @@ public class ItemsController : BaseApiController
     {
         var tenantId = _tenantContext.TenantId!.Value;
         await _svc.UpdateStatusAsync(tenantId, id, request, ct);
+        await _audit.LogAsync(tenantId, GetUserId(), "Updated", "Item", id.ToString(), null, $"Status → {request.Status}", ct);
         return NoContent();
     }
 
@@ -69,6 +80,7 @@ public class ItemsController : BaseApiController
     public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
     {
         var tenantId = _tenantContext.TenantId!.Value;
+        await _audit.LogAsync(tenantId, GetUserId(), "Deleted", "Item", id.ToString(), null, null, ct);
         await _svc.DeleteAsync(tenantId, id, ct);
         return NoContent();
     }

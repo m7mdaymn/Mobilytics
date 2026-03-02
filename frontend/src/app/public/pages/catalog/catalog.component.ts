@@ -16,7 +16,7 @@ import { debounceTime, Subject } from 'rxjs';
   standalone: true,
   imports: [FormsModule, DecimalPipe, ItemCardComponent, PaginationComponent, FollowUpModalComponent],
   template: `
-    <div class="max-w-7xl mx-auto px-4 py-8">
+    <div class="max-w-7xl mx-auto px-4 py-8 page-enter">
       <!-- Page Header -->
       <div class="mb-8">
         <h1 class="text-3xl font-extrabold text-gray-900">{{ pageTitle() }}</h1>
@@ -247,11 +247,29 @@ import { debounceTime, Subject } from 'rxjs';
               <button (click)="clearFilters()" class="mt-2 px-5 py-2.5 bg-[color:var(--color-primary)] text-white font-semibold rounded-xl hover:opacity-90 transition text-sm">{{ i18n.t('store.clearFilters') }}</button>
             </div>
           } @else {
-            <div class="grid grid-cols-2 md:grid-cols-3 gap-5">
-              @for (item of items(); track item.id) {
-                <app-item-card [item]="item" />
+            @if (showGrouped()) {
+              <!-- Grouped by Category -->
+              @for (group of groupedItems(); track group[0]; let gi = $index) {
+                <div class="mb-10" [class.mt-6]="gi > 0">
+                  <div class="flex items-center gap-3 mb-4">
+                    <h2 class="text-lg font-bold text-gray-900">{{ group[0] }}</h2>
+                    <span class="text-xs text-gray-400 font-medium bg-gray-100 px-2 py-0.5 rounded-full">{{ group[1].length }}</span>
+                    <div class="flex-1 h-px bg-gray-200"></div>
+                  </div>
+                  <div class="grid grid-cols-2 md:grid-cols-3 gap-5">
+                    @for (item of group[1]; track item.id; let idx = $index) {
+                      <app-item-card [item]="item" class="animate-fade-in-up" [style.animation-delay.ms]="idx * 50" />
+                    }
+                  </div>
+                </div>
               }
-            </div>
+            } @else {
+              <div class="grid grid-cols-2 md:grid-cols-3 gap-5">
+                @for (item of items(); track item.id; let idx = $index) {
+                  <app-item-card [item]="item" class="animate-fade-in-up" [style.animation-delay.ms]="idx * 50" />
+                }
+              </div>
+            }
             <div class="mt-10">
               <app-pagination
                 [currentPage]="currentPage()"
@@ -340,6 +358,20 @@ export class CatalogComponent implements OnInit, OnDestroy {
     if (this.featuredFilter) count++;
     return count;
   });
+
+  /** Group items by category for sectioned display */
+  readonly groupedItems = computed(() => {
+    const groups = new Map<string, Item[]>();
+    for (const item of this.items()) {
+      const cat = item.categoryName || 'Other';
+      if (!groups.has(cat)) groups.set(cat, []);
+      groups.get(cat)!.push(item);
+    }
+    return [...groups.entries()];
+  });
+
+  /** Show grouped view only when no specific category/search filter is active */
+  readonly showGrouped = computed(() => !this.categoryFilter && !this.search && this.groupedItems().length > 1);
 
   ngOnInit(): void {
     this.route.params.subscribe(params => {

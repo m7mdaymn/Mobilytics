@@ -17,7 +17,7 @@ public class Item : TenantEntity
     public decimal Price { get; set; }
     public decimal? OldPrice { get; set; }
     public TaxStatus TaxStatus { get; set; } = TaxStatus.Exempt;
-    public decimal? VatPercent { get; set; }
+    public decimal? VatAmount { get; set; }
     public ItemCondition Condition { get; set; } = ItemCondition.New;
     public int? BatteryHealth { get; set; }
     public string? IMEI { get; set; }

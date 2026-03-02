@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -15,13 +16,18 @@ public class SettingsController : BaseApiController
     private readonly IStoreSettingsService _svc;
     private readonly ITenantContext _tenantContext;
     private readonly AppDbContext _db;
+    private readonly IAuditService _audit;
 
-    public SettingsController(IStoreSettingsService svc, ITenantContext tenantContext, AppDbContext db)
+    public SettingsController(IStoreSettingsService svc, ITenantContext tenantContext, AppDbContext db, IAuditService audit)
     {
         _svc = svc;
         _tenantContext = tenantContext;
         _db = db;
+        _audit = audit;
     }
+
+    private Guid GetUserId() =>
+        Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? throw new UnauthorizedAccessException());
 
     [HttpGet]
     public async Task<IActionResult> Get(CancellationToken ct)
@@ -35,7 +41,9 @@ public class SettingsController : BaseApiController
     public async Task<IActionResult> Update([FromBody] StoreSettingsDto request, CancellationToken ct)
     {
         var tenantId = _tenantContext.TenantId!.Value;
-        return Ok(await _svc.UpdateAsync(tenantId, request, ct));
+        var result = await _svc.UpdateAsync(tenantId, request, ct);
+        await _audit.LogAsync(tenantId, GetUserId(), "Updated", "StoreSettings", tenantId.ToString(), null, null, ct);
+        return Ok(result);
     }
 
     [HttpPut("theme")]
@@ -43,6 +51,7 @@ public class SettingsController : BaseApiController
     {
         var tenantId = _tenantContext.TenantId!.Value;
         await _svc.UpdateThemeAsync(tenantId, request, ct);
+        await _audit.LogAsync(tenantId, GetUserId(), "Updated", "Theme", tenantId.ToString(), null, $"Preset {request.ThemePresetId}, System {request.SystemThemeId}", ct);
         return Ok(true);
     }
 
@@ -51,6 +60,7 @@ public class SettingsController : BaseApiController
     {
         var tenantId = _tenantContext.TenantId!.Value;
         await _svc.UpdateFooterAsync(tenantId, request, ct);
+        await _audit.LogAsync(tenantId, GetUserId(), "Updated", "Footer", tenantId.ToString(), null, null, ct);
         return Ok(true);
     }
 

@@ -15,7 +15,7 @@ public class InvoiceItem : BaseEntity
     public int Quantity { get; set; } = 1;
     public decimal LineTotal { get; set; }
     public TaxStatus TaxStatusSnapshot { get; set; }
-    public decimal? VatPercentSnapshot { get; set; }
+    public decimal? VatAmountSnapshot { get; set; }
 
     // Navigation
     public Invoice Invoice { get; set; } = null!;
