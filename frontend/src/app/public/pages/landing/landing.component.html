@@ -391,7 +391,7 @@
         <button (click)="billingAnnual.set(false)"
           class="px-6 py-2.5 rounded-full text-sm font-bold transition-all duration-300"
           [class]="!billingAnnual() ? 'bg-black text-white shadow-md' : 'text-neutral-500 hover:text-black'">
-          {{ i18n.lang() === 'ar' ? 'شهري' : 'Monthly' }}
+          {{ i18n.lang() === 'ar' ? 'ربع سنوى' : '3 Months' }}
         </button>
         <button (click)="billingAnnual.set(true)"
           class="px-6 py-2.5 rounded-full text-sm font-bold transition-all duration-300 flex items-center gap-2"
@@ -409,7 +409,7 @@
         </div>
         <div class="text-sm font-bold text-neutral-400 uppercase tracking-wider mb-5">{{ i18n.lang() === 'ar' ? 'الباقة الأساسية' : 'Starter Plan' }}</div>
         <div class="flex items-baseline gap-1.5 mb-2">
-          <span class="text-5xl font-black text-black tabular-nums">{{ billingAnnual() ? '3,840' : '400' }}</span>
+          <span class="text-5xl font-black text-black tabular-nums">{{ billingAnnual() ? '3,840' : '1200' }}</span>
           <span class="text-lg text-neutral-400 font-medium">{{ i18n.t('landing.pricing.currency') }}</span>
         </div>
         <p class="text-sm text-neutral-400 mb-4">
@@ -418,7 +418,7 @@
             <span class="text-emerald-600 font-bold ms-1.5">{{ i18n.lang() === 'ar' ? 'وفر 20%' : 'Save 20%' }}</span>
           }
         </p>
-        <p class="text-xs text-neutral-400 mb-6 font-medium">+ 2,200 {{ i18n.t('landing.pricing.currency') }} {{ i18n.lang() === 'ar' ? 'رسوم تفعيل لمرة واحدة' : 'one-time activation' }}</p>
+        <p class="text-xs text-neutral-400 mb-6 font-medium">+ 4,400 {{ i18n.t('landing.pricing.currency') }} {{ i18n.lang() === 'ar' ? 'رسوم تفعيل لمرة واحدة' : 'one-time activation' }}</p>
         <div class="w-full h-px bg-neutral-100 mb-6"></div>
         <ul class="space-y-3.5 text-sm text-neutral-600 mb-8">
           <li class="flex items-center gap-3"><svg class="w-4 h-4 text-black shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>{{ i18n.lang() === 'ar' ? 'منتجات غير محدودة' : 'Unlimited Items' }}</li>
