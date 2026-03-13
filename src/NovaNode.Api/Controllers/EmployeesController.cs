@@ -90,10 +90,15 @@ public class EmployeesController : BaseApiController
     // ── Absences ──
 
     [HttpGet("absences")]
-    public async Task<IActionResult> GetAbsences([FromQuery] Guid? employeeId, CancellationToken ct)
+    public async Task<IActionResult> GetAbsences(
+        [FromQuery] Guid? employeeId,
+        [FromQuery] DateTime? fromDate,
+        [FromQuery] DateTime? toDate,
+        [FromQuery] bool? isExcused,
+        CancellationToken ct)
     {
         var tenantId = _tenantContext.TenantId!.Value;
-        return Ok(await _svc.GetAbsencesAsync(tenantId, employeeId, ct));
+        return Ok(await _svc.GetAbsencesAsync(tenantId, employeeId, fromDate, toDate, isExcused, ct));
     }
 
     [HttpPost("absences")]
@@ -104,6 +109,16 @@ public class EmployeesController : BaseApiController
         var result = await _svc.CreateAbsenceAsync(tenantId, request, ct);
         await _audit.LogAsync(tenantId, GetUserId(), "Created", "Absence", result.Id.ToString(), null, result.EmployeeName, ct);
         return Created(result);
+    }
+
+    [HttpPut("absences/{id:guid}")]
+    [RequirePermission("employees.manage")]
+    public async Task<IActionResult> UpdateAbsence(Guid id, [FromBody] UpdateAbsenceRequest request, CancellationToken ct)
+    {
+        var tenantId = _tenantContext.TenantId!.Value;
+        var result = await _svc.UpdateAbsenceAsync(tenantId, id, request, ct);
+        await _audit.LogAsync(tenantId, GetUserId(), "Updated", "Absence", id.ToString(), null, result.EmployeeName, ct);
+        return Ok(result);
     }
 
     [HttpDelete("absences/{id:guid}")]

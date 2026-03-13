@@ -186,9 +186,9 @@ export class SettingsStore {
       link.type = 'image/png';
       appleLink.href = resolvedUrl;
     } else {
-      link.href = '/icons/icon-192x192.png';
-      link.type = 'image/png';
-      appleLink.href = '/icons/icon-192x192.png';
+      link.href = '/icons/mobilytics-logo.svg';
+      link.type = 'image/svg+xml';
+      appleLink.href = '/icons/mobilytics-logo.svg';
     }
   }
 

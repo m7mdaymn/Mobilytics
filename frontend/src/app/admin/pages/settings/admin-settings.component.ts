@@ -75,6 +75,14 @@ interface StorePolicies {
                 <input [(ngModel)]="s.headerNoticeText" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-gray-900/10 focus:border-gray-400 outline-none" [placeholder]="i18n.t('settings.headerNoticePlaceholder')" />
                 <p class="text-xs text-gray-400 mt-1">{{ i18n.t('settings.headerNoticeHint') }}</p>
               </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">نص بانر أعلى الهيدر</label>
+                <input [(ngModel)]="s.offerBannerText" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-gray-900/10 focus:border-gray-400 outline-none" placeholder="مثال: خصم 15% لفترة محدودة" />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">رابط البانر</label>
+                <input [(ngModel)]="s.offerBannerUrl" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-gray-900/10 focus:border-gray-400 outline-none" placeholder="/catalog أو https://example.com" />
+              </div>
             </div>
             <button (click)="saveGeneral()" [disabled]="saving()" class="bg-gray-900 hover:bg-black text-white px-5 py-2 rounded-lg text-sm font-semibold transition disabled:opacity-50">
               {{ saving() ? i18n.t('common.saving') : i18n.t('common.save') }}

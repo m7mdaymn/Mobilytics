@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using NovaNode.Domain.Entities;
 using NovaNode.Domain.Enums;
@@ -9,7 +9,7 @@ namespace NovaNode.Infrastructure.Seeding;
 /// <summary>
 /// Seeds default brands, categories, item types, expense categories, and installment providers
 /// when a new tenant is onboarded so the store is immediately usable.
-/// Fully idempotent — safe to call multiple times per tenant.
+/// Fully idempotent ΓÇö safe to call multiple times per tenant.
 /// </summary>
 public static class TenantDefaultDataSeeder
 {
@@ -24,11 +24,11 @@ public static class TenantDefaultDataSeeder
     /// </summary>
     public static async Task SeedAsync(AppDbContext db, Guid tenantId, string? storeName, CancellationToken ct = default)
     {
-        // ── Brands (add any missing by slug) ──
+        // ΓöÇΓöÇ Brands (add any missing by slug) ΓöÇΓöÇ
         var defaultBrands = new (string Name, string Slug, int Order, string? Logo)[]
         {
-            ("Apple", "apple", 0, "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Apple_logo_black.svg/500px-Apple_logo_black.svg.png"),
-            ("Samsung", "samsung", 1, "https://images.samsung.com/is/image/samsung/assets/global/about-us/brand/logo/300_186_4.png?$568_N_PNG$"),
+            ("آبل", "apple", 0, "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Apple_logo_black.svg/500px-Apple_logo_black.svg.png"),
+            ("سامسونج", "samsung", 1, "https://images.samsung.com/is/image/samsung/assets/global/about-us/brand/logo/300_186_4.png?$568_N_PNG$"),
             ("Xiaomi", "xiaomi", 2, "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Xiaomi_logo_%282021-%29.svg/960px-Xiaomi_logo_%282021-%29.svg.png"),
             ("Oppo", "oppo", 3, "https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/OPPO_Logo_wiki.png/960px-OPPO_Logo_wiki.png"),
             ("Realme", "realme", 4, "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Realme_logo.svg/960px-Realme_logo.svg.png"),
@@ -52,14 +52,14 @@ public static class TenantDefaultDataSeeder
         }
         var brands = await db.Brands.Where(b => b.TenantId == tenantId).OrderBy(b => b.DisplayOrder).ToArrayAsync(ct);
 
-        // ── Categories (add any missing by slug, with capability flags) ──
+        // ΓöÇΓöÇ Categories (add any missing by slug, with capability flags) ΓöÇΓöÇ
         var defaultCategories = new (string Name, string Slug, int Order, bool IsDevice, bool IsStock, bool IMEI, bool Serial, bool Battery, bool Warranty)[]
         {
-            ("Smartphones", "smartphones", 0, true, false, true, false, true, true),
-            ("Used Phones", "used-phones", 1, true, false, true, true, true, true),
-            ("Tablets", "tablets", 2, true, false, true, true, true, true),
-            ("Laptops", "laptops", 3, true, false, false, true, true, true),
-            ("Accessories", "accessories", 4, false, true, false, false, false, false),
+            ("هواتف ذكية", "smartphones", 0, true, false, true, false, true, true),
+            ("هواتف مستعملة", "used-phones", 1, true, false, true, true, true, true),
+            ("أجهزة لوحية", "tablets", 2, true, false, true, true, true, true),
+            ("لابتوبات", "laptops", 3, true, false, false, true, true, true),
+            ("إكسسوارات", "accessories", 4, false, true, false, false, false, false),
         };
         var existingCatSlugs = await db.Categories.Where(c => c.TenantId == tenantId).Select(c => c.Slug).ToListAsync(ct);
         var newCats = defaultCategories.Where(c => !existingCatSlugs.Contains(c.Slug))
@@ -88,15 +88,15 @@ public static class TenantDefaultDataSeeder
         }
         var categories = await db.Categories.Where(c => c.TenantId == tenantId).OrderBy(c => c.DisplayOrder).ToArrayAsync(ct);
 
-        // ── Item Types (add any missing by slug) ──
+        // ΓöÇΓöÇ Item Types (add any missing by slug) ΓöÇΓöÇ
         var existingTypeSlugs = await db.ItemTypes.Where(it => it.TenantId == tenantId).Select(it => it.Slug).ToListAsync(ct);
         var defaultTypes = new (string Name, string Slug, bool IsDevice, bool IsStock, bool IMEI, bool Serial, bool Battery, bool Warranty, int Order)[]
         {
-            ("Smartphone", "smartphone", true, false, true, false, true, true, 0),
-            ("Tablet", "tablet", true, false, true, true, true, true, 1),
-            ("Laptop", "laptop", true, false, false, true, true, true, 2),
-            ("Accessory", "accessory", false, true, false, false, false, false, 3),
-            ("Used Unit", "used-unit", true, false, true, true, true, true, 4),
+            ("هاتف ذكي", "smartphone", true, false, true, false, true, true, 0),
+            ("جهاز لوحي", "tablet", true, false, true, true, true, true, 1),
+            ("لابتوب", "laptop", true, false, false, true, true, true, 2),
+            ("ملحق", "accessory", false, true, false, false, false, false, 3),
+            ("جهاز مستعمل", "used-unit", true, false, true, true, true, true, 4),
         };
         foreach (var t in defaultTypes.Where(t => !existingTypeSlugs.Contains(t.Slug)))
         {
@@ -112,15 +112,15 @@ public static class TenantDefaultDataSeeder
 
         await db.SaveChangesAsync(ct);
 
-        // ── Resolve actual store name ──
+        // ΓöÇΓöÇ Resolve actual store name ΓöÇΓöÇ
         var resolvedName = storeName;
         if (string.IsNullOrWhiteSpace(resolvedName))
         {
             var tenant = await db.Tenants.AsNoTracking().FirstOrDefaultAsync(t => t.Id == tenantId, ct);
-            resolvedName = tenant?.Name ?? "New Store";
+            resolvedName = tenant?.Name ?? "متجر جديد";
         }
 
-        // ── Ensure StoreSettings exist ──
+        // ΓöÇΓöÇ Ensure StoreSettings exist ΓöÇΓöÇ
         if (!await db.StoreSettings.AnyAsync(ss => ss.TenantId == tenantId, ct))
         {
             db.StoreSettings.Add(new StoreSettings
@@ -130,87 +130,87 @@ public static class TenantDefaultDataSeeder
                 CurrencyCode = "EGP",
                 ThemePresetId = 1,
                 SystemThemeId = 4,
-                HeaderNoticeText = $"🚚 Free Delivery | ✅ Warranty on all products | 💳 Installment plans available",
-                AboutTitle = $"Welcome to {resolvedName}",
-                AboutDescription = $"{resolvedName} is your trusted destination for the latest smartphones, tablets, laptops and accessories. We offer genuine products with manufacturer warranty, flexible installment plans, and exceptional after-sales support. Whether you're looking for the newest flagship or a quality pre-owned device, we've got you covered with competitive prices and personalized service.",
+                HeaderNoticeText = $"🚚 توصيل مجاني | 🛡 ضمان على جميع المنتجات | 💳 خطط تقسيط متاحة",
+                AboutTitle = $"مرحباً بك في {resolvedName}",
+                AboutDescription = $"{resolvedName} وجهتك الموثوقة لأحدث الهواتف الذكية والأجهزة اللوحية واللابتوبات والإكسسوارات. نوفر منتجات أصلية بضمان رسمي وخيارات تقسيط مرنة ودعم ما بعد البيع باحترافية.",
                 AboutImageUrl = null,
                 HeroBannersJson = $@"[
-                    {{""imageUrl"":""https://images.unsplash.com/photo-1616348436168-de43ad0db179?w=1600&q=80"",""title"":""Welcome to {resolvedName}"",""subtitle"":""Your trusted destination for smartphones, tablets & accessories"",""linkUrl"":""/catalog""}},
-                    {{""imageUrl"":""https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=1600&q=80"",""title"":""Latest Smartphones"",""subtitle"":""Discover the newest arrivals with warranty & installment options"",""linkUrl"":""/catalog""}},
-                    {{""imageUrl"":""https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=1600&q=80"",""title"":""Buy Now, Pay Later"",""subtitle"":""Flexible installment plans with 0% interest from top providers"",""linkUrl"":""/catalog?installmentAvailable=true""}},
-                    {{""imageUrl"":""https://images.unsplash.com/photo-1592899677977-9c10ca588bbd?w=1600&q=80"",""title"":""Certified Pre-Owned"",""subtitle"":""Quality checked used phones at unbeatable prices"",""linkUrl"":""/catalog?condition=Used""}},
-                    {{""imageUrl"":""https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=1600&q=80"",""title"":""Accessories & More"",""subtitle"":""Cases, chargers, earphones and everything your device needs"",""linkUrl"":""/catalog?category=accessories""}}
+                    {{""imageUrl"":""https://images.unsplash.com/photo-1616348436168-de43ad0db179?w=1600&q=80"",""title"":""مرحباً بك في {resolvedName}"",""subtitle"":""وجهتك الموثوقة للهواتف والأجهزة والإكسسوارات"",""linkUrl"":""/catalog""}},
+                    {{""imageUrl"":""https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=1600&q=80"",""title"":""أحدث الهواتف الذكية"",""subtitle"":""اكتشف أحدث الإصدارات مع ضمان وخيارات تقسيط"",""linkUrl"":""/catalog""}},
+                    {{""imageUrl"":""https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=1600&q=80"",""title"":""اشتري الآن وادفع لاحقاً"",""subtitle"":""خطط تقسيط مرنة من أفضل الجهات"",""linkUrl"":""/catalog?installmentAvailable=true""}},
+                    {{""imageUrl"":""https://images.unsplash.com/photo-1592899677977-9c10ca588bbd?w=1600&q=80"",""title"":""أجهزة مستعملة مضمونة"",""subtitle"":""هواتف مستعملة مفحوصة بأسعار منافسة"",""linkUrl"":""/catalog?condition=Used""}},
+                    {{""imageUrl"":""https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=1600&q=80"",""title"":""إكسسوارات وأكثر"",""subtitle"":""جرابات وشواحن وسماعات وكل ما يحتاجه جهازك"",""linkUrl"":""/catalog?category=accessories""}}
                 ]",
                 TestimonialsJson = @"[
-                    {""name"":""Ahmed M."",""text"":""Excellent store with genuine products and great prices. The installment plan made it easy to get the latest iPhone. Highly recommend!"",""rating"":5},
-                    {""name"":""Sara K."",""text"":""Fast delivery and amazing customer service. They answered all my questions on WhatsApp instantly. Will definitely buy again."",""rating"":5},
-                    {""name"":""Omar H."",""text"":""Best phone store in the area. Bought a Samsung Galaxy and the warranty support has been outstanding."",""rating"":4},
-                    {""name"":""Fatma A."",""text"":""Great selection of accessories at competitive prices. The team helped me pick the perfect case and screen protector."",""rating"":5},
-                    {""name"":""Mahmoud R."",""text"":""Bought a used iPhone in perfect condition. The 30-day warranty gave me confidence. Very professional store."",""rating"":5}
+                    {""name"":""أحمد م."",""text"":""المتجر ممتاز ومنتجاته أصلية وأسعاره قوية. التقسيط كان سهل جداً."",""rating"":5},
+                    {""name"":""سارة ك."",""text"":""التوصيل سريع وخدمة العملاء رائعة. ردوا على كل أسئلتي فوراً."",""rating"":5},
+                    {""name"":""عمر ح."",""text"":""أفضل متجر موبايلات في المنطقة. اشتريت جهاز وضمانه ممتاز."",""rating"":4},
+                    {""name"":""فاطمة أ."",""text"":""تشكيلة الإكسسوارات ممتازة والأسعار مناسبة جداً."",""rating"":5},
+                    {""name"":""محمود ر."",""text"":""اشتريت آيفون مستعمل بحالة ممتازة وتعامل احترافي جداً."",""rating"":5}
                 ]",
-                FooterAddress = "Cairo, Egypt",
-                WorkingHours = "10:00 AM - 10:00 PM, Saturday - Thursday",
+                FooterAddress = "القاهرة، مصر",
+                WorkingHours = "10:00 ص - 10:00 م، من السبت إلى الخميس",
                 MapUrl = null,
                 SocialLinksJson = @"{""facebook"":"""",""instagram"":"""",""tiktok"":"""",""twitter"":"""",""whatsapp"":""""}",
                 PoliciesJson = @"{
-                    ""return"":""We offer a 14-day return policy on all unused products in their original packaging. Used devices have a 7-day return window. Items must be in their original condition with all accessories included. Refunds are processed within 3-5 business days."",
-                    ""warranty"":""All new devices come with full manufacturer warranty (typically 12 months). Used devices include a 30-day store warranty covering hardware defects. Extended warranty options are available at purchase."",
-                    ""privacy"":""We respect your privacy and are committed to protecting your personal information. We collect only the data necessary to process your orders and provide customer service. Your information is never shared with third parties without your consent."",
-                    ""shipping"":""We offer free delivery within the city for orders above 2000 EGP. Standard delivery takes 1-3 business days. Express same-day delivery is available for an additional fee."",
-                    ""terms"":""By using our services, you agree to these terms. Prices are subject to change without notice. All sales are final for opened software products. We reserve the right to limit quantities.""
+                    ""return"":""نوفر سياسة استرجاع خلال 14 يوماً للمنتجات الجديدة غير المستخدمة، و7 أيام للأجهزة المستعملة."",
+                    ""warranty"":""الأجهزة الجديدة بضمان الشركة المصنعة، والمستعملة بضمان متجر لا يقل عن 30 يوماً."",
+                    ""privacy"":""نحترم خصوصيتك ونستخدم بياناتك فقط لمعالجة الطلبات وتقديم الخدمة."",
+                    ""shipping"":""نوفر توصيلاً مجانياً داخل المدينة للطلبات المؤهلة، مع خيار توصيل سريع برسوم إضافية."",
+                    ""terms"":""باستخدامك خدماتنا فإنك توافق على الشروط والأحكام، وقد تتغير الأسعار دون إشعار مسبق.""
                 }",
                 FaqJson = @"[
-                    {""question"":""Do you offer installment plans?"",""answer"":""Yes! We partner with leading BNPL providers like ValU, Souhoola, Contact, Shahry and Forsa to offer flexible installment plans with competitive rates starting from 0% interest.""},
-                    {""question"":""What is your return policy?"",""answer"":""We offer a 14-day return policy on all unused products in their original packaging with all accessories. Used devices have a 7-day return window.""},
-                    {""question"":""Do you sell genuine products?"",""answer"":""Absolutely. All our new products are sourced from authorized distributors and come with full manufacturer warranty. Pre-owned devices are thoroughly inspected, certified and graded.""},
-                    {""question"":""How can I contact you?"",""answer"":""You can reach us via WhatsApp for instant support, call us during working hours, or visit our store. We typically respond within minutes!""},
-                    {""question"":""Do you offer warranty on used phones?"",""answer"":""Yes, all pre-owned devices come with a minimum 30-day store warranty covering hardware defects. Extended warranty options are also available.""},
-                    {""question"":""Can I trade in my old phone?"",""answer"":""Yes! We accept trade-ins on most smartphone brands. Bring your device for a free evaluation and get credit towards your new purchase.""},
-                    {""question"":""Do you offer delivery?"",""answer"":""Yes, we offer free delivery within the city for orders above 2000 EGP. Same-day express delivery is also available for an additional fee.""},
-                    {""question"":""What payment methods do you accept?"",""answer"":""We accept cash, InstaPay, bank transfers, and installment plans through our BNPL partners. Choose the method that works best for you.""}
+                    {""question"":""هل لديكم تقسيط؟"",""answer"":""نعم، نوفر خطط تقسيط مرنة مع جهات تمويل متعددة وبنسب تنافسية.""},
+                    {""question"":""ما سياسة الاسترجاع؟"",""answer"":""يمكنك الاسترجاع خلال 14 يوماً للمنتجات الجديدة غير المستخدمة، و7 أيام للأجهزة المستعملة.""},
+                    {""question"":""هل المنتجات أصلية؟"",""answer"":""نعم، جميع المنتجات الجديدة أصلية وبضمان رسمي، والمستعملة مفحوصة ومعتمدة.""},
+                    {""question"":""كيف أتواصل معكم؟"",""answer"":""يمكنك التواصل عبر واتساب أو الاتصال بنا خلال ساعات العمل أو زيارة المتجر.""},
+                    {""question"":""هل يوجد ضمان على المستعمل؟"",""answer"":""نعم، الأجهزة المستعملة عليها ضمان متجر لا يقل عن 30 يوماً.""},
+                    {""question"":""هل يوجد خدمة استبدال؟"",""answer"":""نعم، يمكنك استبدال جهازك القديم بعد تقييمه داخل المتجر.""},
+                    {""question"":""هل يوجد توصيل؟"",""answer"":""نعم، يوجد توصيل مجاني داخل المدينة للطلبات المؤهلة.""},
+                    {""question"":""ما طرق الدفع المتاحة؟"",""answer"":""نقبل الدفع النقدي والتحويلات وخيارات التقسيط المتاحة.""}
                 ]",
-                TrustBadgesJson = @"[""✅ Trusted Store"",""🔒 Genuine Products"",""⚡ Fast Response"",""💳 Installment Available"",""🚚 Free Delivery"",""🛡️ Warranty Included""]",
+                TrustBadgesJson = @"[""✅ متجر موثوق"",""📦 منتجات أصلية"",""⚡ رد سريع"",""💳 تقسيط متاح"",""🚚 توصيل مجاني"",""🛡️ ضمان شامل""]",
                 WhatsAppTemplatesJson = @"[
-                    {""name"":""Welcome"",""template"":""Welcome to our store! 👋 How can we help you today?""},
-                    {""name"":""Price Inquiry"",""template"":""Thank you for your interest! The price for {product} is {price} EGP. Would you like to know about our installment options?""},
-                    {""name"":""Order Confirmation"",""template"":""Your order has been confirmed! 🎉 Order #{orderId}. We will contact you shortly with delivery details.""},
-                    {""name"":""Follow Up"",""template"":""Hi! Just checking in to see if you had any questions about the {product} you were interested in. We're here to help! 😊""},
-                    {""name"":""After Sale"",""template"":""Thank you for your purchase! 🙏 We hope you're enjoying your new {product}. Don't hesitate to reach out if you need anything.""}
+                    {""name"":""ترحيب"",""template"":""أهلاً بك في متجرنا 😊 كيف نقدر نساعدك اليوم؟""},
+                    {""name"":""استفسار سعر"",""template"":""شكراً لاهتمامك! سعر {product} هو {price} جنيه. هل تحب تعرف خيارات التقسيط؟""},
+                    {""name"":""تأكيد طلب"",""template"":""تم تأكيد طلبك بنجاح 🎉 رقم الطلب #{orderId}. سنتواصل معك قريباً بتفاصيل التسليم.""},
+                    {""name"":""متابعة"",""template"":""مرحباً! هل لديك أي استفسار بخصوص {product}؟ نحن جاهزون للمساعدة 😊""},
+                    {""name"":""ما بعد البيع"",""template"":""شكراً لشرائك من متجرنا 🙏 نتمنى أن تستمتع بـ {product}. نحن معك لأي دعم.""}
                 ]",
             });
             await db.SaveChangesAsync(ct);
         }
 
-        // ── Seed default HomeSections (add missing by SectionType) ──
+        // ΓöÇΓöÇ Seed default HomeSections (add missing by SectionType) ΓöÇΓöÇ
         var existingSectionTypes = await db.HomeSections
             .Where(hs => hs.TenantId == tenantId).Select(hs => hs.SectionType).ToListAsync(ct);
 
         var sectionsToAdd = new List<HomeSection>();
         if (!existingSectionTypes.Contains(HomeSectionType.BannerSlider))
-            sectionsToAdd.Add(new HomeSection { TenantId = tenantId, Title = "Hero Banners", SectionType = HomeSectionType.BannerSlider, DisplayOrder = 0, IsActive = true });
+            sectionsToAdd.Add(new HomeSection { TenantId = tenantId, Title = "بنرات رئيسية", SectionType = HomeSectionType.BannerSlider, DisplayOrder = 0, IsActive = true });
         if (!existingSectionTypes.Contains(HomeSectionType.FeaturedItems))
-            sectionsToAdd.Add(new HomeSection { TenantId = tenantId, Title = "Featured Products", SectionType = HomeSectionType.FeaturedItems, DisplayOrder = 1, IsActive = true });
+            sectionsToAdd.Add(new HomeSection { TenantId = tenantId, Title = "منتجات مميزة", SectionType = HomeSectionType.FeaturedItems, DisplayOrder = 1, IsActive = true });
         if (!existingSectionTypes.Contains(HomeSectionType.NewArrivals))
-            sectionsToAdd.Add(new HomeSection { TenantId = tenantId, Title = "New Arrivals", SectionType = HomeSectionType.NewArrivals, DisplayOrder = 2, IsActive = true });
+            sectionsToAdd.Add(new HomeSection { TenantId = tenantId, Title = "وصل حديثاً", SectionType = HomeSectionType.NewArrivals, DisplayOrder = 2, IsActive = true });
 
         HomeSection? categoriesSection = null;
         if (!existingSectionTypes.Contains(HomeSectionType.CategoriesShowcase))
         {
-            categoriesSection = new HomeSection { TenantId = tenantId, Title = "Shop by Category", SectionType = HomeSectionType.CategoriesShowcase, DisplayOrder = 3, IsActive = true };
+            categoriesSection = new HomeSection { TenantId = tenantId, Title = "تسوق حسب التصنيف", SectionType = HomeSectionType.CategoriesShowcase, DisplayOrder = 3, IsActive = true };
             sectionsToAdd.Add(categoriesSection);
         }
 
         HomeSection? brandsSection = null;
         if (!existingSectionTypes.Contains(HomeSectionType.BrandsCarousel))
         {
-            brandsSection = new HomeSection { TenantId = tenantId, Title = "Our Brands", SectionType = HomeSectionType.BrandsCarousel, DisplayOrder = 4, IsActive = true };
+            brandsSection = new HomeSection { TenantId = tenantId, Title = "ماركاتنا", SectionType = HomeSectionType.BrandsCarousel, DisplayOrder = 4, IsActive = true };
             sectionsToAdd.Add(brandsSection);
         }
 
         if (!existingSectionTypes.Contains(HomeSectionType.Testimonials))
-            sectionsToAdd.Add(new HomeSection { TenantId = tenantId, Title = "What Our Customers Say", SectionType = HomeSectionType.Testimonials, DisplayOrder = 5, IsActive = true });
+            sectionsToAdd.Add(new HomeSection { TenantId = tenantId, Title = "آراء العملاء", SectionType = HomeSectionType.Testimonials, DisplayOrder = 5, IsActive = true });
         if (!existingSectionTypes.Contains(HomeSectionType.InstallmentOffers))
-            sectionsToAdd.Add(new HomeSection { TenantId = tenantId, Title = "Installment Offers", SectionType = HomeSectionType.InstallmentOffers, DisplayOrder = 6, IsActive = true });
+            sectionsToAdd.Add(new HomeSection { TenantId = tenantId, Title = "عروض التقسيط", SectionType = HomeSectionType.InstallmentOffers, DisplayOrder = 6, IsActive = true });
 
         if (sectionsToAdd.Count > 0)
         {
@@ -248,9 +248,9 @@ public static class TenantDefaultDataSeeder
             await db.SaveChangesAsync(ct);
         }
 
-        // ── Expense Categories (add missing by name) ──
+        // ΓöÇΓöÇ Expense Categories (add missing by name) ΓöÇΓöÇ
         var existingExpCatNames = await db.ExpenseCategories.Where(ec => ec.TenantId == tenantId).Select(ec => ec.Name).ToListAsync(ct);
-        var defaultExpCats = new[] { "Rent", "Utilities", "Marketing", "Supplies", "Shipping", "Other" };
+        var defaultExpCats = new[] { "إيجار", "مرافق", "تسويق", "مستلزمات", "شحن", "أخرى" };
         var newExpCats = defaultExpCats.Where(n => !existingExpCatNames.Contains(n))
             .Select(n => new ExpenseCategory { TenantId = tenantId, Name = n, IsActive = true })
             .ToArray();
@@ -260,7 +260,7 @@ public static class TenantDefaultDataSeeder
             await db.SaveChangesAsync(ct);
         }
 
-        // ── Installment Providers (add missing by name, with logo URLs) ──
+        // ΓöÇΓöÇ Installment Providers (add missing by name, with logo URLs) ΓöÇΓöÇ
         var existingProviderNames = await db.InstallmentProviders.Where(ip => ip.TenantId == tenantId).Select(ip => ip.Name).ToListAsync(ct);
         var defaultProviders = new (string Name, int Order, string? LogoUrl)[]
         {

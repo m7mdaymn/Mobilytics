@@ -147,13 +147,36 @@ import { resolveImageUrl } from '../../core/utils/image.utils';
     } @else {
     <div class="shell-enter">
 
+    <!--  IMAGE BANNER (top strip above nav)  -->
+    @if (settingsStore.settings()?.bannerUrl) {
+      <div class="bg-gray-900/5 border-b border-gray-100">
+        <div class="max-w-7xl mx-auto px-4 py-2">
+          @if (settingsStore.offerBannerUrl() && isExternalUrl(settingsStore.offerBannerUrl())) {
+            <a [href]="settingsStore.offerBannerUrl()" target="_blank" rel="noopener noreferrer" class="block">
+              <img [src]="resolveImg(settingsStore.settings()!.bannerUrl!)" alt="Store banner" class="w-full h-auto max-h-28 object-cover rounded-xl" />
+            </a>
+          } @else if (settingsStore.offerBannerUrl()) {
+            <a [routerLink]="settingsStore.offerBannerUrl()" class="block">
+              <img [src]="resolveImg(settingsStore.settings()!.bannerUrl!)" alt="Store banner" class="w-full h-auto max-h-28 object-cover rounded-xl" />
+            </a>
+          } @else {
+            <img [src]="resolveImg(settingsStore.settings()!.bannerUrl!)" alt="Store banner" class="w-full h-auto max-h-28 object-cover rounded-xl" />
+          }
+        </div>
+      </div>
+    }
+
     <!--  OFFER BANNER (above nav, dismissible)  -->
     @if (settingsStore.offerBannerText() && !offerBannerDismissed) {
       <div class="bg-gradient-to-r from-[color:var(--color-primary)] to-[color:var(--color-accent)] text-white relative">
         <div class="max-w-7xl mx-auto px-4 py-2 flex items-center justify-center gap-3 text-sm font-semibold text-center">
           <span>🎉 {{ settingsStore.offerBannerText() }}</span>
           @if (settingsStore.offerBannerUrl()) {
-            <a [routerLink]="settingsStore.offerBannerUrl()" class="underline font-bold hover:opacity-80 transition">{{ i18n.t('store.shopNow') }}</a>
+            @if (isExternalUrl(settingsStore.offerBannerUrl())) {
+              <a [href]="settingsStore.offerBannerUrl()" target="_blank" rel="noopener noreferrer" class="underline font-bold hover:opacity-80 transition">{{ i18n.t('store.shopNow') }}</a>
+            } @else {
+              <a [routerLink]="settingsStore.offerBannerUrl()" class="underline font-bold hover:opacity-80 transition">{{ i18n.t('store.shopNow') }}</a>
+            }
           }
           <button (click)="offerBannerDismissed = true" class="absolute end-3 top-1/2 -translate-y-1/2 p-1 hover:opacity-70 transition" aria-label="Dismiss">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
@@ -221,7 +244,7 @@ import { resolveImageUrl } from '../../core/utils/image.utils';
           @if (settingsStore.settings()?.logoUrl) {
             <img [src]="resolveImg(settingsStore.settings()!.logoUrl!)" [alt]="settingsStore.storeName()"
               class="h-9 w-auto group-hover:scale-105 transition-transform duration-300"
-              (error)="$any($event.target).style.display='none'" />
+              (error)="$any($event.target).src='/icons/mobilytics-logo.svg'" />
           } @else {
             <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-[color:var(--color-primary)] to-[color:var(--color-accent)] text-white flex items-center justify-center font-bold text-lg shadow-sm">{{ settingsStore.storeName().charAt(0) }}</div>
           }
@@ -426,7 +449,7 @@ import { resolveImageUrl } from '../../core/utils/image.utils';
             @if (settingsStore.settings()?.logoUrl) {
               <img [src]="resolveImg(settingsStore.settings()!.logoUrl!)" [alt]="settingsStore.storeName()"
                 class="h-8 w-auto max-w-[140px] object-contain"
-                (error)="$any($event.target).style.display='none'; $any($event.target).nextElementSibling?.classList?.remove('hidden')" />
+                (error)="$any($event.target).src='/icons/mobilytics-logo.svg'" />
               <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-[color:var(--color-primary)] to-[color:var(--color-accent)] text-white flex items-center justify-center font-bold text-lg hidden">{{ settingsStore.storeName().charAt(0) }}</div>
             } @else {
               <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-[color:var(--color-primary)] to-[color:var(--color-accent)] text-white flex items-center justify-center font-bold text-lg">{{ settingsStore.storeName().charAt(0) }}</div>
@@ -710,6 +733,11 @@ export class StorefrontShellComponent implements OnInit {
 
   resolveImg(url: string): string {
     return resolveImageUrl(url);
+  }
+
+  isExternalUrl(url: string | null | undefined): boolean {
+    if (!url) return false;
+    return /^https?:\/\//i.test(url);
   }
 
   encodeURI(value: string): string {

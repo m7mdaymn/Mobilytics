@@ -66,6 +66,8 @@ const TRANSLATIONS: Record<string, Record<Lang, string>> = {
   'common.today': { en: 'Today', ar: 'اليوم' },
   'common.home': { en: 'Home', ar: 'الرئيسية' },
   'common.publish': { en: 'Publish', ar: 'نشر' },
+  'common.selectAll': { en: 'Select All', ar: 'تحديد الكل' },
+  'common.deselectAll': { en: 'Clear Selection', ar: 'إلغاء التحديد' },
 
   // ── Auth ──
   'auth.login': { en: 'Login', ar: 'تسجيل الدخول' },
@@ -454,6 +456,7 @@ const TRANSLATIONS: Record<string, Record<Lang, string>> = {
   'items.taxExcluded': { en: 'Exempt', ar: 'معفي' },
   'items.minQty': { en: 'Low Stock Threshold', ar: 'حد المخزون المنخفض' },
   'items.installmentProviders': { en: 'Installment Providers', ar: 'مزودي التقسيط' },
+  'items.installmentNote': { en: 'Calculated based on item price. Actual amounts may vary.', ar: 'يتم الحساب بناءً على سعر المنتج، وقد تختلف القيم النهائية.' },
   'items.selectProviders': { en: 'Select providers', ar: 'اختر مزودي الخدمة' },
   'items.gallery': { en: 'Gallery', ar: 'المعرض' },
   'items.additionalImages': { en: 'Additional Images', ar: 'صور إضافية' },
@@ -483,6 +486,7 @@ const TRANSLATIONS: Record<string, Record<Lang, string>> = {
   'items.loadError': { en: 'Failed to load data', ar: 'فشل تحميل البيانات' },
   'items.validationTitle': { en: 'Title is required', ar: 'العنوان مطلوب' },
   'items.validationType': { en: 'Category is required', ar: 'التصنيف مطلوب' },
+  'items.validationCategory': { en: 'Please select a category', ar: 'يرجى اختيار تصنيف' },
   'items.validationPrice': { en: 'Price must be greater than 0', ar: 'السعر يجب أن يكون أكبر من 0' },
 
   // ── Device Type & Specs ──
@@ -686,6 +690,7 @@ const TRANSLATIONS: Record<string, Record<Lang, string>> = {
   'invoices.deleteFailed': { en: 'Failed to delete invoice', ar: 'فشل حذف الفاتورة' },
   'invoices.availableItems': { en: 'Available Items', ar: 'المنتجات المتاحة' },
   'invoices.lineItems': { en: 'Invoice Items', ar: 'عناصر الفاتورة' },
+  'invoices.print': { en: 'Print', ar: 'طباعة' },
 
   // ── Expenses ──
   'expenses.title': { en: 'Expenses', ar: 'المصاريف' },
@@ -814,6 +819,12 @@ const TRANSLATIONS: Record<string, Record<Lang, string>> = {
   'installments.interestCol': { en: 'Interest', ar: 'الفائدة' },
   'installments.totalCol': { en: 'Total', ar: 'الإجمالي' },
   'installments.monthsSuffix': { en: 'months', ar: 'شهر' },
+  'installments.selectPlans': { en: 'Select Installment Plans', ar: 'اختر خطط التقسيط' },
+  'installments.monthsLabel': { en: 'Months', ar: 'شهر' },
+  'installments.monthUnit': { en: 'mo', ar: 'شهر' },
+  'installments.extraCost': { en: 'extra', ar: 'زيادة' },
+  'installments.enterPrice': { en: 'Enter the item price above to see installment plan details.', ar: 'أدخل سعر المنتج بالأعلى لعرض تفاصيل خطط التقسيط.' },
+  'installments.noExtra': { en: '0% Interest', ar: 'بدون فائدة' },
   'installments.editProvider': { en: 'Edit Provider', ar: 'تعديل المزود' },
   'installments.addProviderTitle': { en: 'Add Provider', ar: 'إضافة مزود' },
   'installments.providerName': { en: 'Name', ar: 'الاسم' },

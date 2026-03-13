@@ -134,10 +134,14 @@ public class EmployeeService : IEmployeeService
     };
 
     // ── Absence ──
-    public async Task<List<EmployeeAbsenceDto>> GetAbsencesAsync(Guid tenantId, Guid? employeeId, CancellationToken ct = default)
+    public async Task<List<EmployeeAbsenceDto>> GetAbsencesAsync(Guid tenantId, Guid? employeeId, DateTime? fromDate, DateTime? toDate, bool? isExcused, CancellationToken ct = default)
     {
         var query = _db.EmployeeAbsences.Include(a => a.Employee).Where(a => a.TenantId == tenantId);
         if (employeeId.HasValue) query = query.Where(a => a.EmployeeId == employeeId.Value);
+        if (fromDate.HasValue) query = query.Where(a => a.AbsenceDate.Date >= fromDate.Value.Date);
+        if (toDate.HasValue) query = query.Where(a => a.AbsenceDate.Date <= toDate.Value.Date);
+        if (isExcused.HasValue) query = query.Where(a => a.IsExcused == isExcused.Value);
+
         return await query.OrderByDescending(a => a.AbsenceDate)
             .Select(a => new EmployeeAbsenceDto
             {
@@ -162,6 +166,32 @@ public class EmployeeService : IEmployeeService
         {
             Id = absence.Id, EmployeeId = absence.EmployeeId, EmployeeName = emp?.Name ?? "",
             AbsenceDate = absence.AbsenceDate, Reason = absence.Reason, Notes = absence.Notes, IsExcused = absence.IsExcused
+        };
+    }
+
+    public async Task<EmployeeAbsenceDto> UpdateAbsenceAsync(Guid tenantId, Guid id, UpdateAbsenceRequest request, CancellationToken ct = default)
+    {
+        var absence = await _db.EmployeeAbsences
+            .Include(a => a.Employee)
+            .FirstOrDefaultAsync(a => a.TenantId == tenantId && a.Id == id, ct)
+            ?? throw new KeyNotFoundException("Absence not found.");
+
+        absence.AbsenceDate = request.AbsenceDate;
+        absence.Reason = request.Reason;
+        absence.Notes = request.Notes;
+        absence.IsExcused = request.IsExcused;
+
+        await _db.SaveChangesAsync(ct);
+
+        return new EmployeeAbsenceDto
+        {
+            Id = absence.Id,
+            EmployeeId = absence.EmployeeId,
+            EmployeeName = absence.Employee.Name,
+            AbsenceDate = absence.AbsenceDate,
+            Reason = absence.Reason,
+            Notes = absence.Notes,
+            IsExcused = absence.IsExcused
         };
     }
 

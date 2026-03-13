@@ -5,7 +5,7 @@ using NovaNode.Application.Interfaces;
 
 namespace NovaNode.Api.Controllers.Platform;
 
-[Authorize(Roles = "SuperAdmin")]
+[Authorize(Roles = "SuperAdmin,PlatformEmployee")]
 [Route("api/v1/platform/tenants")]
 public class PlatformTenantsController : BaseApiController
 {
@@ -73,6 +73,11 @@ public class PlatformTenantsController : BaseApiController
         Ok(await _svc.UpdateStoreSettingsAsync(id, request, ct));
 
     [HttpGet("{id:guid}/stats")]
+    [Authorize(Roles = "SuperAdmin")]
     public async Task<IActionResult> GetStats(Guid id, CancellationToken ct) =>
         Ok(await _svc.GetTenantStatsAsync(id, ct));
+
+    [HttpGet("{id:guid}/operational-stats")]
+    public async Task<IActionResult> GetOperationalStats(Guid id, CancellationToken ct) =>
+        Ok(await _svc.GetTenantOperationalStatsAsync(id, ct));
 }

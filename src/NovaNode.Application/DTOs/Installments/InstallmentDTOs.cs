@@ -90,4 +90,11 @@ public class ItemInstallmentInfoDto
     public string? ProviderLogoUrl { get; set; }
     public int Months { get; set; }
     public decimal DownPayment { get; set; }
+    public decimal MonthlyPayment { get; set; }
+    public decimal AdminFees { get; set; }
+    public decimal TotalAmount { get; set; }
+    public decimal? DownPaymentPercent { get; set; }
+    public decimal? AdminFeesPercent { get; set; }
+    public decimal? InterestRate { get; set; }
+    public string? Notes { get; set; }
 }

@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { PlatformAuthService } from '../../core/services/platform-auth.service';
 import { I18nService } from '../../core/services/i18n.service';
@@ -43,7 +43,7 @@ interface NavItem {
 
         <!-- Nav -->
         <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-1">
-          @for (item of navItems; track item.route) {
+          @for (item of navItems(); track item.route) {
             <a [routerLink]="item.route"
                routerLinkActive="bg-white/15 text-white border-s-2 border-white"
                [routerLinkActiveOptions]="{ exact: item.route === '/superadmin' }"
@@ -63,7 +63,7 @@ interface NavItem {
             </div>
             <div class="flex-1 overflow-hidden">
               <p class="text-sm font-medium truncate">{{ platformAuth.user()?.name || 'SuperAdmin' }}</p>
-              <p class="text-xs text-neutral-400 truncate">{{ platformAuth.user()?.email }}</p>
+              <p class="text-xs text-neutral-400 truncate">{{ platformAuth.user()?.email }} · {{ platformAuth.user()?.role }}</p>
             </div>
             <button (click)="platformAuth.logout()" class="text-neutral-400 hover:text-white p-2" [title]="i18n.t('auth.logout')">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -111,10 +111,15 @@ export class PlatformLayoutComponent {
   readonly i18n = inject(I18nService);
   readonly sidebarOpen = signal(false);
 
-  readonly navItems: NavItem[] = [
+  private readonly allNavItems: NavItem[] = [
     { i18nKey: 'platform.nav.dashboard', icon: '📊', route: '/superadmin' },
     { i18nKey: 'platform.nav.tenants', icon: '🏢', route: '/superadmin/tenants' },
     { i18nKey: 'platform.nav.plans', icon: '💎', route: '/superadmin/plans' },
     { i18nKey: 'platform.nav.subscriptions', icon: '📋', route: '/superadmin/subscriptions' },
   ];
+
+  readonly navItems = computed(() => {
+    if (this.platformAuth.isSuperAdmin()) return this.allNavItems;
+    return this.allNavItems.filter(i => i.route === '/superadmin/tenants');
+  });
 }

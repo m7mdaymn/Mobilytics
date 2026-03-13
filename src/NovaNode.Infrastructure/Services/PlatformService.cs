@@ -218,6 +218,36 @@ public class PlatformService : IPlatformService
         };
     }
 
+    public async Task<TenantStatsDto> GetTenantOperationalStatsAsync(Guid tenantId, CancellationToken ct = default)
+    {
+        var full = await GetTenantStatsAsync(tenantId, ct);
+
+        return new TenantStatsDto
+        {
+            TotalProducts = full.TotalProducts,
+            AvailableProducts = full.AvailableProducts,
+            SoldProducts = full.SoldProducts,
+            TotalInvoices = 0,
+            TotalRevenue = 0,
+            MonthlyRevenue = 0,
+            TotalEmployees = full.TotalEmployees,
+            ActiveEmployees = full.ActiveEmployees,
+            TotalBrands = full.TotalBrands,
+            TotalCategories = full.TotalCategories,
+            TotalLeads = full.TotalLeads,
+            TotalExpenses = full.TotalExpenses,
+            TotalExpenseAmount = 0,
+            RevenueChart = [],
+            TopProducts = full.TopProducts.Select(p => new TopProductDto
+            {
+                Title = p.Title,
+                CategoryName = p.CategoryName,
+                QuantitySold = p.QuantitySold,
+                Price = 0
+            }).ToList()
+        };
+    }
+
     public async Task SuspendTenantAsync(Guid id, CancellationToken ct = default)
     {
         var t = await _db.Tenants.FindAsync([id], ct) ?? throw new KeyNotFoundException("Tenant not found.");
@@ -243,9 +273,14 @@ public class PlatformService : IPlatformService
         // ── Validation ──
         var errors = new List<string>();
         if (string.IsNullOrWhiteSpace(request.StoreName)) errors.Add("Store Name is required.");
+        if (string.IsNullOrWhiteSpace(request.Category)) errors.Add("Store category is required.");
+        if (string.IsNullOrWhiteSpace(request.Location)) errors.Add("Store location is required.");
+        if (string.IsNullOrWhiteSpace(request.NumberOfStores)) errors.Add("Number of stores is required.");
+        if (!request.AgreeTerms) errors.Add("Terms agreement is required.");
         if (string.IsNullOrWhiteSpace(request.Slug)) errors.Add("Slug is required.");
         if (string.IsNullOrWhiteSpace(request.OwnerName)) errors.Add("Owner Name is required.");
         if (string.IsNullOrWhiteSpace(request.OwnerEmail)) errors.Add("Owner Email is required.");
+        if (string.IsNullOrWhiteSpace(request.OwnerPhone)) errors.Add("Owner phone is required.");
         if (string.IsNullOrWhiteSpace(request.OwnerPassword)) errors.Add("Owner Password is required.");
         if (request.OwnerPassword?.Length < 6) errors.Add("Password must be at least 6 characters.");
         if (request.PlanId == Guid.Empty) errors.Add("Plan is required.");
@@ -290,6 +325,28 @@ public class PlatformService : IPlatformService
             Phone = request.OwnerPhone,
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.OwnerPassword),
             Role = "Owner"
+        });
+
+        // 4.5 Registration parity audit record
+        _db.StoreRegistrations.Add(new StoreRegistration
+        {
+            StoreName = request.StoreName,
+            Category = request.Category,
+            Location = request.Location,
+            OwnerName = request.OwnerName,
+            Email = request.OwnerEmail,
+            Phone = request.OwnerPhone!,
+            WhatsApp = request.OwnerWhatsApp,
+            Address = request.Address,
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.OwnerPassword),
+            NumberOfStores = request.NumberOfStores,
+            MonthlyRevenue = null,
+            Source = "PlatformOnboarding",
+            Status = RegistrationStatus.Approved,
+            ApprovalNotes = "Created directly by platform onboarding",
+            ApprovedAt = DateTime.UtcNow,
+            ApprovedByUserId = null,
+            SubmittedAt = DateTime.UtcNow
         });
 
         // 5. Subscription

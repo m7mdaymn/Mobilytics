@@ -71,6 +71,11 @@ export class PlatformApiService {
       .pipe(map(res => this.unwrap(res)));
   }
 
+  getTenantOperationalStats(id: string): Observable<TenantStats> {
+    return this.http.get<ApiResponse<TenantStats>>(`${this.baseUrl}/tenants/${id}/operational-stats`)
+      .pipe(map(res => this.unwrap(res)));
+  }
+
   // Tenant Features
   getTenantFeatures(tenantId: string): Observable<TenantFeatures> {
     return this.http.get<ApiResponse<TenantFeatures>>(`${this.baseUrl}/tenants/${tenantId}/features`)

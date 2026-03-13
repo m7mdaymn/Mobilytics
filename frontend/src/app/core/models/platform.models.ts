@@ -14,7 +14,7 @@ export interface PlatformUser {
   id: string;
   email: string;
   name: string;
-  role: 'SuperAdmin';
+  role: 'SuperAdmin' | 'PlatformEmployee';
 }
 
 export interface Tenant {
@@ -219,6 +219,10 @@ export type SubscriptionStatus = 'Trial' | 'Active' | 'Grace' | 'Expired' | 'Sus
 
 export interface OnboardTenantRequest {
   storeName: string;
+  category: string;
+  location: string;
+  numberOfStores: string;
+  agreeTerms: boolean;
   slug: string;
   storePhone?: string;
   storeWhatsApp?: string;

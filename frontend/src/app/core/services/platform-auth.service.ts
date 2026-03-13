@@ -22,6 +22,7 @@ export class PlatformAuthService {
   readonly user = this._user.asReadonly();
   readonly loading = this._loading.asReadonly();
   readonly isAuthenticated = computed(() => !!this._token());
+  readonly isSuperAdmin = computed(() => this._user()?.role === 'SuperAdmin');
 
   constructor() {
     this.restoreSession();
@@ -54,6 +55,10 @@ export class PlatformAuthService {
     this.router.navigate(['/superadmin/login']);
   }
 
+  hasRole(role: 'SuperAdmin' | 'PlatformEmployee'): boolean {
+    return this._user()?.role === role;
+  }
+
   private restoreSession(): void {
     const token = sessionStorage.getItem(PLATFORM_TOKEN_KEY);
     if (token) {
@@ -79,7 +84,7 @@ export class PlatformAuthService {
         id: payload.sub || payload.nameid,
         email: payload.email,
         name: payload.name || payload.unique_name || 'SuperAdmin',
-        role: 'SuperAdmin',
+        role: (payload.role || payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] || 'SuperAdmin') as 'SuperAdmin' | 'PlatformEmployee',
       };
     } catch {
       return { id: '', email: '', name: 'SuperAdmin', role: 'SuperAdmin' };

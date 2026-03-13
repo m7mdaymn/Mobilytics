@@ -74,7 +74,12 @@ public partial class ItemService : IItemService
         var item = await _db.Items.Include(i => i.Brand).Include(i => i.Category)
             .FirstOrDefaultAsync(i => i.TenantId == tenantId && i.Id == id, ct)
             ?? throw new KeyNotFoundException("Item not found.");
-        return MapDto(item);
+        var dto = MapDto(item);
+        dto.InstallmentPlanIds = await _db.InstallmentPlans
+            .Where(p => p.TenantId == tenantId && p.ItemId == id)
+            .Select(p => p.Id)
+            .ToListAsync(ct);
+        return dto;
     }
 
     public async Task<ItemDto?> GetBySlugAsync(Guid tenantId, string slug, CancellationToken ct = default)
@@ -119,6 +124,8 @@ public partial class ItemService : IItemService
         _db.Items.Add(item);
         await _db.SaveChangesAsync(ct);
 
+        await SyncItemInstallmentPlansAsync(tenantId, item.Id, request.InstallmentAvailable, request.InstallmentPlanIds, ct);
+
         return await GetByIdAsync(tenantId, item.Id, ct);
     }
 
@@ -157,7 +164,72 @@ public partial class ItemService : IItemService
         item.Specs = request.Specs; item.WhatsInTheBox = request.WhatsInTheBox;
         await _db.SaveChangesAsync(ct);
 
+        await SyncItemInstallmentPlansAsync(tenantId, id, request.InstallmentAvailable, request.InstallmentPlanIds, ct);
+
         return await GetByIdAsync(tenantId, item.Id, ct);
+    }
+
+    private async Task SyncItemInstallmentPlansAsync(Guid tenantId, Guid itemId, bool installmentAvailable, List<Guid>? selectedPlanIds, CancellationToken ct)
+    {
+        var selected = (selectedPlanIds ?? []).Distinct().ToList();
+
+        // If installments are disabled for the item, unlink all item-specific plans.
+        if (!installmentAvailable)
+        {
+            var linked = await _db.InstallmentPlans
+                .Where(p => p.TenantId == tenantId && p.ItemId == itemId)
+                .ToListAsync(ct);
+
+            foreach (var p in linked) p.ItemId = null;
+            await _db.SaveChangesAsync(ct);
+            return;
+        }
+
+        var currentlyLinked = await _db.InstallmentPlans
+            .Where(p => p.TenantId == tenantId && p.ItemId == itemId)
+            .ToListAsync(ct);
+
+        // Unlink plans removed from selection.
+        foreach (var p in currentlyLinked.Where(p => !selected.Contains(p.Id)))
+            p.ItemId = null;
+
+        if (selected.Count > 0)
+        {
+            var chosenPlans = await _db.InstallmentPlans
+                .Where(p => p.TenantId == tenantId && selected.Contains(p.Id))
+                .ToListAsync(ct);
+
+            foreach (var plan in chosenPlans)
+            {
+                // Reuse global plans or already-linked plans.
+                if (!plan.ItemId.HasValue || plan.ItemId == itemId)
+                {
+                    plan.ItemId = itemId;
+                    continue;
+                }
+
+                // If plan is linked to another item, clone it so we don't hijack that item's plan.
+                var clone = new InstallmentPlan
+                {
+                    TenantId = tenantId,
+                    ProviderId = plan.ProviderId,
+                    ItemId = itemId,
+                    Months = plan.Months,
+                    DownPayment = plan.DownPayment,
+                    AdminFees = plan.AdminFees,
+                    MonthlyPayment = plan.MonthlyPayment,
+                    TotalAmount = plan.TotalAmount,
+                    Notes = plan.Notes,
+                    IsActive = plan.IsActive,
+                    DownPaymentPercent = plan.DownPaymentPercent,
+                    AdminFeesPercent = plan.AdminFeesPercent,
+                    InterestRate = plan.InterestRate
+                };
+                _db.InstallmentPlans.Add(clone);
+            }
+        }
+
+        await _db.SaveChangesAsync(ct);
     }
 
     public async Task UpdateStatusAsync(Guid tenantId, Guid id, UpdateItemStatusRequest request, CancellationToken ct = default)

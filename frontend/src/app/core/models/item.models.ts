@@ -281,6 +281,16 @@ export interface PermissionEntry {
   isEnabled: boolean;
 }
 
+export interface EmployeeAbsence {
+  id: string;
+  employeeId: string;
+  employeeName: string;
+  absenceDate: string;
+  reason: string;
+  notes?: string | null;
+  isExcused: boolean;
+}
+
 export interface Lead {
   id: string;
   customerName: string;

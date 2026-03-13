@@ -1,9 +1,9 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { CurrencyPipe } from '@angular/common';
+import { CurrencyPipe, DatePipe } from '@angular/common';
 import { ApiService } from '../../../core/services/api.service';
 import { ToastService } from '../../../core/services/toast.service';
-import { Employee } from '../../../core/models/item.models';
+import { Employee, EmployeeAbsence } from '../../../core/models/item.models';
 import { ALL_PERMISSIONS, PermissionKey } from '../../../core/models/auth.models';
 import { SettingsStore } from '../../../core/stores/settings.store';
 import { I18nService } from '../../../core/services/i18n.service';
@@ -11,7 +11,7 @@ import { I18nService } from '../../../core/services/i18n.service';
 @Component({
   selector: 'app-employees',
   standalone: true,
-  imports: [FormsModule, CurrencyPipe],
+  imports: [FormsModule, CurrencyPipe, DatePipe],
   template: `
     <div class="space-y-6">
       <div class="flex items-center justify-between">
@@ -177,6 +177,142 @@ import { I18nService } from '../../../core/services/i18n.service';
           </tbody>
         </table>
       </div>
+
+      <!-- Absence Management -->
+      <div class="bg-white rounded-2xl border border-gray-200 p-5 space-y-4">
+        <div class="flex items-start justify-between gap-3 flex-wrap">
+          <div>
+            <h2 class="text-lg font-semibold text-gray-900">إدارة الغياب</h2>
+            <p class="text-xs text-gray-500 mt-1">تسجيل الغياب، تعديل الحالة، واعتماد أو رفض الأعذار</p>
+          </div>
+          <button (click)="openAbsenceForm()"
+            class="inline-flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            إضافة غياب
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-3 bg-gray-50 rounded-xl p-3">
+          <select [(ngModel)]="absenceFilters.employeeId" (ngModelChange)="loadAbsences()" class="px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
+            <option value="">كل الموظفين</option>
+            @for (emp of employees(); track emp.id) {
+              <option [value]="emp.id">{{ emp.name }}</option>
+            }
+          </select>
+          <input [(ngModel)]="absenceFilters.fromDate" (change)="loadAbsences()" type="date" class="px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+          <input [(ngModel)]="absenceFilters.toDate" (change)="loadAbsences()" type="date" class="px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+          <select [(ngModel)]="absenceFilters.status" (ngModelChange)="loadAbsences()" class="px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
+            <option value="">كل الحالات</option>
+            <option value="pending">معلق</option>
+            <option value="approved">معتمد</option>
+            <option value="rejected">مرفوض</option>
+          </select>
+          <div class="grid grid-cols-3 gap-2">
+            <div class="rounded-lg bg-white border border-gray-200 px-2 py-2 text-center">
+              <div class="text-xs text-gray-500">إجمالي</div>
+              <div class="font-bold text-gray-900">{{ absences().length }}</div>
+            </div>
+            <div class="rounded-lg bg-white border border-green-200 px-2 py-2 text-center">
+              <div class="text-xs text-green-700">معتمد</div>
+              <div class="font-bold text-green-700">{{ approvedCount() }}</div>
+            </div>
+            <div class="rounded-lg bg-white border border-amber-200 px-2 py-2 text-center">
+              <div class="text-xs text-amber-700">معلق</div>
+              <div class="font-bold text-amber-700">{{ pendingCount() }}</div>
+            </div>
+          </div>
+        </div>
+
+        @if (showAbsenceForm()) {
+          <div class="rounded-xl border border-indigo-100 bg-indigo-50/40 p-4 space-y-3">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div>
+                <label class="text-xs text-gray-600 font-medium">الموظف <span class="text-red-500">*</span></label>
+                <select [(ngModel)]="absenceForm.employeeId" class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
+                  <option value="">اختر موظف</option>
+                  @for (emp of employees(); track emp.id) {
+                    <option [value]="emp.id">{{ emp.name }}</option>
+                  }
+                </select>
+              </div>
+              <div>
+                <label class="text-xs text-gray-600 font-medium">تاريخ الغياب <span class="text-red-500">*</span></label>
+                <input [(ngModel)]="absenceForm.absenceDate" type="date" class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+              </div>
+              <div>
+                <label class="text-xs text-gray-600 font-medium">السبب <span class="text-red-500">*</span></label>
+                <input [(ngModel)]="absenceForm.reason" class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="سبب الغياب" />
+              </div>
+              <div class="flex items-end">
+                <label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+                  <input type="checkbox" [(ngModel)]="absenceForm.isExcused" class="w-4 h-4 accent-indigo-600" />
+                  غياب بعذر (معتمد)
+                </label>
+              </div>
+              <div class="md:col-span-2">
+                <label class="text-xs text-gray-600 font-medium">ملاحظات</label>
+                <textarea [(ngModel)]="absenceForm.notes" rows="2" class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="ملاحظات إضافية"></textarea>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <button (click)="saveAbsence()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-semibold">{{ editingAbsenceId() ? 'حفظ التعديل' : 'إضافة الغياب' }}</button>
+              <button (click)="cancelAbsenceForm()" class="px-4 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-gray-800">إلغاء</button>
+            </div>
+          </div>
+        }
+
+        <div class="overflow-x-auto border border-gray-100 rounded-xl">
+          <table class="w-full text-sm">
+            <thead class="bg-gray-50 text-gray-600 text-xs uppercase tracking-wider">
+              <tr>
+                <th class="px-4 py-3 text-start">الموظف</th>
+                <th class="px-4 py-3 text-start">التاريخ</th>
+                <th class="px-4 py-3 text-start">السبب</th>
+                <th class="px-4 py-3 text-start">الحالة</th>
+                <th class="px-4 py-3 text-end">إجراءات</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-50">
+              @if (absenceLoading()) {
+                <tr><td colspan="5" class="px-4 py-8 text-center text-gray-400">جاري تحميل الغيابات...</td></tr>
+              } @else {
+                @for (a of absences(); track a.id) {
+                  <tr class="hover:bg-gray-50/70">
+                    <td class="px-4 py-3 font-medium text-gray-900">{{ a.employeeName }}</td>
+                    <td class="px-4 py-3 text-gray-600">{{ a.absenceDate | date:'yyyy-MM-dd' }}</td>
+                    <td class="px-4 py-3 text-gray-600">
+                      <div class="font-medium text-gray-800">{{ a.reason }}</div>
+                      @if (a.notes) {
+                        <div class="text-xs text-gray-400 mt-0.5">{{ a.notes }}</div>
+                      }
+                    </td>
+                    <td class="px-4 py-3">
+                      <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold"
+                        [class]="a.isExcused ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'">
+                        {{ a.isExcused ? 'معتمد' : 'معلق/مرفوض' }}
+                      </span>
+                    </td>
+                    <td class="px-4 py-3">
+                      <div class="flex items-center justify-end gap-2">
+                        @if (!a.isExcused) {
+                          <button (click)="setAbsenceStatus(a, true)" class="text-xs px-2 py-1 rounded-md bg-green-50 text-green-700 hover:bg-green-100">اعتماد</button>
+                        }
+                        @if (a.isExcused) {
+                          <button (click)="setAbsenceStatus(a, false)" class="text-xs px-2 py-1 rounded-md bg-amber-50 text-amber-700 hover:bg-amber-100">رفض</button>
+                        }
+                        <button (click)="editAbsence(a)" class="text-xs px-2 py-1 rounded-md bg-indigo-50 text-indigo-700 hover:bg-indigo-100">تعديل</button>
+                        <button (click)="deleteAbsence(a)" class="text-xs px-2 py-1 rounded-md bg-red-50 text-red-700 hover:bg-red-100">حذف</button>
+                      </div>
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr><td colspan="5" class="px-4 py-8 text-center text-gray-400">لا توجد بيانات غياب مطابقة للفلاتر.</td></tr>
+                }
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   `,
 })
@@ -190,8 +326,15 @@ export class EmployeesComponent implements OnInit {
   readonly showForm = signal(false);
   readonly editId = signal<string | null>(null);
   readonly saving = signal(false);
+  readonly absences = signal<EmployeeAbsence[]>([]);
+  readonly absenceLoading = signal(false);
+  readonly showAbsenceForm = signal(false);
+  readonly editingAbsenceId = signal<string | null>(null);
 
   readonly allPermissions = ALL_PERMISSIONS;
+
+  readonly approvedCount = computed(() => this.absences().filter(a => a.isExcused).length);
+  readonly pendingCount = computed(() => this.absences().filter(a => !a.isExcused).length);
 
   form: {
     name: string; email: string; phone: string; role: string;
@@ -201,10 +344,42 @@ export class EmployeesComponent implements OnInit {
     salaryMonthly: 0, password: '', isActive: true, enabledPermissions: new Set(),
   };
 
+  absenceForm: {
+    employeeId: string;
+    absenceDate: string;
+    reason: string;
+    notes: string;
+    isExcused: boolean;
+  } = {
+    employeeId: '',
+    absenceDate: '',
+    reason: '',
+    notes: '',
+    isExcused: false,
+  };
+
+  absenceFilters: {
+    employeeId: string;
+    fromDate: string;
+    toDate: string;
+    status: '' | 'pending' | 'approved' | 'rejected';
+  } = {
+    employeeId: '',
+    fromDate: '',
+    toDate: '',
+    status: '',
+  };
+
   ngOnInit(): void { this.load(); }
 
   load(): void {
-    this.api.get<Employee[]>('/Employees').subscribe(d => this.employees.set(d || []));
+    this.api.get<Employee[]>('/Employees').subscribe({
+      next: d => {
+        this.employees.set(d || []);
+        this.loadAbsences();
+      },
+      error: () => this.toastService.error('Failed to load employees'),
+    });
   }
 
   openForm(): void {
@@ -321,6 +496,115 @@ export class EmployeesComponent implements OnInit {
         this.toastService.error(this.i18n.t('employees.permsSaveFailed'));
         this.load();
       },
+    });
+  }
+
+  loadAbsences(): void {
+    const params: Record<string, string> = {};
+    if (this.absenceFilters.employeeId) params['employeeId'] = this.absenceFilters.employeeId;
+    if (this.absenceFilters.fromDate) params['fromDate'] = this.absenceFilters.fromDate;
+    if (this.absenceFilters.toDate) params['toDate'] = this.absenceFilters.toDate;
+    if (this.absenceFilters.status === 'approved') params['isExcused'] = 'true';
+    if (this.absenceFilters.status === 'pending' || this.absenceFilters.status === 'rejected') params['isExcused'] = 'false';
+
+    this.absenceLoading.set(true);
+    this.api.get<EmployeeAbsence[]>('/Employees/absences', params).subscribe({
+      next: data => {
+        this.absences.set(data || []);
+        this.absenceLoading.set(false);
+      },
+      error: () => {
+        this.absenceLoading.set(false);
+        this.toastService.error('Failed to load absences');
+      },
+    });
+  }
+
+  openAbsenceForm(): void {
+    this.editingAbsenceId.set(null);
+    this.absenceForm = {
+      employeeId: '',
+      absenceDate: new Date().toISOString().slice(0, 10),
+      reason: '',
+      notes: '',
+      isExcused: false,
+    };
+    this.showAbsenceForm.set(true);
+  }
+
+  editAbsence(absence: EmployeeAbsence): void {
+    this.editingAbsenceId.set(absence.id);
+    this.absenceForm = {
+      employeeId: absence.employeeId,
+      absenceDate: absence.absenceDate.slice(0, 10),
+      reason: absence.reason,
+      notes: absence.notes || '',
+      isExcused: absence.isExcused,
+    };
+    this.showAbsenceForm.set(true);
+  }
+
+  cancelAbsenceForm(): void {
+    this.showAbsenceForm.set(false);
+    this.editingAbsenceId.set(null);
+  }
+
+  saveAbsence(): void {
+    if (!this.absenceForm.employeeId || !this.absenceForm.absenceDate || !this.absenceForm.reason.trim()) {
+      this.toastService.error('Employee, date and reason are required');
+      return;
+    }
+
+    const body = {
+      employeeId: this.absenceForm.employeeId,
+      absenceDate: this.absenceForm.absenceDate,
+      reason: this.absenceForm.reason.trim(),
+      notes: this.absenceForm.notes.trim() || null,
+      isExcused: this.absenceForm.isExcused,
+    };
+
+    const request$ = this.editingAbsenceId()
+      ? this.api.put(`/Employees/absences/${this.editingAbsenceId()}`, {
+          absenceDate: body.absenceDate,
+          reason: body.reason,
+          notes: body.notes,
+          isExcused: body.isExcused,
+        })
+      : this.api.post('/Employees/absences', body);
+
+    request$.subscribe({
+      next: () => {
+        this.toastService.success(this.editingAbsenceId() ? 'Absence updated' : 'Absence added');
+        this.cancelAbsenceForm();
+        this.loadAbsences();
+      },
+      error: () => this.toastService.error('Failed to save absence'),
+    });
+  }
+
+  setAbsenceStatus(absence: EmployeeAbsence, approved: boolean): void {
+    this.api.put(`/Employees/absences/${absence.id}`, {
+      absenceDate: absence.absenceDate,
+      reason: absence.reason,
+      notes: absence.notes,
+      isExcused: approved,
+    }).subscribe({
+      next: () => {
+        this.toastService.success(approved ? 'Absence approved' : 'Absence rejected');
+        this.loadAbsences();
+      },
+      error: () => this.toastService.error('Failed to update absence status'),
+    });
+  }
+
+  deleteAbsence(absence: EmployeeAbsence): void {
+    if (!confirm(`Delete absence for "${absence.employeeName}" on ${absence.absenceDate.slice(0, 10)}?`)) return;
+    this.api.delete(`/Employees/absences/${absence.id}`).subscribe({
+      next: () => {
+        this.toastService.success('Absence deleted');
+        this.loadAbsences();
+      },
+      error: () => this.toastService.error('Failed to delete absence'),
     });
   }
 }

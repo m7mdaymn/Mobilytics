@@ -122,8 +122,9 @@ public interface IEmployeeService
     Task UpdatePermissionsAsync(Guid tenantId, Guid employeeId, UpdatePermissionsRequest request, CancellationToken ct = default);
     Task<int> GenerateSalaryExpensesAsync(Guid tenantId, string month, Guid userId, CancellationToken ct = default);
     // Absence
-    Task<List<EmployeeAbsenceDto>> GetAbsencesAsync(Guid tenantId, Guid? employeeId, CancellationToken ct = default);
+    Task<List<EmployeeAbsenceDto>> GetAbsencesAsync(Guid tenantId, Guid? employeeId, DateTime? fromDate, DateTime? toDate, bool? isExcused, CancellationToken ct = default);
     Task<EmployeeAbsenceDto> CreateAbsenceAsync(Guid tenantId, CreateAbsenceRequest request, CancellationToken ct = default);
+    Task<EmployeeAbsenceDto> UpdateAbsenceAsync(Guid tenantId, Guid id, UpdateAbsenceRequest request, CancellationToken ct = default);
     Task DeleteAbsenceAsync(Guid tenantId, Guid id, CancellationToken ct = default);
 }
 
@@ -191,6 +192,7 @@ public interface IPlatformService
 
     // Tenant Stats
     Task<TenantStatsDto> GetTenantStatsAsync(Guid tenantId, CancellationToken ct = default);
+    Task<TenantStatsDto> GetTenantOperationalStatsAsync(Guid tenantId, CancellationToken ct = default);
 
     // Store Settings (platform-managed)
     Task<TenantStoreSettingsDto> GetStoreSettingsAsync(Guid tenantId, CancellationToken ct = default);

@@ -19,13 +19,24 @@ public static class DatabaseSeeder
         else
             await db.Database.EnsureCreatedAsync();
 
-        // Seed super-admin
-        if (!await db.PlatformUsers.AnyAsync())
+        // Seed platform users
+        if (!await db.PlatformUsers.AnyAsync(u => u.Email == "admin@novanode.com"))
         {
             db.PlatformUsers.Add(new PlatformUser
             {
                 Email = "admin@novanode.com",
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin@123")
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin@123"),
+                Role = "SuperAdmin"
+            });
+        }
+
+        if (!await db.PlatformUsers.AnyAsync(u => u.Email == "employee@novanode.com"))
+        {
+            db.PlatformUsers.Add(new PlatformUser
+            {
+                Email = "employee@novanode.com",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("Employee@123"),
+                Role = "PlatformEmployee"
             });
         }
 
@@ -35,7 +46,7 @@ public static class DatabaseSeeder
             db.Plans.AddRange(
                 new Plan
                 {
-                    Name = "Trial",
+                    Name = "تجريبية",
                     PriceMonthly = 0m,
                     ActivationFee = 0m,
                     LimitsJson = "{\"maxItems\":20,\"maxEmployees\":2,\"maxImages\":3,\"maxStorageMB\":100}",
@@ -44,7 +55,7 @@ public static class DatabaseSeeder
                 },
                 new Plan
                 {
-                    Name = "Standard",
+                    Name = "قياسية",
                     PriceMonthly = 500m,
                     ActivationFee = 1500m,
                     LimitsJson = "{\"maxItems\":500,\"maxEmployees\":10,\"maxImages\":10,\"maxStorageMB\":2048}",
@@ -53,7 +64,7 @@ public static class DatabaseSeeder
                 },
                 new Plan
                 {
-                    Name = "Premium",
+                    Name = "مميزة",
                     PriceMonthly = 1200m,
                     ActivationFee = 2500m,
                     LimitsJson = "{\"maxItems\":5000,\"maxEmployees\":50,\"maxImages\":20,\"maxStorageMB\":10240}",
@@ -72,7 +83,7 @@ public static class DatabaseSeeder
             var plan = await db.Plans.FirstAsync();
             var tenant = new Tenant
             {
-                Name = "Demo Store",
+                Name = "متجر تجريبي",
                 Slug = "demo",
                 SupportPhone = "+201000000000",
                 SupportWhatsApp = "+201000000000"
@@ -84,11 +95,11 @@ public static class DatabaseSeeder
             db.StoreSettings.Add(new StoreSettings 
             { 
                 TenantId = tenant.Id, 
-                StoreName = "TechHub Electronics",
+                StoreName = "تك هب للإلكترونيات",
                 CurrencyCode = "EGP",
                 ThemePresetId = 1,
                 SystemThemeId = 4,
-                PwaSettingsJson = "{\"shortName\":\"TechHub\",\"description\":\"Your Ultimate Tech Store\"}"
+                PwaSettingsJson = "{\"shortName\":\"تك هب\",\"description\":\"متجرك الذكي للأجهزة والإكسسوارات\"}"
             });
 
             db.TenantFeatureToggles.Add(new TenantFeatureToggle 
@@ -112,7 +123,7 @@ public static class DatabaseSeeder
             db.Employees.Add(new Employee
             {
                 TenantId = tenant.Id,
-                Name = "Owner",
+                Name = "مالك المتجر",
                 Email = "owner@demo.com",
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("Demo@123"),
                 Role = "Owner"
@@ -124,32 +135,32 @@ public static class DatabaseSeeder
             // ===== CATEGORIES =====
             var categories = new[]
             {
-                new Category { TenantId = tenant.Id, Name = "Smartphones", Slug = "smartphones", DisplayOrder = 0 },
-                new Category { TenantId = tenant.Id, Name = "Tablets", Slug = "tablets", DisplayOrder = 1 },
-                new Category { TenantId = tenant.Id, Name = "Laptops", Slug = "laptops", DisplayOrder = 2 },
-                new Category { TenantId = tenant.Id, Name = "Accessories", Slug = "accessories", DisplayOrder = 3 },
-                new Category { TenantId = tenant.Id, Name = "Audio", Slug = "audio", DisplayOrder = 4 },
+                new Category { TenantId = tenant.Id, Name = "هواتف ذكية", Slug = "smartphones", DisplayOrder = 0 },
+                new Category { TenantId = tenant.Id, Name = "أجهزة لوحية", Slug = "tablets", DisplayOrder = 1 },
+                new Category { TenantId = tenant.Id, Name = "لابتوبات", Slug = "laptops", DisplayOrder = 2 },
+                new Category { TenantId = tenant.Id, Name = "إكسسوارات", Slug = "accessories", DisplayOrder = 3 },
+                new Category { TenantId = tenant.Id, Name = "صوتيات", Slug = "audio", DisplayOrder = 4 },
             }.ToList();
             db.Categories.AddRange(categories);
 
             // ===== BRANDS =====
             var brands = new[]
             {
-                new Brand { TenantId = tenant.Id, Name = "Apple", Slug = "apple", LogoUrl = "https://via.placeholder.com/200x100?text=Apple" },
-                new Brand { TenantId = tenant.Id, Name = "Samsung", Slug = "samsung", LogoUrl = "https://via.placeholder.com/200x100?text=Samsung" },
-                new Brand { TenantId = tenant.Id, Name = "Sony", Slug = "sony", LogoUrl = "https://via.placeholder.com/200x100?text=Sony" },
+                new Brand { TenantId = tenant.Id, Name = "آبل", Slug = "apple", LogoUrl = "https://via.placeholder.com/200x100?text=Apple" },
+                new Brand { TenantId = tenant.Id, Name = "سامسونج", Slug = "samsung", LogoUrl = "https://via.placeholder.com/200x100?text=Samsung" },
+                new Brand { TenantId = tenant.Id, Name = "سوني", Slug = "sony", LogoUrl = "https://via.placeholder.com/200x100?text=Sony" },
                 new Brand { TenantId = tenant.Id, Name = "LG", Slug = "lg", LogoUrl = "https://via.placeholder.com/200x100?text=LG" },
-                new Brand { TenantId = tenant.Id, Name = "Dell", Slug = "dell", LogoUrl = "https://via.placeholder.com/200x100?text=Dell" },
+                new Brand { TenantId = tenant.Id, Name = "ديل", Slug = "dell", LogoUrl = "https://via.placeholder.com/200x100?text=Dell" },
             }.ToList();
             db.Brands.AddRange(brands);
 
             // ===== ITEM TYPES =====
             var itemTypes = new[]
             {
-                new ItemType { TenantId = tenant.Id, Name = "Smartphone", Slug = "smartphone", IsDevice = true, IsStockItem = false },
-                new ItemType { TenantId = tenant.Id, Name = "Laptop", Slug = "laptop", IsDevice = true, IsStockItem = false },
-                new ItemType { TenantId = tenant.Id, Name = "Tablet", Slug = "tablet", IsDevice = true, IsStockItem = false },
-                new ItemType { TenantId = tenant.Id, Name = "Accessory", Slug = "accessory", IsDevice = false, IsStockItem = true },
+                new ItemType { TenantId = tenant.Id, Name = "هاتف ذكي", Slug = "smartphone", IsDevice = true, IsStockItem = false },
+                new ItemType { TenantId = tenant.Id, Name = "لابتوب", Slug = "laptop", IsDevice = true, IsStockItem = false },
+                new ItemType { TenantId = tenant.Id, Name = "جهاز لوحي", Slug = "tablet", IsDevice = true, IsStockItem = false },
+                new ItemType { TenantId = tenant.Id, Name = "ملحق", Slug = "accessory", IsDevice = false, IsStockItem = true },
             }.ToList();
             db.ItemTypes.AddRange(itemTypes);
 
@@ -166,7 +177,7 @@ public static class DatabaseSeeder
                     CategoryId = categories[0].Id,
                     BrandId = brands[0].Id,
                     ItemTypeId = itemTypes[0].Id,
-                    Description = "Latest Apple flagship with advanced camera system",
+                    Description = "هاتف آبل الرائد بأحدث تقنيات الكاميرا والأداء",
                     Price = 24999,
                     IsFeatured = true,
                     Status = ItemStatus.Available,
@@ -180,7 +191,7 @@ public static class DatabaseSeeder
                     CategoryId = categories[0].Id,
                     BrandId = brands[1].Id,
                     ItemTypeId = itemTypes[0].Id,
-                    Description = "Premium Android phone with AI features",
+                    Description = "هاتف أندرويد رائد بمزايا ذكاء اصطناعي متقدمة",
                     Price = 23999,
                     IsFeatured = true,
                     Status = ItemStatus.Available,
@@ -194,7 +205,7 @@ public static class DatabaseSeeder
                     CategoryId = categories[1].Id,
                     BrandId = brands[0].Id,
                     ItemTypeId = itemTypes[2].Id,
-                    Description = "High-performance tablet perfect for work and play",
+                    Description = "جهاز لوحي عالي الأداء مناسب للعمل والترفيه",
                     Price = 15999,
                     IsFeatured = true,
                     Status = ItemStatus.Available,
@@ -208,7 +219,7 @@ public static class DatabaseSeeder
                     CategoryId = categories[2].Id,
                     BrandId = brands[0].Id,
                     ItemTypeId = itemTypes[1].Id,
-                    Description = "Powerful laptop for professionals",
+                    Description = "لابتوب قوي للاستخدام الاحترافي",
                     Price = 49999,
                     IsFeatured = true,
                     Status = ItemStatus.Available,
@@ -222,7 +233,7 @@ public static class DatabaseSeeder
                     CategoryId = categories[4].Id,
                     BrandId = brands[2].Id,
                     ItemTypeId = itemTypes[3].Id,
-                    Description = "Premium noise-cancelling headphones",
+                    Description = "سماعات عالية الجودة بعزل ضوضاء احترافي",
                     Price = 3999,
                     IsFeatured = true,
                     Status = ItemStatus.Available,
@@ -231,12 +242,12 @@ public static class DatabaseSeeder
                 new Item 
                 { 
                     TenantId = tenant.Id, 
-                    Title = "USB-C Cable (2m)",
+                    Title = "كابل USB-C بطول 2 متر",
                     Slug = "usb-c-cable-2m",
                     CategoryId = categories[3].Id,
                     BrandId = null,
                     ItemTypeId = itemTypes[3].Id,
-                    Description = "High-quality USB-C charging cable",
+                    Description = "كابل شحن USB-C عالي الجودة",
                     Price = 89,
                     IsFeatured = false,
                     Status = ItemStatus.Available,
@@ -251,7 +262,7 @@ public static class DatabaseSeeder
             var bannerSection = new HomeSection
             {
                 TenantId = tenant.Id,
-                Title = "🔥 Hot Deals This Week",
+                Title = "🔥 عروض الأسبوع",
                 SectionType = HomeSectionType.BannerSlider,
                 DisplayOrder = 0,
                 IsActive = true
@@ -259,7 +270,7 @@ public static class DatabaseSeeder
             var featuredSection = new HomeSection
             {
                 TenantId = tenant.Id,
-                Title = "Featured Products",
+                Title = "منتجات مميزة",
                 SectionType = HomeSectionType.FeaturedItems,
                 DisplayOrder = 1,
                 IsActive = true
@@ -267,7 +278,7 @@ public static class DatabaseSeeder
             var categoriesSection = new HomeSection
             {
                 TenantId = tenant.Id,
-                Title = "Shop By Category",
+                Title = "تسوق حسب التصنيف",
                 SectionType = HomeSectionType.CategoriesShowcase,
                 DisplayOrder = 2,
                 IsActive = true
@@ -275,7 +286,7 @@ public static class DatabaseSeeder
             var brandsSection = new HomeSection
             {
                 TenantId = tenant.Id,
-                Title = "Our Top Brands",
+                Title = "أفضل الماركات",
                 SectionType = HomeSectionType.BrandsCarousel,
                 DisplayOrder = 3,
                 IsActive = true
@@ -285,15 +296,15 @@ public static class DatabaseSeeder
 
             // ===== HOME SECTION ITEMS =====
             db.HomeSectionItems.AddRange(
-                new HomeSectionItem { HomeSectionId = bannerSection.Id, TargetType = HomeSectionTargetType.Url, Title = "Get iPhone 15 Pro Max at Best Price!", ImageUrl = "https://via.placeholder.com/1200x400?text=iPhone+Deal", Url = "/catalog?search=iphone", DisplayOrder = 0 },
-                new HomeSectionItem { HomeSectionId = bannerSection.Id, TargetType = HomeSectionTargetType.Url, Title = "Fresh Samsung Galaxy S24 Arrivals", ImageUrl = "https://via.placeholder.com/1200x400?text=Samsung+Deal", Url = "/catalog?brand=samsung", DisplayOrder = 1 },
-                new HomeSectionItem { HomeSectionId = categoriesSection.Id, TargetType = HomeSectionTargetType.Category, TargetId = categories[0].Id, Title = "Smartphones", ImageUrl = "https://via.placeholder.com/200x200?text=Phones", DisplayOrder = 0 },
-                new HomeSectionItem { HomeSectionId = categoriesSection.Id, TargetType = HomeSectionTargetType.Category, TargetId = categories[1].Id, Title = "Tablets", ImageUrl = "https://via.placeholder.com/200x200?text=Tablets", DisplayOrder = 1 },
-                new HomeSectionItem { HomeSectionId = categoriesSection.Id, TargetType = HomeSectionTargetType.Category, TargetId = categories[2].Id, Title = "Laptops", ImageUrl = "https://via.placeholder.com/200x200?text=Laptops", DisplayOrder = 2 },
-                new HomeSectionItem { HomeSectionId = categoriesSection.Id, TargetType = HomeSectionTargetType.Category, TargetId = categories[3].Id, Title = "Accessories", ImageUrl = "https://via.placeholder.com/200x200?text=Accessories", DisplayOrder = 3 },
-                new HomeSectionItem { HomeSectionId = brandsSection.Id, TargetType = HomeSectionTargetType.Brand, TargetId = brands[0].Id, Title = "Apple", ImageUrl = "https://via.placeholder.com/200x100?text=Apple", DisplayOrder = 0 },
-                new HomeSectionItem { HomeSectionId = brandsSection.Id, TargetType = HomeSectionTargetType.Brand, TargetId = brands[1].Id, Title = "Samsung", ImageUrl = "https://via.placeholder.com/200x100?text=Samsung", DisplayOrder = 1 },
-                new HomeSectionItem { HomeSectionId = brandsSection.Id, TargetType = HomeSectionTargetType.Brand, TargetId = brands[2].Id, Title = "Sony", ImageUrl = "https://via.placeholder.com/200x100?text=Sony", DisplayOrder = 2 }
+                new HomeSectionItem { HomeSectionId = bannerSection.Id, TargetType = HomeSectionTargetType.Url, Title = "احصل على iPhone 15 Pro Max بأفضل سعر", ImageUrl = "https://via.placeholder.com/1200x400?text=iPhone+Deal", Url = "/catalog?search=iphone", DisplayOrder = 0 },
+                new HomeSectionItem { HomeSectionId = bannerSection.Id, TargetType = HomeSectionTargetType.Url, Title = "وصول جديد لهاتف Samsung Galaxy S24", ImageUrl = "https://via.placeholder.com/1200x400?text=Samsung+Deal", Url = "/catalog?brand=samsung", DisplayOrder = 1 },
+                new HomeSectionItem { HomeSectionId = categoriesSection.Id, TargetType = HomeSectionTargetType.Category, TargetId = categories[0].Id, Title = "هواتف ذكية", ImageUrl = "https://via.placeholder.com/200x200?text=Phones", DisplayOrder = 0 },
+                new HomeSectionItem { HomeSectionId = categoriesSection.Id, TargetType = HomeSectionTargetType.Category, TargetId = categories[1].Id, Title = "أجهزة لوحية", ImageUrl = "https://via.placeholder.com/200x200?text=Tablets", DisplayOrder = 1 },
+                new HomeSectionItem { HomeSectionId = categoriesSection.Id, TargetType = HomeSectionTargetType.Category, TargetId = categories[2].Id, Title = "لابتوبات", ImageUrl = "https://via.placeholder.com/200x200?text=Laptops", DisplayOrder = 2 },
+                new HomeSectionItem { HomeSectionId = categoriesSection.Id, TargetType = HomeSectionTargetType.Category, TargetId = categories[3].Id, Title = "إكسسوارات", ImageUrl = "https://via.placeholder.com/200x200?text=Accessories", DisplayOrder = 3 },
+                new HomeSectionItem { HomeSectionId = brandsSection.Id, TargetType = HomeSectionTargetType.Brand, TargetId = brands[0].Id, Title = "آبل", ImageUrl = "https://via.placeholder.com/200x100?text=Apple", DisplayOrder = 0 },
+                new HomeSectionItem { HomeSectionId = brandsSection.Id, TargetType = HomeSectionTargetType.Brand, TargetId = brands[1].Id, Title = "سامسونج", ImageUrl = "https://via.placeholder.com/200x100?text=Samsung", DisplayOrder = 1 },
+                new HomeSectionItem { HomeSectionId = brandsSection.Id, TargetType = HomeSectionTargetType.Brand, TargetId = brands[2].Id, Title = "سوني", ImageUrl = "https://via.placeholder.com/200x100?text=Sony", DisplayOrder = 2 }
             );
 
             await db.SaveChangesAsync();
@@ -313,35 +324,35 @@ public static class DatabaseSeeder
                 Total = plan.ActivationFee + (plan.PriceMonthly * 12),
                 PaymentMethod = PaymentMethod.Cash,
                 PaymentStatus = PaymentStatus.Paid,
-                Notes = "Demo store — full year activation"
+                Notes = "متجر تجريبي - تفعيل لمدة سنة كاملة"
             });
 
             // ===== SAMPLE STORE REGISTRATION (lead) =====
             db.Set<StoreRegistration>().Add(new StoreRegistration
             {
-                StoreName = "ElectroMart",
-                Category = "Electronics",
-                Location = "Cairo, Egypt",
-                OwnerName = "Ahmed Hassan",
+                StoreName = "إلكترو مارت",
+                Category = "إلكترونيات",
+                Location = "القاهرة، مصر",
+                OwnerName = "أحمد حسن",
                 Email = "ahmed@electromart.com",
                 Phone = "+201234567890",
                 NumberOfStores = "2",
                 MonthlyRevenue = "50000-100000",
-                Source = "Facebook Ad",
+                Source = "إعلان فيسبوك",
                 Status = RegistrationStatus.PendingApproval,
                 SubmittedAt = DateTime.UtcNow.AddDays(-2)
             });
             db.Set<StoreRegistration>().Add(new StoreRegistration
             {
-                StoreName = "PhoneZone",
-                Category = "Mobile Phones",
-                Location = "Alexandria, Egypt",
-                OwnerName = "Sara Ali",
+                StoreName = "فون زون",
+                Category = "هواتف محمولة",
+                Location = "الإسكندرية، مصر",
+                OwnerName = "سارة علي",
                 Email = "sara@phonezone.com",
                 Phone = "+201098765432",
                 NumberOfStores = "1",
                 MonthlyRevenue = "20000-50000",
-                Source = "Referral",
+                Source = "إحالة",
                 Status = RegistrationStatus.PendingApproval,
                 SubmittedAt = DateTime.UtcNow.AddDays(-1)
             });

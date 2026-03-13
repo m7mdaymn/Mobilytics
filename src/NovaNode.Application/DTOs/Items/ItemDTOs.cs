@@ -36,6 +36,7 @@ public class ItemDto
     public string? Storage { get; set; }
     public string? RAM { get; set; }
     public bool InstallmentAvailable { get; set; }
+    public List<Guid> InstallmentPlanIds { get; set; } = [];
     public string? Specs { get; set; }
     public string? WhatsInTheBox { get; set; }
     public DateTime CreatedAt { get; set; }
@@ -69,6 +70,7 @@ public class CreateItemRequest
     public string? Storage { get; set; }
     public string? RAM { get; set; }
     public bool InstallmentAvailable { get; set; }
+    public List<Guid>? InstallmentPlanIds { get; set; }
     public string? Specs { get; set; }
     public string? WhatsInTheBox { get; set; }
 }
@@ -100,6 +102,7 @@ public class UpdateItemRequest
     public string? Storage { get; set; }
     public string? RAM { get; set; }
     public bool InstallmentAvailable { get; set; }
+    public List<Guid>? InstallmentPlanIds { get; set; }
     public string? Specs { get; set; }
     public string? WhatsInTheBox { get; set; }
 }

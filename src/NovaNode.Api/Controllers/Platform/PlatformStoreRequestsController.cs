@@ -4,7 +4,7 @@ using NovaNode.Application.Interfaces;
 
 namespace NovaNode.Api.Controllers.Platform;
 
-[Authorize(Roles = "SuperAdmin")]
+[Authorize(Roles = "SuperAdmin,PlatformEmployee")]
 [Route("api/v1/platform/store-requests")]
 public class PlatformStoreRequestsController : BaseApiController
 {

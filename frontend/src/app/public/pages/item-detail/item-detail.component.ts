@@ -1,6 +1,6 @@
 import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { CurrencyPipe } from '@angular/common';
+import { CurrencyPipe, DecimalPipe } from '@angular/common';
 import { ApiService } from '../../../core/services/api.service';
 import { Item, ItemImage, CustomFieldValue, ChecklistItem } from '../../../core/models/item.models';
 import { SettingsStore } from '../../../core/stores/settings.store';
@@ -18,12 +18,30 @@ interface InstallmentPlan {
   providerLogoUrl: string | null;
   months: number;
   downPayment: number;
+  monthlyPayment: number;
+  adminFees: number;
+  totalAmount: number;
+  downPaymentPercent: number | null;
+  adminFeesPercent: number | null;
+  interestRate: number | null;
+  notes: string | null;
+}
+
+interface InstallmentBreakdown {
+  downPaymentPercent: number;
+  adminFeesPercent: number;
+  interestPercent: number;
+  downPaymentAmount: number;
+  adminFeesAmount: number;
+  interestAmount: number;
+  monthlyAmount: number;
+  totalAmount: number;
 }
 
 @Component({
   selector: 'app-item-detail',
   standalone: true,
-  imports: [RouterLink, CurrencyPipe, ItemGalleryComponent, FollowUpModalComponent],
+  imports: [RouterLink, CurrencyPipe, DecimalPipe, ItemGalleryComponent, FollowUpModalComponent],
   template: `
     @if (loading()) {
       <div class="max-w-7xl mx-auto px-4 py-8">
@@ -374,14 +392,41 @@ interface InstallmentPlan {
                           <tr class="text-start text-xs text-gray-500 uppercase tracking-wider border-b border-gray-100">
                             <th class="px-5 py-3 font-medium">{{ i18n.t('store.months') }}</th>
                             <th class="px-5 py-3 font-medium">{{ i18n.t('store.downPayment') }}</th>
+                            <th class="px-5 py-3 font-medium">قسط شهري</th>
+                            <th class="px-5 py-3 font-medium">النسب</th>
+                            <th class="px-5 py-3 font-medium">الإجمالي</th>
                           </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-50">
                           @for (plan of group.plans; track plan.months; let odd = $odd) {
                             <tr [class.bg-gray-50]="odd" class="hover:bg-purple-50/50 transition">
                               <td class="px-5 py-3 font-semibold text-gray-900">{{ plan.months }}</td>
-                              <td class="px-5 py-3 text-gray-700">{{ plan.downPayment | currency: settingsStore.currency() : 'symbol-narrow' : '1.0-0' }}</td>
+                              <td class="px-5 py-3 text-gray-700">
+                                <div class="flex flex-col gap-0.5">
+                                  <span class="font-semibold">{{ installmentBreakdown(plan).downPaymentPercent | number:'1.0-2' }}%</span>
+                                  <span class="text-xs text-gray-500">{{ installmentBreakdown(plan).downPaymentAmount | currency: settingsStore.currency() : 'symbol-narrow' : '1.0-0' }}</span>
+                                </div>
+                              </td>
+                              <td class="px-5 py-3 text-gray-700">
+                                {{ installmentBreakdown(plan).monthlyAmount | currency: settingsStore.currency() : 'symbol-narrow' : '1.0-0' }}
+                              </td>
+                              <td class="px-5 py-3 text-gray-700">
+                                <div class="flex flex-col gap-0.5">
+                                  <span>رسوم: {{ installmentBreakdown(plan).adminFeesPercent | number:'1.0-2' }}%</span>
+                                  <span class="text-[11px] text-indigo-600">فائدة: {{ installmentBreakdown(plan).interestPercent | number:'1.0-2' }}%</span>
+                                </div>
+                              </td>
+                              <td class="px-5 py-3 text-gray-700 font-semibold">
+                                {{ installmentBreakdown(plan).totalAmount | currency: settingsStore.currency() : 'symbol-narrow' : '1.0-0' }}
+                              </td>
                             </tr>
+                            @if (plan.notes) {
+                              <tr>
+                                <td colspan="5" class="px-5 py-2 text-xs text-gray-500 bg-white">
+                                  <span class="font-semibold text-gray-600">ملاحظات:</span> {{ plan.notes }}
+                                </td>
+                              </tr>
+                            }
                           }
                         </tbody>
                       </table>
@@ -469,15 +514,35 @@ interface InstallmentPlan {
                   <span class="text-[10px] text-gray-400 uppercase">{{ group.type }}</span>
                 </div>
                 @for (plan of group.plans; track plan.months) {
-                  <div class="flex items-center justify-between px-4 py-2.5 border-b border-gray-50 last:border-b-0 hover:bg-purple-50/30 transition">
-                    <span class="text-sm text-gray-700">{{ plan.months }} {{ i18n.t('store.months') }}</span>
-                    <div class="text-end">
-                      @if (plan.downPayment > 0) {
-                        <span class="text-sm font-bold text-purple-600">{{ plan.downPayment | currency: settingsStore.currency() : 'symbol-narrow' : '1.0-0' }} {{ i18n.t('store.downPayment') }}</span>
-                      } @else {
-                        <span class="text-sm font-bold text-emerald-600">{{ i18n.t('store.noDownPayment') || 'No Down Payment' }}</span>
-                      }
+                  <div class="px-4 py-2.5 border-b border-gray-50 last:border-b-0 hover:bg-purple-50/30 transition">
+                    <div class="flex items-center justify-between">
+                      <span class="text-sm text-gray-700">{{ plan.months }} {{ i18n.t('store.months') }}</span>
+                      <div class="text-end">
+                        @if (installmentBreakdown(plan).downPaymentPercent > 0) {
+                          <span class="text-sm font-bold text-purple-600">{{ installmentBreakdown(plan).downPaymentPercent | number:'1.0-2' }}% {{ i18n.t('store.downPayment') }}</span>
+                        } @else {
+                          <span class="text-sm font-bold text-emerald-600">{{ i18n.t('store.noDownPayment') || 'No Down Payment' }}</span>
+                        }
+                      </div>
                     </div>
+                    <div class="grid grid-cols-2 gap-2 mt-2 text-[11px] text-gray-500">
+                      <div class="rounded-md bg-white px-2 py-1 border border-gray-100">
+                        <span class="font-semibold">قسط شهري:</span>
+                        {{ installmentBreakdown(plan).monthlyAmount | currency: settingsStore.currency() : 'symbol-narrow' : '1.0-0' }}
+                      </div>
+                      <div class="rounded-md bg-white px-2 py-1 border border-gray-100">
+                        <span class="font-semibold">الرسوم:</span> {{ installmentBreakdown(plan).adminFeesPercent | number:'1.0-2' }}%
+                      </div>
+                      <div class="rounded-md bg-white px-2 py-1 border border-gray-100">
+                        <span class="font-semibold">الفائدة:</span> {{ installmentBreakdown(plan).interestPercent | number:'1.0-2' }}%
+                      </div>
+                      <div class="rounded-md bg-white px-2 py-1 border border-gray-100">
+                        <span class="font-semibold">الإجمالي:</span> {{ installmentBreakdown(plan).totalAmount | currency: settingsStore.currency() : 'symbol-narrow' : '1.0-0' }}
+                      </div>
+                    </div>
+                    @if (plan.notes) {
+                      <p class="text-[11px] text-gray-500 mt-2"><span class="font-semibold">ملاحظات:</span> {{ plan.notes }}</p>
+                    }
                   </div>
                 }
               </div>
@@ -550,8 +615,49 @@ export class ItemDetailComponent implements OnInit {
       }
       group.plans.push(p);
     }
+    for (const group of map.values()) {
+      group.plans.sort((a, b) => a.months - b.months);
+    }
     return Array.from(map.values());
   });
+
+  installmentBreakdown(plan: InstallmentPlan): InstallmentBreakdown {
+    const basePrice = this.item()?.price ?? 0;
+    if (basePrice <= 0 || plan.months <= 0) {
+      return {
+        downPaymentPercent: 0,
+        adminFeesPercent: 0,
+        interestPercent: 0,
+        downPaymentAmount: 0,
+        adminFeesAmount: 0,
+        interestAmount: 0,
+        monthlyAmount: 0,
+        totalAmount: 0,
+      };
+    }
+
+    const downPaymentPercent = plan.downPaymentPercent ?? (plan.downPayment > 0 ? (plan.downPayment / basePrice) * 100 : 0);
+    const adminFeesPercent = plan.adminFeesPercent ?? (plan.adminFees > 0 ? (plan.adminFees / basePrice) * 100 : 0);
+    const interestPercent = plan.interestRate ?? 0;
+
+    const downPaymentAmount = (basePrice * downPaymentPercent) / 100;
+    const adminFeesAmount = (basePrice * adminFeesPercent) / 100;
+    const interestAmount = (basePrice * interestPercent) / 100;
+    const financedAmount = basePrice - downPaymentAmount + adminFeesAmount + interestAmount;
+    const monthlyAmount = financedAmount / plan.months;
+    const totalAmount = downPaymentAmount + financedAmount;
+
+    return {
+      downPaymentPercent,
+      adminFeesPercent,
+      interestPercent,
+      downPaymentAmount,
+      adminFeesAmount,
+      interestAmount,
+      monthlyAmount,
+      totalAmount,
+    };
+  }
 
   // Parse JSON string fields from backend into typed arrays
   readonly parsedGallery = computed<ItemImage[]>(() => {

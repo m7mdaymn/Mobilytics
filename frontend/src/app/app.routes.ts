@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 import { permissionGuard } from './core/guards/permission.guard';
 import { platformAuthGuard } from './core/guards/platform-auth.guard';
+import { platformRoleGuard } from './core/guards/platform-role.guard';
 import { tenantResolverGuard } from './core/guards/tenant-resolver.guard';
 
 export const routes: Routes = [
@@ -79,12 +80,12 @@ export const routes: Routes = [
     loadComponent: () => import('./platform/layout/platform-layout.component').then(m => m.PlatformLayoutComponent),
     canActivate: [platformAuthGuard],
     children: [
-      { path: '', loadComponent: () => import('./platform/pages/dashboard/platform-dashboard.component').then(m => m.PlatformDashboardComponent) },
+      { path: '', canActivate: [platformRoleGuard('SuperAdmin')], loadComponent: () => import('./platform/pages/dashboard/platform-dashboard.component').then(m => m.PlatformDashboardComponent) },
       { path: 'tenants', loadComponent: () => import('./platform/pages/tenants/tenants-list.component').then(m => m.TenantsListComponent) },
       { path: 'tenants/create', loadComponent: () => import('./platform/pages/tenants/tenant-create.component').then(m => m.TenantCreateComponent) },
       { path: 'tenants/:id', loadComponent: () => import('./platform/pages/tenants/tenant-detail.component').then(m => m.TenantDetailComponent) },
-      { path: 'plans', loadComponent: () => import('./platform/pages/plans/plans.component').then(m => m.PlansComponent) },
-      { path: 'subscriptions', loadComponent: () => import('./platform/pages/subscriptions/subscriptions.component').then(m => m.SubscriptionsComponent) },
+      { path: 'plans', canActivate: [platformRoleGuard('SuperAdmin')], loadComponent: () => import('./platform/pages/plans/plans.component').then(m => m.PlansComponent) },
+      { path: 'subscriptions', canActivate: [platformRoleGuard('SuperAdmin')], loadComponent: () => import('./platform/pages/subscriptions/subscriptions.component').then(m => m.SubscriptionsComponent) },
     ],
   },
 

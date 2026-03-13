@@ -123,6 +123,10 @@ public class OnboardTenantRequest
 {
     // Store info
     public string StoreName { get; set; } = string.Empty;
+    public string Category { get; set; } = string.Empty;
+    public string Location { get; set; } = string.Empty;
+    public string NumberOfStores { get; set; } = string.Empty;
+    public bool AgreeTerms { get; set; }
     public string Slug { get; set; } = string.Empty;
     public string? StorePhone { get; set; }
     public string? StoreWhatsApp { get; set; }

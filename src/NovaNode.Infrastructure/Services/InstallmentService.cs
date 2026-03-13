@@ -153,10 +153,16 @@ public class InstallmentService : IInstallmentService
 
     public async Task<List<ItemInstallmentInfoDto>> GetItemInstallmentsAsync(Guid tenantId, Guid itemId, CancellationToken ct = default)
     {
-        return await _db.InstallmentPlans
+        var baseQuery = _db.InstallmentPlans
             .Include(p => p.Provider)
-            .Where(p => p.TenantId == tenantId && p.IsActive && p.Provider.IsActive)
-            .Where(p => p.ItemId == itemId || p.ItemId == null)
+            .Where(p => p.TenantId == tenantId && p.IsActive && p.Provider.IsActive);
+
+        var hasItemSpecificPlans = await baseQuery.AnyAsync(p => p.ItemId == itemId, ct);
+        var filteredQuery = hasItemSpecificPlans
+            ? baseQuery.Where(p => p.ItemId == itemId)
+            : baseQuery.Where(p => p.ItemId == null);
+
+        return await filteredQuery
             .OrderBy(p => p.Months)
             .Select(p => new ItemInstallmentInfoDto
             {
@@ -164,7 +170,14 @@ public class InstallmentService : IInstallmentService
                 ProviderType = p.Provider.Type,
                 ProviderLogoUrl = p.Provider.LogoUrl,
                 Months = p.Months,
-                DownPayment = p.DownPayment
+                DownPayment = p.DownPayment,
+                MonthlyPayment = p.MonthlyPayment,
+                AdminFees = p.AdminFees,
+                TotalAmount = p.TotalAmount,
+                DownPaymentPercent = p.DownPaymentPercent,
+                AdminFeesPercent = p.AdminFeesPercent,
+                InterestRate = p.InterestRate,
+                Notes = p.Notes
             }).ToListAsync(ct);
     }
 

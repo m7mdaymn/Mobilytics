@@ -1,8 +1,9 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { DatePipe, DecimalPipe } from '@angular/common';
 import { PlatformApiService } from '../../../core/services/platform-api.service';
+import { PlatformAuthService } from '../../../core/services/platform-auth.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { Tenant, TenantStoreSettings, UpdateStoreSettingsRequest, PlatformInvoice, TenantStats } from '../../../core/models/platform.models';
 import { environment } from '../../../../environments/environment';
@@ -64,7 +65,7 @@ import { environment } from '../../../../environments/environment';
         <!-- ═══ TAB NAVIGATION ═══ -->
         <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
           <div class="flex border-b border-slate-200 overflow-x-auto">
-            @for (tab of pageTabs; track tab.key) {
+            @for (tab of pageTabs(); track tab.key) {
               <button (click)="activePageTab.set(tab.key)"
                 class="flex items-center gap-2 px-5 py-3.5 text-sm font-medium whitespace-nowrap border-b-2 transition-colors"
                 [class]="activePageTab() === tab.key
@@ -163,15 +164,17 @@ import { environment } from '../../../../environments/environment';
                       <p class="text-2xl font-black text-indigo-900">{{ stats()!.totalProducts }}</p>
                       <p class="text-xs text-indigo-500 mt-1">{{ stats()!.availableProducts }} available &middot; {{ stats()!.soldProducts }} sold</p>
                     </div>
-                    <div class="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-xl p-4">
-                      <p class="text-xs text-emerald-600 font-semibold uppercase mb-1">Revenue</p>
-                      <p class="text-2xl font-black text-emerald-900">{{ stats()!.totalRevenue | number:'1.0-0' }}</p>
-                      <p class="text-xs text-emerald-500 mt-1">{{ stats()!.monthlyRevenue | number:'1.0-0' }} this month</p>
-                    </div>
-                    <div class="bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl p-4">
-                      <p class="text-xs text-amber-600 font-semibold uppercase mb-1">Invoices</p>
-                      <p class="text-2xl font-black text-amber-900">{{ stats()!.totalInvoices }}</p>
-                    </div>
+                    @if (!isFinancialRestricted()) {
+                      <div class="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-xl p-4">
+                        <p class="text-xs text-emerald-600 font-semibold uppercase mb-1">Revenue</p>
+                        <p class="text-2xl font-black text-emerald-900">{{ stats()!.totalRevenue | number:'1.0-0' }}</p>
+                        <p class="text-xs text-emerald-500 mt-1">{{ stats()!.monthlyRevenue | number:'1.0-0' }} this month</p>
+                      </div>
+                      <div class="bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl p-4">
+                        <p class="text-xs text-amber-600 font-semibold uppercase mb-1">Invoices</p>
+                        <p class="text-2xl font-black text-amber-900">{{ stats()!.totalInvoices }}</p>
+                      </div>
+                    }
                     <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-4">
                       <p class="text-xs text-purple-600 font-semibold uppercase mb-1">Employees</p>
                       <p class="text-2xl font-black text-purple-900">{{ stats()!.totalEmployees }}</p>
@@ -194,13 +197,17 @@ import { environment } from '../../../../environments/environment';
                       <p class="text-xs text-slate-500 mt-1">Leads</p>
                     </div>
                     <div class="bg-slate-50 rounded-xl p-4 text-center">
-                      <p class="text-2xl font-bold text-slate-800">{{ stats()!.totalExpenses }} <span class="text-sm font-normal text-slate-400">({{ stats()!.totalExpenseAmount | number:'1.0-0' }})</span></p>
+                      <p class="text-2xl font-bold text-slate-800">{{ stats()!.totalExpenses }}
+                        @if (!isFinancialRestricted()) {
+                          <span class="text-sm font-normal text-slate-400">({{ stats()!.totalExpenseAmount | number:'1.0-0' }})</span>
+                        }
+                      </p>
                       <p class="text-xs text-slate-500 mt-1">Expenses</p>
                     </div>
                   </div>
 
                   <!-- Revenue Chart (Bar) -->
-                  @if (stats()!.revenueChart && stats()!.revenueChart.length > 0) {
+                  @if (!isFinancialRestricted() && stats()!.revenueChart && stats()!.revenueChart.length > 0) {
                     <div class="bg-white rounded-xl border border-slate-200 p-5">
                       <h4 class="font-semibold text-slate-800 mb-4">Revenue — Last 6 Months</h4>
                       <div class="flex items-end gap-3 h-48">
@@ -660,6 +667,7 @@ import { environment } from '../../../../environments/environment';
 })
 export class TenantDetailComponent implements OnInit {
   private readonly api = inject(PlatformApiService);
+  private readonly platformAuth = inject(PlatformAuthService);
   private readonly toast = inject(ToastService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -677,16 +685,30 @@ export class TenantDetailComponent implements OnInit {
   readonly activePageTab = signal('overview');
   readonly stats = signal<TenantStats | null>(null);
   readonly loadingStats = signal(false);
+  readonly isFinancialRestricted = computed(() => !this.platformAuth.isSuperAdmin());
   subEditMonths = 1;
 
-  readonly pageTabs = [
-    { key: 'overview', icon: '📋', label: 'Overview' },
-    { key: 'analytics', icon: '📊', label: 'Analytics' },
-    { key: 'subscription', icon: '💎', label: 'Subscription' },
-    { key: 'settings', icon: '⚙️', label: 'Store Settings' },
-    { key: 'invoices', icon: '🧾', label: 'Invoices' },
-    { key: 'actions', icon: '⚡', label: 'Actions' },
-  ];
+  readonly pageTabs = computed(() => {
+    const baseTabs = [
+      { key: 'overview', icon: '📋', label: 'Overview' },
+      { key: 'analytics', icon: '📊', label: 'Analytics' },
+      { key: 'settings', icon: '⚙️', label: 'Store Settings' },
+      { key: 'actions', icon: '⚡', label: 'Actions' },
+    ];
+
+    if (this.platformAuth.isSuperAdmin()) {
+      return [
+        baseTabs[0],
+        baseTabs[1],
+        { key: 'subscription', icon: '💎', label: 'Subscription' },
+        baseTabs[2],
+        { key: 'invoices', icon: '🧾', label: 'Invoices' },
+        baseTabs[3],
+      ];
+    }
+
+    return baseTabs;
+  });
 
   readonly settingsTabs = [
     { key: 'general', label: 'General' },
@@ -727,6 +749,11 @@ export class TenantDetailComponent implements OnInit {
   }
 
   loadInvoices(): void {
+    if (this.isFinancialRestricted()) {
+      this.invoices.set([]);
+      return;
+    }
+
     const t = this.tenant();
     if (!t) return;
     this.loadingInvoices.set(true);
@@ -743,7 +770,11 @@ export class TenantDetailComponent implements OnInit {
     const t = this.tenant();
     if (!t) return;
     this.loadingStats.set(true);
-    this.api.getTenantStats(t.id).subscribe({
+    const request$ = this.isFinancialRestricted()
+      ? this.api.getTenantOperationalStats(t.id)
+      : this.api.getTenantStats(t.id);
+
+    request$.subscribe({
       next: data => {
         this.stats.set(data);
         this.loadingStats.set(false);

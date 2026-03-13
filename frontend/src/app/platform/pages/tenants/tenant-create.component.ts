@@ -199,6 +199,14 @@ import { environment } from '../../../../environments/environment';
                 <label class="block text-sm font-medium text-slate-700 mb-1">Store Name <span class="text-red-500">*</span></label>
                 <input [(ngModel)]="form.storeName" class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500" placeholder="TechHub Electronics" />
               </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">Store Category <span class="text-red-500">*</span></label>
+                <input [(ngModel)]="form.category" class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500" placeholder="Electronics / Mobile" />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">Number of Branches / Stores <span class="text-red-500">*</span></label>
+                <input [(ngModel)]="form.numberOfStores" class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500" placeholder="1" />
+              </div>
               <div class="md:col-span-2">
                 <label class="block text-sm font-medium text-slate-700 mb-1">Slug <span class="text-red-500">*</span></label>
                 <div class="flex items-center gap-2">
@@ -214,6 +222,10 @@ import { environment } from '../../../../environments/environment';
               <div>
                 <label class="block text-sm font-medium text-slate-700 mb-1">WhatsApp</label>
                 <input [(ngModel)]="form.storeWhatsApp" class="w-full px-4 py-2.5 border border-slate-300 rounded-lg" placeholder="+201000000000" />
+              </div>
+              <div class="md:col-span-2">
+                <label class="block text-sm font-medium text-slate-700 mb-1">Store Location <span class="text-red-500">*</span></label>
+                <input [(ngModel)]="form.location" class="w-full px-4 py-2.5 border border-slate-300 rounded-lg" placeholder="Cairo, Egypt" />
               </div>
               <div class="md:col-span-2">
                 <label class="block text-sm font-medium text-slate-700 mb-1">Address</label>
@@ -274,6 +286,12 @@ import { environment } from '../../../../environments/environment';
                   </div>
                 </div>
               </div>
+              <div class="md:col-span-2">
+                <label class="inline-flex items-center gap-2 cursor-pointer text-sm text-slate-700">
+                  <input type="checkbox" [(ngModel)]="form.agreeTerms" class="w-4 h-4" />
+                  I confirm terms and policy agreement for tenant activation <span class="text-red-500">*</span>
+                </label>
+              </div>
             </div>
           }
 
@@ -290,7 +308,7 @@ import { environment } from '../../../../environments/environment';
                 <input type="email" [(ngModel)]="form.ownerEmail" class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500" placeholder="owner@store.com" />
               </div>
               <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">Owner Phone</label>
+                <label class="block text-sm font-medium text-slate-700 mb-1">Owner Phone <span class="text-red-500">*</span></label>
                 <input [(ngModel)]="form.ownerPhone" class="w-full px-4 py-2.5 border border-slate-300 rounded-lg" placeholder="+201000000000" />
               </div>
               <div>
@@ -402,7 +420,10 @@ import { environment } from '../../../../environments/environment';
               <div class="space-y-3">
                 <h3 class="font-semibold text-slate-700 uppercase text-xs tracking-wide">Store</h3>
                 <div><span class="text-slate-500">Name:</span> {{ form.storeName }}</div>
+                <div><span class="text-slate-500">Category:</span> {{ form.category }}</div>
+                <div><span class="text-slate-500">Branches:</span> {{ form.numberOfStores }}</div>
                 <div><span class="text-slate-500">Slug:</span> <code class="font-mono text-indigo-600">{{ form.slug }}</code></div>
+                <div><span class="text-slate-500">Location:</span> {{ form.location }}</div>
                 @if (form.storePhone) { <div><span class="text-slate-500">Phone:</span> {{ form.storePhone }}</div> }
                 @if (form.storeWhatsApp) { <div><span class="text-slate-500">WhatsApp:</span> {{ form.storeWhatsApp }}</div> }
                 @if (form.address) { <div><span class="text-slate-500">Address:</span> {{ form.address }}</div> }
@@ -485,6 +506,10 @@ export class TenantCreateComponent implements OnInit {
 
   form: OnboardTenantRequest = {
     storeName: '',
+    category: '',
+    location: '',
+    numberOfStores: '1',
+    agreeTerms: false,
     slug: '',
     ownerName: '',
     ownerEmail: '',
@@ -592,13 +617,19 @@ export class TenantCreateComponent implements OnInit {
 
   nextStep(): void {
     this.error.set(null);
-    if (this.step() === 1 && (!this.form.storeName || !this.form.slug)) {
-      this.error.set('Store Name and Slug are required.');
-      return;
+    if (this.step() === 1) {
+      if (!this.form.storeName || !this.form.slug || !this.form.category || !this.form.location || !this.form.numberOfStores) {
+        this.error.set('Store name, category, location, number of stores, and slug are required.');
+        return;
+      }
+      if (!this.form.agreeTerms) {
+        this.error.set('Terms agreement is required.');
+        return;
+      }
     }
     if (this.step() === 2) {
-      if (!this.form.ownerName || !this.form.ownerEmail || !this.form.ownerPassword) {
-        this.error.set('Owner Name, Email, and Password are required.');
+      if (!this.form.ownerName || !this.form.ownerEmail || !this.form.ownerPhone || !this.form.ownerPassword) {
+        this.error.set('Owner name, email, phone, and password are required.');
         return;
       }
       if (this.form.ownerPassword.length < 6) {
@@ -793,7 +824,8 @@ export class TenantCreateComponent implements OnInit {
 
   resetForm(): void {
     this.form = {
-      storeName: '', slug: '', ownerName: '', ownerEmail: '', ownerPassword: '',
+      storeName: '', category: '', location: '', numberOfStores: '1', agreeTerms: false,
+      slug: '', ownerName: '', ownerEmail: '', ownerPassword: '',
       planId: '', durationMonths: 1, isTrial: false,
       activationFeePaid: 0, subscriptionAmountPaid: 0, discount: 0, paymentMethod: 'Cash',
       themePresetId: 1, currencyCode: 'EGP',

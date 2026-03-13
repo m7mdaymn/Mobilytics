@@ -952,6 +952,13 @@ export class ItemFormComponent implements OnInit {
         this.form.specs = item.specs || '';
         this.form.whatsInTheBox = item.whatsInTheBox || '';
 
+        this.selectedPlanIds.clear();
+        const selectedPlanIds = Array.isArray(item.installmentPlanIds) ? item.installmentPlanIds as string[] : [];
+        for (const planId of selectedPlanIds) {
+          if (planId) this.selectedPlanIds.add(planId);
+        }
+        this.syncProviderIdsFromPlans();
+
         // Parse structured specs (JSON array of {label, value} or legacy "key: value" text)
         if (item.specs) {
           try {
@@ -1358,6 +1365,7 @@ export class ItemFormComponent implements OnInit {
       warrantyType: this.form.warrantyType || undefined,
       warrantyMonths: this.form.warrantyMonths ?? undefined,
       installmentAvailable: this.form.installmentAvailable || false,
+      installmentPlanIds: this.form.installmentAvailable ? Array.from(this.selectedPlanIds) : [],
       specs: this.serializeSpecs(),
       whatsInTheBox: this.serializeBoxItems(),
       customFieldsJson: cfValues.length ? JSON.stringify(cfValues) : undefined,
