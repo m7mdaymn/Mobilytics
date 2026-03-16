@@ -1,0 +1,523 @@
+Overview
+
+This phase is analysis/design only. No code was modified.
+
+Current baseline from runtime code:
+- Frontend tenancy is path-based under /store/:slug (frontend/src/app/app.routes.ts, frontend/src/app/core/guards/tenant-resolver.guard.ts, frontend/src/app/core/services/tenant.service.ts).
+- Backend tenancy is resolved from X-Tenant-Slug (src/NovaNode.Api/Middleware/TenantResolutionMiddleware.cs).
+- Tenant isolation is enforced by JWT tenantId claim vs resolved tenant context (src/NovaNode.Api/Middleware/TenantClaimValidationMiddleware.cs).
+- Domain-based tenant routing, domain verification, and host-based resolver are not found in runtime code.
+
+Goal of this design:
+- Define a migration-safe target contract to move from path + header tenancy to domain-based tenancy.
+
+
+Recommended Target Domain Model
+
+1) Recommended domain topology
+- Platform root domain:
+  - Recommended: apex/root hosts platform marketing and public platform pages.
+  - Current relevant references: root frontend app and landing route in frontend/src/app/app.routes.ts.
+- Platform admin domain:
+  - Recommended: dedicated subdomain for platform admin (for example, admin.platform-domain).
+  - Rationale: hard separation from tenant traffic reduces resolver ambiguity and improves policy isolation.
+  - Current state: platform admin is route-based under /superadmin (frontend/src/app/app.routes.ts), not host-separated.
+- Tenant storefront domain:
+  - Recommended: tenant domain root hosts storefront pages (/, /catalog, /item/:itemSlug, etc.) without /store/:slug prefix.
+- Tenant admin domain/URL:
+  - Recommended: /admin and /admin/login on tenant domain (same host as storefront by default).
+  - Rationale: preserves simple tenant context while separating tenant admin surface by path.
+
+2) Tenant domain attachment model
+- Recommended per tenant:
+  - One primary canonical domain (required).
+  - Optional platform subdomain fallback (recommended during and after migration unless product decides otherwise).
+  - Optional custom domain (recommended: one active custom domain initially, expandable later).
+  - Optional additional attached domains: not recommended in first stable target unless product explicitly needs multi-domain aliases.
+- Why this recommendation fits current architecture:
+  - Current Tenant model has a single Slug as identity (src/NovaNode.Domain/Entities/Tenant.cs).
+  - Current resolver sets a single tenant context per request (src/NovaNode.Infrastructure/MultiTenancy/TenantContext.cs).
+  - Current claim validation assumes one resolved tenantId per request (src/NovaNode.Api/Middleware/TenantClaimValidationMiddleware.cs).
+
+3) Canonical host recommendation
+- Recommended canonical policy:
+  - Platform: choose either apex or www as canonical and redirect the other.
+  - Tenant: custom domain canonical when verified and active; platform fallback subdomain remains operational as secondary alias unless product chooses strict canonical-only enforcement.
+- Current code support for canonical host rules: not found.
+
+4) Explicit current-vs-target summary
+- Current:
+  - Tenant URL identity in path (/store/:slug) and header (X-Tenant-Slug).
+- Target:
+  - Tenant URL identity in host/domain first.
+  - Slug becomes identifier/metadata compatibility key, not primary request routing source.
+
+
+Tenant Resolution Precedence Model
+
+Recommended conceptual precedence (during migration):
+
+1) Platform-exempt routing first
+- If request path is exempt platform/infrastructure path, do not resolve tenant.
+- Current exempt shape exists in src/NovaNode.Api/Middleware/TenantResolutionMiddleware.cs:
+  - /api/v1/platform, /api/v1/stores, /swagger, /uploads, /health.
+- Target contract: retain this concept, but apply host-aware platform classification before tenant lookup.
+
+2) Host/domain resolution (primary)
+- If host matches configured platform admin host -> platform context (never tenant).
+- If host matches platform marketing host -> platform context unless route explicitly points to tenant legacy fallback endpoint.
+- If host matches verified tenant custom domain -> resolve tenant by domain mapping.
+- If host matches tenant subdomain pattern -> resolve tenant by subdomain mapping.
+
+3) Legacy fallback resolution (temporary)
+- If no host match and legacy X-Tenant-Slug exists -> resolve tenant by slug (temporary compatibility mode).
+- If host is platform domain and path starts with /store/:slug -> resolve by slug from path (temporary compatibility mode).
+
+4) Optional public route behavior
+- Current optional public prefix exists (/api/v1/public) in TenantResolutionMiddleware.
+- Target contract:
+  - Public endpoints may execute unresolved only for truly tenant-agnostic actions (tenant listing/pricing style endpoints).
+  - Tenant-scoped public endpoints require resolved tenant from host or fallback mechanisms.
+
+5) Admin on tenant domain
+- If host resolves to tenant and path starts with /admin -> tenant admin behavior in same tenant context.
+- If host is tenant but no tenant resolution exists (detached/unverified domain) -> tenant-not-found behavior.
+
+6) Precedence matrix (conceptual)
+- Host = platform admin host:
+  - Behavior: platform admin only, no tenant resolution.
+- Host = platform root host:
+  - Behavior: platform pages.
+  - Legacy exception: /store/:slug may be allowed only during compatibility period.
+- Host = tenant custom domain (verified + active mapping):
+  - Behavior: tenant context from domain mapping.
+- Host = tenant fallback subdomain:
+  - Behavior: tenant context from subdomain mapping.
+- Host unmatched + X-Tenant-Slug present (transition only):
+  - Behavior: legacy tenant resolution.
+- Host unmatched + /store/:slug legacy path on platform host (transition only):
+  - Behavior: legacy tenant resolution.
+- No host match, no valid legacy source:
+  - Behavior: tenant not found.
+
+Post-migration target precedence:
+- Host/domain only for tenant resolution.
+- X-Tenant-Slug fallback removed.
+- /store/:slug behavior becomes redirect-only (or removed per product decision).
+
+
+Transition Compatibility Model
+
+1) Legacy /store/:slug compatibility
+- Recommended: keep temporarily.
+- Behavior during transition:
+  - /store/:slug/* continues to work on platform host.
+  - If tenant has canonical domain, legacy route should redirect to canonical domain equivalent path.
+- Rationale:
+  - Prevents breakage of existing links and bookmarks.
+  - Current route and link estate is large and path-coupled (phase2 inventory).
+
+2) Legacy X-Tenant-Slug compatibility
+- Recommended: keep temporarily for compatibility.
+- Behavior during transition:
+  - Backend accepts host/domain first, then header fallback only if host not resolved.
+- Rationale:
+  - Current frontend interceptor injects X-Tenant-Slug for non-platform calls (frontend/src/app/core/interceptors/api.interceptor.ts).
+
+3) Unified login transition behavior
+- Current contract returns tenantSlug (src/NovaNode.Infrastructure/Services/AuthService.cs, UnifiedLoginAsync).
+- Recommended transition contract:
+  - Continue returning tenantSlug temporarily.
+  - Add resolved tenant URLs (storefront/admin) and primary domain metadata.
+- Rationale:
+  - Existing frontend login redirect uses slug path (frontend/src/app/public/pages/login/unified-login.component.ts).
+
+4) Legacy URL redirection model
+- /store/:slug -> tenant canonical storefront root.
+- /store/:slug/admin -> tenant canonical /admin.
+- /store/:slug/admin/login -> tenant canonical /admin/login.
+- /store/:slug/item/:itemSlug -> tenant canonical /item/:itemSlug.
+- Preserve query/fragment where applicable.
+
+5) Slug history interaction with domain routing
+- Current slug history exists via TenantSlugHistory and /public/resolve-slug/{slug} (src/NovaNode.Domain/Entities/TenantSlugHistory.cs, src/NovaNode.Api/Controllers/PublicController.cs).
+- Recommended transition behavior:
+  - Keep slug history to resolve old slugs to current tenant identity.
+  - After tenant identity found, redirect to canonical domain URL, not to legacy path.
+
+6) Compatibility period behavior needed to avoid user breakage
+- Required temporary capabilities:
+  - Host-first resolver with header/path fallback.
+  - Legacy route redirects with canonical destination.
+  - Login payload backward compatibility (still includes tenantSlug).
+  - Documentation and generated URLs updated in platform pages to avoid sending stale query-param links.
+- Compatibility duration value: product decision required.
+
+
+API Contract Transition Design
+
+1) Endpoints that can remain unchanged (conceptually)
+- Most tenant-scoped controller signatures using ITenantContext can remain unchanged if resolver behavior changes behind the middleware boundary:
+  - Brands/Categories/Items/Invoices/etc. in src/NovaNode.Api/Controllers/*.cs.
+- Platform APIs under /api/v1/platform can remain structurally unchanged.
+- Reason:
+  - Controllers already consume tenantId from context; they do not directly parse host/header except resolver-dependent guards/messages.
+
+2) Endpoints needing payload expansion
+
+A) Unified login
+- Current contract:
+  - Returns tenantSlug, tenantName, tenantActive (AuthService.UnifiedLoginAsync).
+- Future conceptual contract:
+  - Keep tenantSlug (transition).
+  - Add tenantDomain (primary canonical domain).
+  - Add storefrontUrl.
+  - Add adminUrl.
+- Migration rationale:
+  - Frontend can stop constructing path-based URLs from slug and move to returned canonical URLs.
+
+B) Public tenant listing
+- Current contract:
+  - /api/v1/public/tenants returns tenant Id/Slug/Name/LogoUrl (PublicController.GetTenants).
+- Future conceptual contract:
+  - Keep slug (transition/reference).
+  - Add primaryDomain.
+  - Add optional fallbackSubdomain/customDomain indicators.
+  - Add computed storefrontUrl/adminUrl where product wants direct navigation.
+- Migration rationale:
+  - Landing/store discovery should navigate by canonical domain rather than /store/:slug.
+
+C) Slug resolver endpoint
+- Current contract:
+  - /api/v1/public/resolve-slug/{slug} returns { slug, redirect }.
+- Future conceptual contract:
+  - Keep resolve-slug for legacy compatibility.
+  - Supplement with resolve-domain or unified tenant-resolution endpoint for diagnostics/migration tooling.
+- Migration rationale:
+  - Slug endpoint still useful for old bookmarks; domain-native systems need domain-centric resolve semantics.
+
+3) Header behavior transition
+- Current frontend behavior:
+  - Sends X-Tenant-Slug for non-platform calls via interceptor.
+- Future conceptual behavior:
+  - During transition: allow header fallback.
+  - End state: frontend stops sending X-Tenant-Slug; backend resolves from host/domain only.
+- Migration rationale:
+  - Remove conflicting identity sources and reduce spoofing/ambiguity risks.
+
+4) Backend tenant resolution source transition
+- Current: header-first slug lookup in middleware.
+- Future target: host/domain-first lookup, header/path only temporary fallback.
+
+5) Contract-change table (current -> future)
+- /stores/login response:
+  - Current: token + tenantSlug + tenantName + tenantActive.
+  - Future: add tenantDomain + storefrontUrl + adminUrl (keep tenantSlug during transition).
+  - Why: deterministic redirect target without path synthesis.
+
+- /public/tenants response:
+  - Current: id/slug/name/logo.
+  - Future: add domain-facing fields and canonical URLs.
+  - Why: landing should open tenant domain directly.
+
+- Tenant context transport:
+  - Current: X-Tenant-Slug expected in many flows.
+  - Future: host/domain as primary identity source.
+  - Why: domain-based tenancy objective.
+
+
+Data Model Extension Surface
+
+Current base:
+- Tenant has Name, Slug, IsActive, contact/address/map fields (src/NovaNode.Domain/Entities/Tenant.cs).
+- No domain attachment or verification model: not found.
+
+Recommended conceptual surface:
+
+1) Primary domain data
+- Needed fields/concepts:
+  - primaryDomain
+  - primaryDomainType (subdomain/custom)
+  - canonical host flag
+- Why needed:
+  - Canonical URL generation and redirect policy require a single authoritative host.
+- Placement recommendation:
+  - Prefer separate domain mapping entity for flexibility and future aliases; primary reference can be denormalized on Tenant for quick access.
+
+2) Subdomain support
+- Needed fields/concepts:
+  - fallbackSubdomain (or tenantSubdomain label)
+  - fallbackSubdomainEnabled
+- Why needed:
+  - Safe fallback path during migration and recovery if custom domain breaks.
+- Placement recommendation:
+  - Domain mapping entity with domainType=subdomain.
+
+3) Custom domain support
+- Needed fields/concepts:
+  - customDomain (or domain records with type=custom)
+  - isCustomDomainActive
+- Why needed:
+  - Required for domain-based tenancy objective and white-labeling.
+- Placement recommendation:
+  - Domain mapping entity (supports future expansion).
+
+4) Verification surface
+- Needed fields/concepts:
+  - verificationStatus (pending/verified/failed)
+  - verificationMethod (dns-txt/cname/http)
+  - verificationToken / expectedValue
+  - verificationStartedAt / verifiedAt / lastCheckedAt
+  - verificationFailureReason
+- Why needed:
+  - Domain ownership trust and attach/detach lifecycle.
+- Placement recommendation:
+  - Domain mapping entity (verification is per-domain, not per-tenant globally).
+
+5) Domain lifecycle state
+- Needed fields/concepts:
+  - domainStatus (active/inactive/detached)
+  - detachedAt / disabledReason
+- Why needed:
+  - Deterministic runtime behavior for inactive or detached mappings.
+- Placement recommendation:
+  - Domain mapping entity.
+
+6) Redirect/canonical settings
+- Needed fields/concepts:
+  - redirectToPrimary (bool)
+  - preservePathOnRedirect (bool)
+  - adminHostPolicy (same-host vs dedicated-host, if product chooses)
+- Why needed:
+  - Controls redirect behavior when multiple domains exist.
+- Placement recommendation:
+  - Tenant-level defaults + per-domain override if needed.
+
+7) Domain history/alias support
+- Needed fields/concepts:
+  - old domain aliases
+  - replacement target
+  - validUntil (optional)
+- Why needed:
+  - Equivalent of TenantSlugHistory for domain transitions.
+- Placement recommendation:
+  - Separate domain history entity (similar conceptual role to TenantSlugHistory).
+
+Tradeoff grounded in current architecture:
+- Putting all domain fields directly on Tenant is simpler for one-domain-only systems.
+- Current code already has historical alias pattern via TenantSlugHistory, which strongly favors separate mapping/history entities for scalable domain handling.
+
+
+Routing Contract Design
+
+Target conceptual route contract:
+
+1) Platform marketing pages
+- Current route pattern:
+  - / (landing), /login (frontend/src/app/app.routes.ts)
+- Future intended pattern:
+  - Platform host root paths remain for marketing and unified login entry.
+- Legacy path behavior:
+  - /store/:slug legacy routes continue temporarily with redirects.
+- Scope:
+  - Platform-scoped.
+
+2) Platform admin pages
+- Current route pattern:
+  - /superadmin/*
+- Future intended pattern:
+  - Dedicated platform-admin host with same path family (or equivalent), avoiding tenant host conflicts.
+- Legacy path behavior:
+  - Continue temporarily on current host/path until cutover.
+- Scope:
+  - Platform-scoped.
+
+3) Tenant storefront pages
+- Current route pattern:
+  - /store/:slug, /store/:slug/catalog, /store/:slug/item/:itemSlug, etc.
+- Future intended pattern:
+  - Tenant host root: /, /catalog, /item/:itemSlug, /category/:catSlug, /brand/:brandSlug, /type/:typeSlug, /compare, /policies/:key, /about.
+- Legacy path behavior:
+  - Redirect from /store/:slug/... to tenant canonical host equivalents during transition.
+- Scope:
+  - Tenant-scoped.
+
+4) Tenant admin pages
+- Current route pattern:
+  - /store/:slug/admin and /store/:slug/admin/login
+- Future intended pattern:
+  - /admin and /admin/login on tenant host.
+- Legacy path behavior:
+  - Redirect from old path-based admin URLs.
+- Scope:
+  - Tenant-scoped.
+
+5) Custom-domain tenant pages
+- Current route pattern:
+  - not found (runtime host resolution not present).
+- Future intended pattern:
+  - Same tenant storefront/admin paths on custom domain host.
+- Legacy path behavior:
+  - If custom domain is canonical, fallback/subdomain should redirect.
+- Scope:
+  - Tenant-scoped.
+
+6) Blocked/inactive behavior
+- Current route pattern:
+  - /inactive and /store/:slug/admin/blocked patterns in frontend flow.
+- Future intended pattern:
+  - Tenant host-based blocked/inactive pages with same semantic outcomes.
+- Legacy path behavior:
+  - Legacy paths redirect to equivalent host-based blocked/inactive view.
+- Scope:
+  - Tenant-scoped.
+
+7) Tenant-not-found behavior
+- Current route pattern:
+  - /tenant-not-found route in frontend.
+- Future intended pattern:
+  - Tenant-not-found response/page for unresolved tenant hosts or unresolved legacy slug/path.
+- Legacy path behavior:
+  - unchanged semantic, but source can be host resolution failure.
+- Scope:
+  - Platform fallback or tenant resolution fallback.
+
+
+Redirect and Canonical Behavior
+
+1) www behavior (platform)
+- Recommended:
+  - Choose one canonical platform host (apex or www).
+  - Permanently redirect the other to canonical.
+- Current explicit canonical implementation: not found.
+
+2) Platform canonical root
+- Recommended:
+  - Keep one canonical platform root for marketing/unified login.
+  - Keep platform admin on dedicated admin host to avoid tenant resolver collisions.
+
+3) Tenant with both subdomain and custom domain
+- Recommended:
+  - Verified custom domain becomes canonical storefront/admin host.
+  - Fallback subdomain remains active but redirects to canonical unless product explicitly wants dual-live hosts.
+
+4) Old /store/:slug redirect rules
+- Recommended explicit rules:
+  - /store/:slug -> https://{canonical-tenant-host}/
+  - /store/:slug/admin -> https://{canonical-tenant-host}/admin
+  - /store/:slug/admin/login -> https://{canonical-tenant-host}/admin/login
+  - /store/:slug/item/:itemSlug -> https://{canonical-tenant-host}/item/:itemSlug
+  - Preserve query string and fragment where safe.
+
+5) Admin vs storefront redirect differences
+- Recommended:
+  - Admin legacy URLs redirect specifically to /admin equivalents.
+  - Storefront legacy URLs redirect to storefront equivalents.
+  - Avoid sending admin traffic to storefront root.
+
+6) Slug history redirect interaction
+- Recommended:
+  - If slug is old, resolve via slug history first.
+  - Then redirect to canonical domain URL of current tenant identity.
+- Current domain-history equivalent: not found.
+
+7) Domain exists but tenant inactive
+- Recommended:
+  - Host resolves tenant successfully.
+  - Return inactive/blocked behavior consistently (storefront + admin policy).
+- Current analogous behavior:
+  - tenant suspension checks and blocked/inactive redirects exist in current model.
+
+8) Domain unverified or detached
+- Recommended:
+  - Do not resolve to tenant runtime context for unverified/detached mappings.
+  - Show tenant-not-found/unavailable behavior.
+- Current verification-aware behavior: not found.
+
+
+Security and Isolation Considerations
+
+1) Tenant identity trust source
+- Long-term recommended trust source:
+  - Host/domain mapping resolved server-side.
+- Current trust source:
+  - Client-supplied X-Tenant-Slug header.
+- Long-term recommendation for X-Tenant-Slug:
+  - Do not trust as primary source; deprecate after transition.
+
+2) JWT tenantId claim interaction
+- Current strong control:
+  - TenantClaimValidationMiddleware compares JWT claim tenantId with resolved tenant context.
+- Target contract:
+  - Keep this control unchanged conceptually.
+  - Ensure tenant context is resolved from host/domain to prevent header/path spoof source dominance.
+
+3) Conflicting source risks during transition
+- Risk surface:
+  - Host says tenant A, header says tenant B, path says tenant C.
+- Required contract:
+  - Deterministic precedence (host first).
+  - If conflict exists, ignore lower-priority source and optionally log/audit conflict.
+
+4) Admin access isolation implications
+- Current:
+  - Route-based admin checks and slug session mismatch protections.
+- Target:
+  - Admin isolation must continue via JWT claim + resolved tenant context; route shape change must not weaken this.
+
+5) Custom domain infrastructure implications
+- When custom domains point to platform infra, host header becomes security-critical identity input.
+- Required contract (conceptual):
+  - Only verified active domain mappings can resolve tenant context.
+  - Detached/unverified domains must not resolve tenant context.
+
+6) Current missing security features for domain model
+- Domain verification workflow and trust lifecycle controls: not found.
+- Domain attachment authorization/audit workflow: not found.
+
+
+Open Decisions and Required Product Choices
+
+Code-driven conclusions (from current codebase)
+- Frontend and backend are currently path+header coupled for tenancy.
+- Host/domain runtime tenant resolution is not present.
+- Slug is currently both URL key and resolver key.
+- Middleware-based context + claim validation pattern is already suitable to carry forward with a different resolver source.
+
+Product decisions still needed (cannot be finalized from code alone)
+1) Domain attachment policy
+- One custom domain vs multiple attached custom domains.
+
+2) Canonical strategy
+- Should fallback subdomain always remain active, or redirect-only, or disabled after custom domain verification.
+
+3) Platform host strategy
+- Keep platform admin under same host path (/superadmin) or move to dedicated admin host.
+
+4) Tenant admin host strategy
+- Always same host as storefront (/admin path) vs separate admin host.
+
+5) Legacy compatibility duration
+- How long /store/:slug and X-Tenant-Slug fallback should remain supported.
+
+6) Redirect permanence
+- Temporary redirects during migration vs permanent redirect policy for legacy URLs.
+
+7) Domain verification UX/policy
+- Verification method priority (DNS vs HTTP), retry windows, failure behavior, auto-disable rules.
+
+8) Canonical www policy
+- Platform canonical host choice (www vs apex).
+
+9) Multi-region/CDN/domain operations policy
+- Required operational model for custom-domain onboarding and lifecycle.
+
+
+Recommended Next Investigation Step
+
+Phase 4 should be a no-code contract specification package that converts this design into formal artifacts:
+- Source-of-truth resolver contract document (host/header/path precedence + conflict rules).
+- API schema diff specification (current vs transition vs end-state payloads for /stores/login, /public/tenants, and slug/domain resolve endpoints).
+- Route/redirect specification table (legacy path -> canonical domain equivalents, including admin/storefront differences).
+- Domain lifecycle state machine specification (attach, verify, activate, detach, redirect behavior) aligned to current middleware/ITenantContext architecture.
+- Product decision checklist with explicit defaults and open choices to unblock implementation planning.

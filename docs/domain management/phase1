@@ -1,0 +1,245 @@
+Overview
+- Current tenancy model is path-based on the frontend and header-based on the backend.
+- Frontend routes are built around /store/:slug/... and /superadmin/... in frontend/src/app/app.routes.ts.
+- Backend tenant resolution is centralized in src/NovaNode.Api/Middleware/TenantResolutionMiddleware.cs and depends on X-Tenant-Slug for tenant-scoped API routes.
+- Root/default route is landing page at path ''.
+
+Current Frontend Flow
+1) Application route architecture
+- Main/root domain behavior:
+  - '' loads LandingComponent (public landing page).
+  - 'landing' redirects to ''.
+  - Fallback '**' redirects to ''.
+  - Source: frontend/src/app/app.routes.ts.
+- Storefront routing:
+  - Base path: /store/:slug.
+  - Public storefront pages are children under the empty child path of /store/:slug:
+    - '', catalog, type/:typeSlug, category/:catSlug, brands, brand/:brandSlug, item/:itemSlug, compare, policies/:key, about.
+  - Wildcard under storefront redirects to '' (storefront home).
+  - Source: frontend/src/app/app.routes.ts.
+- Tenant admin dashboard routing:
+  - Admin login: /store/:slug/admin/login.
+  - Admin shell: /store/:slug/admin with child routes (dashboard, items, invoices, settings, etc.).
+  - Admin routes are intentionally declared before storefront child route to avoid storefront wildcard catching admin URLs.
+  - Source: frontend/src/app/app.routes.ts.
+- Platform/superadmin routing:
+  - /superadmin/login and /superadmin/... separate from tenant context.
+  - Source: frontend/src/app/app.routes.ts.
+
+2) Tenant resolution in frontend
+- Core resolver components:
+  - Tenant service: frontend/src/app/core/services/tenant.service.ts (TenantService).
+  - Guard: frontend/src/app/core/guards/tenant-resolver.guard.ts (tenantResolverGuard).
+  - Interceptor: frontend/src/app/core/interceptors/api.interceptor.ts (apiInterceptor).
+  - Settings bootstrap after navigation: frontend/src/app/app.component.ts (AppComponent ngOnInit).
+- Exact determination mechanism:
+  - Primary source: route param :slug from /store/:slug.
+  - Guard walks parent route chain to find slug if not on current segment.
+  - Slug validity check: /^[a-z0-9-]+$/ in TenantService.
+  - Not based on hostname, subdomain, or custom domain.
+  - Not based on URL query param for runtime resolution in current router/guard.
+  - Not based on localStorage for tenant resolution.
+  - sessionStorage is used only for auth/session tracking (stored slug key mobilytics_slug), not for initial route resolution.
+- Page-load to tenant-context flow:
+  - User navigates to /store/:slug/... route.
+  - tenantResolverGuard extracts slug and calls tenantService.setSlug(slug).
+  - If missing slug: redirect '/'.
+  - If invalid slug format: redirect '/tenant-not-found'.
+  - If valid, route activates.
+  - On NavigationEnd, AppComponent checks tenantService.resolved() and /store/ prefix; then SettingsStore.loadSettings() requests /api/v1/Public/settings.
+  - apiInterceptor attaches X-Tenant-Slug from TenantService for non-platform API calls.
+  - Tenant context is therefore available in frontend before tenant-scoped API calls.
+- Login flow nuance:
+  - Unified login endpoint /api/v1/stores/login returns tenantSlug and tenantName.
+  - Unified login component sets TenantService slug from response then navigates to /store/{tenantSlug}/admin.
+  - Sources: frontend/src/app/public/pages/login/unified-login.component.ts, frontend/src/app/core/services/auth.service.ts.
+
+Current Backend Flow
+1) Middleware order and request flow
+- Program pipeline order (relevant parts):
+  - UseMiddleware<TenantResolutionMiddleware>()
+  - UseMiddleware<SubscriptionEnforcementMiddleware>()
+  - UseAuthentication()
+  - UseMiddleware<TenantClaimValidationMiddleware>()
+  - UseAuthorization()
+  - Source: src/NovaNode.Api/Program.cs.
+
+2) Tenant resolution mechanism (backend)
+- Primary resolver:
+  - src/NovaNode.Api/Middleware/TenantResolutionMiddleware.cs.
+- Resolution source and lookup:
+  - Reads request header X-Tenant-Slug.
+  - Looks up tenant by Tenants.Slug in AppDbContext.
+  - If found, sets ITenantContext via tenantContext.Set(tenant.Id, tenant.Slug).
+  - Source of context object: src/NovaNode.Infrastructure/MultiTenancy/TenantContext.cs and src/NovaNode.Domain/Interfaces/ITenantContext.cs.
+- Exempt routes (resolution skipped):
+  - /api/v1/platform
+  - /api/v1/stores
+  - /swagger
+  - /uploads
+  - /health
+- Optional tenant routes:
+  - /api/v1/public (header optional; request may proceed unresolved).
+- Behavior when header missing:
+  - Non-optional route: 400 with message requiring X-Tenant-Slug.
+  - Optional route (/api/v1/public): proceeds without tenant.
+- Behavior when slug not found:
+  - Non-optional route: 404 tenant not found.
+  - Optional route: proceeds unresolved.
+- Behavior for inactive tenant:
+  - Non-optional route: 403 suspended.
+  - Optional route: not blocked at resolution middleware.
+
+3) Claim validation / isolation
+- src/NovaNode.Api/Middleware/TenantClaimValidationMiddleware.cs checks authenticated JWT tenant claim vs resolved tenant context.
+- Claim lookup order:
+  - tenantId
+  - tenant_id
+  - TenantId
+  - first claim with type containing tenantId or tenant_id (case-insensitive)
+- If mismatch or missing tenant claim in tenant context: 403.
+
+4) Subscription enforcement
+- src/NovaNode.Api/Middleware/SubscriptionEnforcementMiddleware.cs blocks non-public tenant operations based on subscription status.
+- Bypass prefixes include /api/v1/public, /api/v1/platform, /api/v1/auth, /api/v1/stores, /swagger, /uploads, /health.
+
+Existing Tenant Resolution Logic
+- Frontend tenant source:
+  - route params: implemented.
+  - pathname pattern /store/:slug: implemented.
+  - hostname/subdomain parsing: not found.
+  - custom-domain parsing: not found.
+  - query param tenant= for runtime tenant resolution: not currently implemented in guard/service.
+  - local storage tenant override: not found in resolver flow (only a comment exists in frontend/src/environments/environment.ts).
+  - API call to resolve tenant before setting context: not used for initial tenant context; resolver is local route-param based.
+- Backend tenant source:
+  - X-Tenant-Slug header: implemented (primary/required for tenant-scoped routes).
+  - slug lookup in Tenants table: implemented.
+  - subdomain/host/custom-domain lookup: not found.
+  - host parsing (Request.Host, X-Forwarded-Host): not found in tenant resolution middleware.
+
+Existing Domain Support
+- Wildcard subdomains:
+  - Status: not implemented.
+  - Evidence: no host/subdomain parsing in tenant resolution; frontend is path-based routing.
+- Custom domains per tenant:
+  - Status: not implemented.
+  - Evidence: Tenant entity/DTOs have no custom-domain fields; no domain verification workflow; no host mapping logic.
+- Tenant-specific admin URLs:
+  - Status: implemented (path-based).
+  - Pattern: /store/{slug}/admin.
+  - Evidence: frontend/src/app/app.routes.ts.
+- Tenant-specific storefront URLs:
+  - Status: implemented (path-based).
+  - Pattern: /store/{slug}/...
+  - Evidence: frontend/src/app/app.routes.ts.
+- Root domain landing page:
+  - Status: implemented.
+  - Pattern: '/'.
+  - Evidence: frontend/src/app/app.routes.ts.
+
+Data Model Findings
+1) Tenant persistence
+- Tenant entity:
+  - src/NovaNode.Domain/Entities/Tenant.cs.
+  - Fields present: Name, Slug, IsActive, SupportPhone, SupportWhatsApp, Address, MapUrl.
+- Tenant table mapping:
+  - src/NovaNode.Infrastructure/Persistence/AppDbContext.cs.
+  - Unique index on Slug.
+
+2) Domain-related fields requested
+- slug:
+  - Exists: yes (Tenant.Slug, unique index).
+- subdomain:
+  - Exists: not found.
+- custom domain:
+  - Exists: not found.
+- primary domain:
+  - Exists: not found.
+- domain verification:
+  - Exists: not found.
+- active/inactive domain state:
+  - Domain-level state: not found.
+  - Tenant-level state exists: Tenant.IsActive (store suspension/activation).
+
+3) Related entity
+- TenantSlugHistory exists:
+  - src/NovaNode.Domain/Entities/TenantSlugHistory.cs.
+  - Stores OldSlug and ChangedAt.
+  - Public endpoint resolves old slug: src/NovaNode.Api/Controllers/PublicController.cs (resolve-slug/{slug}).
+- Important gap in current implementation:
+  - No write path found that inserts TenantSlugHistory records when tenant slug changes.
+  - PlatformService.UpdateTenantAsync directly updates Slug without creating history.
+  - Source: src/NovaNode.Infrastructure/Services/PlatformService.cs.
+
+4) Feature toggle model
+- TenantFeatureToggle only has CanRemovePoweredBy and AdvancedReports.
+- No custom-domain or subdomain feature flag in backend model.
+- Source: src/NovaNode.Domain/Entities/TenantFeatureToggle.cs.
+
+Gaps / Blockers
+1) Blockers for moving to main domain as project root
+- Frontend is already rooted at '/' for landing, but tenant storefront/admin are hardwired to /store/:slug paths.
+- Existing platform-generated URLs still use query-style tenant links (/store?tenant=..., /admin?tenant=...) which do not match current router patterns.
+- Sources:
+  - frontend/src/app/app.routes.ts
+  - frontend/src/app/platform/pages/tenants/tenant-create.component.ts
+  - frontend/src/app/platform/pages/tenants/tenant-detail.component.ts
+
+2) Blockers for subdomain per store
+- No host/subdomain parsing in frontend or backend tenant resolution.
+- Backend strictly resolves via X-Tenant-Slug, not Request.Host.
+- No tenant subdomain field in data model.
+- Sources:
+  - src/NovaNode.Api/Middleware/TenantResolutionMiddleware.cs
+  - src/NovaNode.Domain/Entities/Tenant.cs
+
+3) Blockers for custom domain per tenant
+- No custom-domain persistence fields.
+- No domain verification fields/workflow.
+- No host-to-tenant mapping logic.
+- No domain-level active/verified state.
+- Sources:
+  - src/NovaNode.Domain/Entities/Tenant.cs
+  - src/NovaNode.Infrastructure/Persistence/AppDbContext.cs
+  - src/NovaNode.Api/Middleware/TenantResolutionMiddleware.cs
+
+4) Blockers for tenant admin on tenant domain
+- Admin URLs are path-based under /store/:slug/admin.
+- Auth guard/store isolation currently compares route-derived slug vs session-stored slug.
+- Backend still requires X-Tenant-Slug header for tenant-scoped endpoints; host/domain alone cannot resolve tenant.
+- Sources:
+  - frontend/src/app/app.routes.ts
+  - frontend/src/app/core/guards/auth.guard.ts
+  - frontend/src/app/core/interceptors/api.interceptor.ts
+  - src/NovaNode.Api/Middleware/TenantResolutionMiddleware.cs
+
+5) Configuration and deployment constraints
+- Frontend vercel rewrites route everything to index.html (single SPA host behavior).
+- Backend CORS is AllowAnyOrigin/AllowAnyHeader/AllowAnyMethod (not domain-restricted currently).
+- appDomain/apiBaseUrl are configurable only via environment files, but values are hardcoded in those files per build target.
+- Sources:
+  - vercel.json
+  - frontend/vercel.json
+  - src/NovaNode.Api/Program.cs
+  - frontend/src/environments/environment.ts
+  - frontend/src/environments/environment.prod.ts
+
+6) Documentation/implementation mismatch observed
+- docs/PATH_MODE.md states some patterns (for example public path conventions and query style notes) that do not fully match current middleware/controller behavior.
+- Current authoritative behavior is in app.routes.ts + TenantResolutionMiddleware + PublicController.
+
+Recommended Next Investigation Step
+- Perform a focused phase-2 inventory of all places that generate tenant URLs and all external entry points, then classify each as:
+  - correct for current path mode,
+  - stale (query-based), or
+  - dependent on future subdomain/custom-domain assumptions.
+- Minimum files for this next investigation:
+  - frontend/src/app/platform/pages/tenants/tenant-create.component.ts
+  - frontend/src/app/platform/pages/tenants/tenant-detail.component.ts
+  - frontend/src/app/public/pages/landing/landing.component.ts
+  - frontend/src/app/core/interceptors/api.interceptor.ts
+  - src/NovaNode.Api/Middleware/TenantResolutionMiddleware.cs
+  - src/NovaNode.Domain/Entities/Tenant.cs
+  - src/NovaNode.Infrastructure/Services/PlatformService.cs
+- Goal of phase-2: produce a migration matrix from current path/header model to target domain model without implementing code changes yet.

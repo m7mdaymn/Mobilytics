@@ -1402,6 +1402,24 @@ namespace NovaNode.Infrastructure.Persistence.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("CustomDomain")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<bool>("CustomDomainIsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("CustomDomainVerificationStatus")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("CustomDomainVerifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("FallbackSubdomain")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
@@ -1412,6 +1430,14 @@ namespace NovaNode.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("PrimaryDomain")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<bool>("RedirectFallbackToPrimary")
+                        .HasColumnType("bit");
 
                     b.Property<string>("Slug")
                         .IsRequired()
@@ -1428,6 +1454,15 @@ namespace NovaNode.Infrastructure.Persistence.Migrations
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CustomDomain")
+                        .IsUnique()
+                        .HasFilter("[CustomDomain] IS NOT NULL");
+
+                    b.HasIndex("FallbackSubdomain")
+                        .IsUnique();
+
+                    b.HasIndex("PrimaryDomain");
 
                     b.HasIndex("Slug")
                         .IsUnique();

@@ -45,6 +45,12 @@ import { environment } from '../../../../environments/environment';
             <div class="grid grid-cols-2 gap-3 text-sm">
               <div><span class="text-slate-500">Store Name:</span> <span class="font-medium">{{ result()!.tenant.name }}</span></div>
               <div><span class="text-slate-500">Slug:</span> <code class="text-indigo-600 font-mono">{{ result()!.tenant.slug }}</code></div>
+              <div class="col-span-2"><span class="text-slate-500">Primary Domain:</span> <code class="text-indigo-600 font-mono">{{ result()!.tenant.primaryDomain }}</code></div>
+              <div class="col-span-2"><span class="text-slate-500">Fallback Domain:</span> <code class="font-mono">{{ result()!.tenant.fallbackSubdomain }}.{{ appDomain }}</code></div>
+              @if (result()!.tenant.customDomain) {
+                <div class="col-span-2"><span class="text-slate-500">Custom Domain:</span> <code class="font-mono">{{ result()!.tenant.customDomain }}</code></div>
+                <div><span class="text-slate-500">Custom Domain Status:</span> {{ result()!.tenant.customDomainVerificationStatus }}</div>
+              }
               <div><span class="text-slate-500">Status:</span>
                 <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
                   [class]="result()!.tenant.status === 'Active' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'">
@@ -212,8 +218,28 @@ import { environment } from '../../../../environments/environment';
                 <div class="flex items-center gap-2">
                   <code class="text-sm text-slate-400">https://</code>
                   <input [(ngModel)]="form.slug" (ngModelChange)="normalizeSlug()" class="flex-1 px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 font-mono" placeholder="techhub" />
-                  <code class="text-sm text-slate-400">.mobilytics.com</code>
+                  <code class="text-sm text-slate-400">.{{ appDomain }}</code>
                 </div>
+              </div>
+              <div class="md:col-span-2">
+                <label class="block text-sm font-medium text-slate-700 mb-1">Custom Domain (Optional)</label>
+                <input
+                  [(ngModel)]="form.customDomain"
+                  (ngModelChange)="normalizeCustomDomain()"
+                  class="w-full px-4 py-2.5 border border-slate-300 rounded-lg"
+                  placeholder="store.example.com"
+                />
+                <p class="text-xs text-slate-500 mt-1">Leave empty to use fallback subdomain only.</p>
+              </div>
+              <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-3">
+                <label class="inline-flex items-center gap-2 cursor-pointer text-sm text-slate-700">
+                  <input type="checkbox" [(ngModel)]="form.customDomainIsActive" class="w-4 h-4" />
+                  Activate custom domain when verified
+                </label>
+                <label class="inline-flex items-center gap-2 cursor-pointer text-sm text-slate-700">
+                  <input type="checkbox" [(ngModel)]="form.redirectFallbackToPrimary" class="w-4 h-4" />
+                  Redirect fallback subdomain to primary domain
+                </label>
               </div>
               <div>
                 <label class="block text-sm font-medium text-slate-700 mb-1">Phone</label>
@@ -423,6 +449,10 @@ import { environment } from '../../../../environments/environment';
                 <div><span class="text-slate-500">Category:</span> {{ form.category }}</div>
                 <div><span class="text-slate-500">Branches:</span> {{ form.numberOfStores }}</div>
                 <div><span class="text-slate-500">Slug:</span> <code class="font-mono text-indigo-600">{{ form.slug }}</code></div>
+                <div><span class="text-slate-500">Fallback Domain:</span> <code class="font-mono">{{ form.slug }}.{{ appDomain }}</code></div>
+                @if (form.customDomain) { <div><span class="text-slate-500">Custom Domain:</span> <code class="font-mono">{{ form.customDomain }}</code></div> }
+                <div><span class="text-slate-500">Custom Active:</span> {{ form.customDomainIsActive ? 'Yes' : 'No' }}</div>
+                <div><span class="text-slate-500">Redirect Fallback:</span> {{ form.redirectFallbackToPrimary ? 'Yes' : 'No' }}</div>
                 <div><span class="text-slate-500">Location:</span> {{ form.location }}</div>
                 @if (form.storePhone) { <div><span class="text-slate-500">Phone:</span> {{ form.storePhone }}</div> }
                 @if (form.storeWhatsApp) { <div><span class="text-slate-500">WhatsApp:</span> {{ form.storeWhatsApp }}</div> }
@@ -521,6 +551,8 @@ export class TenantCreateComponent implements OnInit {
     subscriptionAmountPaid: 0,
     discount: 0,
     paymentMethod: 'Cash',
+    customDomainIsActive: false,
+    redirectFallbackToPrimary: true,
     themePresetId: 1,
     currencyCode: 'EGP',
   };
@@ -592,6 +624,15 @@ export class TenantCreateComponent implements OnInit {
     this.form.slug = this.form.slug.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-');
   }
 
+  normalizeCustomDomain(): void {
+    if (!this.form.customDomain) return;
+    this.form.customDomain = this.form.customDomain
+      .toLowerCase()
+      .replace(/^https?:\/\//, '')
+      .replace(/\/.*$/, '')
+      .trim();
+  }
+
   hasSocialLinks(): boolean {
     return !!(this.socialLinks.facebook || this.socialLinks.instagram || this.socialLinks.tiktok || this.socialLinks.twitter);
   }
@@ -620,6 +661,10 @@ export class TenantCreateComponent implements OnInit {
     if (this.step() === 1) {
       if (!this.form.storeName || !this.form.slug || !this.form.category || !this.form.location || !this.form.numberOfStores) {
         this.error.set('Store name, category, location, number of stores, and slug are required.');
+        return;
+      }
+      if (this.form.customDomainIsActive && !this.form.customDomain?.trim()) {
+        this.error.set('Custom domain must be provided before enabling it as active.');
         return;
       }
       if (!this.form.agreeTerms) {
@@ -657,6 +702,10 @@ export class TenantCreateComponent implements OnInit {
     this.saving.set(true);
     this.error.set(null);
     this.form.socialLinksJson = this.buildSocialLinksJson();
+    this.form.customDomain = this.form.customDomain?.trim() || undefined;
+    if (!this.form.customDomain) {
+      this.form.customDomainIsActive = false;
+    }
     this.api.onboardTenant(this.form).subscribe({
       next: res => {
         this.saving.set(false);
@@ -828,6 +877,7 @@ export class TenantCreateComponent implements OnInit {
       slug: '', ownerName: '', ownerEmail: '', ownerPassword: '',
       planId: '', durationMonths: 1, isTrial: false,
       activationFeePaid: 0, subscriptionAmountPaid: 0, discount: 0, paymentMethod: 'Cash',
+      customDomainIsActive: false, redirectFallbackToPrimary: true,
       themePresetId: 1, currencyCode: 'EGP',
     };
     this.confirmPassword = '';

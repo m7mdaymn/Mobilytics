@@ -1,0 +1,767 @@
+Overview
+
+This phase is investigation-only. No code was modified.
+
+Current tenancy model observed in runtime code:
+- Frontend tenant context is path-based under /store/:slug via route guard + TenantService.
+- Backend tenant context is header-based via X-Tenant-Slug in TenantResolutionMiddleware.
+- Tenant identity is enforced by JWT tenantId claim matching resolved tenant context.
+
+Migration target assessed in this inventory:
+- Move from path-based tenant URL identity to host/domain-based tenant identity.
+
+
+URL Generation Inventory
+
+1) Frontend runtime URL generation and dependency points
+
+A) Core route shape and computed base URLs
+- File: frontend/src/app/app.routes.ts
+  Class/component/function: routes constant
+  Current URL format: /store/:slug/* and /store/:slug/admin/*
+  Status: current-path-based and valid
+  Domain migration impact: future-breaking for hostname-based resolution because slug is mandatory route identity.
+
+- File: frontend/src/app/core/services/tenant.service.ts
+  Class/component/function: TenantService.storeUrl, TenantService.adminUrl
+  Current URL format: /store/{slug} and /store/{slug}/admin
+  Status: current-path-based and valid
+  Domain migration impact: future-breaking; this is the central URL factory for storefront/admin links.
+
+- File: frontend/src/app/core/services/tenant.service.ts
+  Class/component/function: comments above service
+  Current URL format: comment explicitly documents /store/{slug}
+  Status: current-path-based and valid (for current model)
+  Domain migration impact: future-breaking docs/comments in code if model changes.
+
+B) Guards/interceptor redirects and route checks
+- File: frontend/src/app/core/guards/tenant-resolver.guard.ts
+  Class/component/function: tenantResolverGuard
+  Current URL format: reads route param slug from /store/:slug tree; redirects to / or /tenant-not-found
+  Status: current-path-based and valid
+  Domain migration impact: future-breaking because tenancy source is route param.
+
+- File: frontend/src/app/core/guards/auth.guard.ts
+  Class/component/function: authGuard
+  Current URL format: redirect /store/{storedSlug}/admin on mismatch
+  Status: current-path-based and valid
+  Domain migration impact: future-breaking because mismatch correction uses slug path.
+
+- File: frontend/src/app/core/guards/permission.guard.ts
+  Class/component/function: permissionGuard
+  Current URL format: redirect /store/{slug}/admin (or /)
+  Status: current-path-based and valid
+  Domain migration impact: future-breaking because fallback target is slug path.
+
+- File: frontend/src/app/core/interceptors/api.interceptor.ts
+  Class/component/function: apiInterceptor
+  Current URL format: detects admin route using regex ^/store/[^/]+/admin and redirects /store/{slug}/admin/blocked for 403
+  Status: current-path-based and valid
+  Domain migration impact: future-breaking because admin route detection and redirect path are slug-path-specific.
+
+- File: frontend/src/app/app.component.ts
+  Class/component/function: AppComponent.ngOnInit router event handling
+  Current URL format: checks event.urlAfterRedirects.startsWith('/store/')
+  Status: current-path-based and valid
+  Domain migration impact: future-breaking because store route detection assumes path prefix.
+
+C) Auth redirect URLs and post-login landing URLs
+- File: frontend/src/app/public/pages/login/unified-login.component.ts
+  Class/component/function: ngOnInit, onLogin
+  Current URL format: /store/{slug}/admin and /store/{slug}/admin/blocked
+  Status: current-path-based and valid
+  Domain migration impact: future-breaking because login landing assumes slug path.
+
+- File: frontend/src/app/admin/pages/login/login.component.ts
+  Class/component/function: ngOnInit, onLogin
+  Current URL format: /store/{slug}/admin and tenantService.adminUrl(); back link tenantService.storeUrl()
+  Status: current-path-based and valid
+  Domain migration impact: future-breaking because tenant admin login flow is path-coupled.
+
+- File: frontend/src/app/core/services/auth.service.ts
+  Class/component/function: unifiedLogin, getStoredSlug, logout
+  Current URL format: no direct URL builder, but persists tenantSlug in session storage key mobilytics_slug
+  Status: current-path-based and valid (indirect dependency)
+  Domain migration impact: potentially incompatible as-is because slug remains persisted as identity key used by guards/redirects.
+
+D) Landing/store discovery and store entry URLs
+- File: frontend/src/app/public/pages/landing/landing.component.ts
+  Class/component/function: visitStore
+  Current URL format: router.navigate(['/store', slug])
+  Status: current-path-based and valid
+  Domain migration impact: future-breaking because open-store CTA targets slug path.
+
+- File: frontend/src/app/public/pages/landing/landing.component.ts
+  Class/component/function: tenant list fetch
+  Current URL format: GET {apiBaseUrl}/api/v1/Public/tenants (returns slug used by visitStore)
+  Status: current-path-based and valid usage pattern
+  Domain migration impact: medium impact; if future model returns domains, this consumer must switch from slug path navigation to domain navigation behavior.
+
+- File: frontend/src/app/public/pages/landing/landing.component.html
+  Class/component/function: store card button
+  Current URL format: (click) visitStore(t.slug) -> /store/{slug}
+  Status: current-path-based and valid
+  Domain migration impact: future-breaking for domain-based tenant root.
+
+E) Storefront and admin links generated throughout UI using TenantService
+- File: frontend/src/app/public/layouts/storefront-shell.component.ts
+  Class/component/function: template links + search navigation
+  Current URL format: tenantService.storeUrl() + '/catalog|/brands|/about|/type/:slug|/category/:slug|/brand/:slug|/compare|/policies/:key'
+  Status: current-path-based and valid
+  Domain migration impact: future-breaking because all storefront internal links are prefixed with /store/{slug}.
+
+- File: frontend/src/app/public/pages/home/home.component.ts
+  Class/component/function: template links and resolveHeroCta
+  Current URL format: tenantService.storeUrl() + '/catalog...'; resolveHeroCta passes through absolute /store/... links and otherwise prefixes tenant base
+  Status: current-path-based and valid
+  Domain migration impact: future-breaking because hero CTA URL normalization is slug-path-aware.
+
+- File: frontend/src/app/public/pages/about/about.component.ts
+  Class/component/function: template links
+  Current URL format: tenantService.storeUrl() + '/catalog'
+  Status: current-path-based and valid
+  Domain migration impact: future-breaking.
+
+- File: frontend/src/app/public/pages/brands/brands.component.ts
+  Class/component/function: template links
+  Current URL format: tenantService.storeUrl(), tenantService.storeUrl() + '/brand/{slug}'
+  Status: current-path-based and valid
+  Domain migration impact: future-breaking.
+
+- File: frontend/src/app/public/pages/brands/brand-detail.component.ts
+  Class/component/function: template links
+  Current URL format: tenantService.storeUrl(), tenantService.storeUrl() + '/brands', tenantService.storeUrl() + '/catalog'
+  Status: current-path-based and valid
+  Domain migration impact: future-breaking.
+
+- File: frontend/src/app/public/pages/category/category.component.ts
+  Class/component/function: template links
+  Current URL format: tenantService.storeUrl(), tenantService.storeUrl() + '/catalog'
+  Status: current-path-based and valid
+  Domain migration impact: future-breaking.
+
+- File: frontend/src/app/public/pages/item-detail/item-detail.component.ts
+  Class/component/function: template links
+  Current URL format: tenantService.storeUrl(), tenantService.storeUrl() + '/catalog', tenantService.storeUrl() + '/catalog/{rel.slug}'
+  Status: current-path-based and valid
+  Domain migration impact: future-breaking.
+
+- File: frontend/src/app/public/pages/compare/compare.component.ts
+  Class/component/function: template links and share URL
+  Current URL format: tenantService.storeUrl() + '/catalog', tenantService.storeUrl() + '/item/{slug}', pageUrl = window.location.origin + tenantService.storeUrl() + '/item/{slug}'
+  Status: current-path-based and valid
+  Domain migration impact: future-breaking for generated share URLs.
+
+- File: frontend/src/app/shared/components/item-card/item-card.component.ts
+  Class/component/function: template links
+  Current URL format: tenantService.storeUrl() + '/item/{slug}'
+  Status: current-path-based and valid
+  Domain migration impact: future-breaking.
+
+- File: frontend/src/app/admin/layout/admin-layout.component.ts
+  Class/component/function: menu links, quick actions, onboarding/notification navigation
+  Current URL format: tenantService.adminUrl() + '/...'; tenantService.storeUrl() for storefront preview
+  Status: current-path-based and valid
+  Domain migration impact: future-breaking for admin shell navigation and preview links.
+
+- File: frontend/src/app/admin/pages/dashboard/dashboard.component.ts
+  Class/component/function: template links
+  Current URL format: tenantService.adminUrl() + '/invoices|/items|/expenses|...'
+  Status: current-path-based and valid
+  Domain migration impact: future-breaking.
+
+- File: frontend/src/app/admin/pages/items/items-list.component.ts
+  Class/component/function: template links
+  Current URL format: tenantService.adminUrl() + '/items/new' and '/items/{id}/edit'
+  Status: current-path-based and valid
+  Domain migration impact: future-breaking.
+
+- File: frontend/src/app/admin/pages/items/item-form.component.ts
+  Class/component/function: template links + post-save navigation
+  Current URL format: tenantService.adminUrl() + '/items'
+  Status: current-path-based and valid
+  Domain migration impact: future-breaking.
+
+- File: frontend/src/app/admin/pages/invoices/invoices-list.component.ts
+  Class/component/function: template links
+  Current URL format: tenantService.adminUrl() + '/invoices/new' and '/invoices/{id}'
+  Status: current-path-based and valid
+  Domain migration impact: future-breaking.
+
+- File: frontend/src/app/admin/pages/invoices/invoice-form.component.ts
+  Class/component/function: template links + post-create navigation
+  Current URL format: tenantService.adminUrl() + '/invoices' and '/invoices/{id}'
+  Status: current-path-based and valid
+  Domain migration impact: future-breaking.
+
+- File: frontend/src/app/admin/pages/invoices/invoice-detail.component.ts
+  Class/component/function: template links + navigation
+  Current URL format: tenantService.adminUrl() + '/invoices'
+  Status: current-path-based and valid
+  Domain migration impact: future-breaking.
+
+- File: frontend/src/app/admin/pages/blocked/blocked.component.ts
+  Class/component/function: back-to-dashboard link
+  Current URL format: tenantService.adminUrl()
+  Status: current-path-based and valid
+  Domain migration impact: future-breaking.
+
+- File: frontend/src/app/admin/pages/onboarding/onboarding.component.ts
+  Class/component/function: step links
+  Current URL format: tenant.adminUrl() + step.route and tenant.adminUrl()
+  Status: current-path-based and valid
+  Domain migration impact: future-breaking.
+
+- File: frontend/src/app/core/stores/settings.store.ts
+  Class/component/function: updateManifest
+  Current URL format: start_url and scope derived from tenantService.storeUrl()
+  Status: current-path-based and valid
+  Domain migration impact: future-breaking for PWA scope/start_url when tenant root moves to host-based root.
+
+F) Platform tenant admin pages generating/displaying tenant URLs
+- File: frontend/src/app/platform/pages/tenants/tenant-detail.component.ts
+  Class/component/function: Access URLs section + sendCredentialsWhatsApp
+  Current URL format:
+  - https://{appDomain}/store?tenant={slug}
+  - https://{appDomain}/admin/login?tenant={slug}
+  - future text: https://{slug}.mobilytics.com
+  Status: stale/inconsistent (query-param model does not match active router path model)
+  Domain migration impact: future-breaking and already inconsistent with current production path model.
+
+- File: frontend/src/app/platform/pages/tenants/tenant-create.component.ts
+  Class/component/function: post-creation Access URLs + sendCredentialsWhatsApp
+  Current URL format:
+  - https://{appDomain}/store?tenant={slug}
+  - https://{appDomain}/admin?tenant={slug}
+  Status: stale/inconsistent (query-param model differs from current /store/:slug and /store/:slug/admin/login)
+  Domain migration impact: future-breaking and currently inconsistent.
+
+G) API URL generation (base URLs)
+- File: frontend/src/app/core/services/api.service.ts
+  Class/component/function: ApiService.baseUrl
+  Current URL format: {apiBaseUrl}/api/v1 + endpoint path
+  Status: current model and valid
+  Domain migration impact: low direct impact; tenant context still currently supplied by header/slug.
+
+- File: frontend/src/app/core/services/platform-api.service.ts
+  Class/component/function: PlatformApiService.baseUrl
+  Current URL format: {apiBaseUrl}/api/v1/platform
+  Status: current model and valid
+  Domain migration impact: low for platform paths.
+
+- File: frontend/src/app/core/services/platform-auth.service.ts
+  Class/component/function: PlatformAuthService.baseUrl
+  Current URL format: {apiBaseUrl}/api/v1/platform
+  Status: current model and valid
+  Domain migration impact: low.
+
+H) Environment/deployment references that influence URL outputs
+- File: frontend/src/environments/environment.ts
+  Class/component/function: environment object
+  Current URL format/config: apiBaseUrl localhost; appDomain localhost; comment mentions ?tenant fallback and localStorage override
+  Status: inconsistent/stale comment versus current TenantService implementation (TenantService is path-based only)
+  Domain migration impact: medium; config naming is reusable, but comments are stale.
+
+- File: frontend/src/environments/environment.prod.ts
+  Class/component/function: environment object
+  Current URL format/config: appDomain mobilytics.vercel.app
+  Status: current and valid as config value
+  Domain migration impact: medium because single appDomain is platform-wide, not per-tenant domain model.
+
+2) Backend URL generation / URL-dependent behavior
+- File: src/NovaNode.Api/Controllers/PublicController.cs
+  Class/component/function: ResolveSlug endpoint
+  Current URL format: GET /api/v1/public/resolve-slug/{slug}
+  Status: current-path-based compatibility endpoint (for old slug redirects)
+  Domain migration impact: medium/high; endpoint is slug-only, no domain alias resolution.
+
+- File: src/NovaNode.Api/Controllers/PublicController.cs
+  Class/component/function: GetTenants endpoint
+  Current URL format: returns tenant slug/name/logo for client-side store navigation
+  Status: current-path-based and valid
+  Domain migration impact: medium; currently optimized for slug path navigation.
+
+- File: src/NovaNode.Api/Controllers/AuthController.cs
+  Class/component/function: Login/Refresh/ChangePassword
+  Current URL behavior: explicit error text requires X-Tenant-Slug header
+  Status: current header model and valid
+  Domain migration impact: high coupling to slug-header resolution model.
+
+3) Docs/comments URL references (non-runtime but migration-relevant)
+- File: docs/PATH_MODE.md
+  Reference format: /store/:slug routes, X-Tenant-Slug, resolve-slug
+  Status: current-path-based and valid with current runtime.
+  Domain migration impact: future-breaking docs if model changes.
+
+- File: docs/STORE_URLS.md and docs/RUNBOOK.md
+  Reference format: /store?tenant={slug}
+  Status: stale/inconsistent with current active router.
+  Domain migration impact: high confusion risk during migration.
+
+- File: frontend/docs/README.md, frontend/docs/DEPLOYMENT.md, frontend/docs/STATE-MANAGEMENT.md, frontend/docs/RELEASE-CHECKLIST.md
+  Reference format: subdomain-based runtime + query fallback narratives
+  Status: inconsistent with current path-based TenantService implementation
+  Domain migration impact: medium/high documentation drift risk.
+
+
+Frontend Path-Based Dependencies
+
+Direct dependencies on /store/:slug and slug route-param tenancy:
+
+1) Route topology and slug extraction
+- frontend/src/app/app.routes.ts
+  Exact dependency: root tenant route declared as path: 'store/:slug' and admin children under this tree.
+  Hostname model break: tenant context would no longer come from route param; route tree would need de-slugging.
+
+- frontend/src/app/core/guards/tenant-resolver.guard.ts
+  Exact dependency: route.paramMap.get('slug') with parent traversal.
+  Hostname model break: guard cannot resolve tenant because slug param disappears.
+
+2) Store/admin URL composition
+- frontend/src/app/core/services/tenant.service.ts
+  Exact dependency: storeUrl/adminUrl computed from slug into /store/{slug} and /store/{slug}/admin.
+  Hostname model break: every consumer of these computed URLs would navigate to outdated paths.
+
+3) Router navigations and redirects to tenant paths
+- frontend/src/app/public/pages/login/unified-login.component.ts
+  Exact dependency: navigate(['/store', tenantSlug, 'admin']) and blocked variant.
+  Hostname model break: post-login redirect destinations become invalid.
+
+- frontend/src/app/admin/pages/login/login.component.ts
+  Exact dependency: redirects to /store/{slug}/admin and tenantService.adminUrl().
+  Hostname model break: tenant admin login will route to wrong URLs.
+
+- frontend/src/app/core/guards/auth.guard.ts
+  Exact dependency: mismatch redirect to /store/{storedSlug}/admin.
+  Hostname model break: isolation redirect target invalid.
+
+- frontend/src/app/core/guards/permission.guard.ts
+  Exact dependency: permission fallback redirect to /store/{slug}/admin.
+  Hostname model break: denied-access fallback invalid.
+
+- frontend/src/app/core/interceptors/api.interceptor.ts
+  Exact dependency: admin route detection regex /store/{slug}/admin and blocked redirect path.
+  Hostname model break: role-aware error redirects and route detection fail.
+
+- frontend/src/app/public/pages/landing/landing.component.ts
+  Exact dependency: visitStore(slug) navigates /store/{slug}.
+  Hostname model break: landing cannot open tenant storefront correctly.
+
+- frontend/src/app/app.component.ts
+  Exact dependency: startsWith('/store/') route test.
+  Hostname model break: settings loading/inactive handling trigger conditions fail.
+
+4) routerLink patterns across templates
+- frontend/src/app/public/layouts/storefront-shell.component.ts
+- frontend/src/app/public/pages/home/home.component.ts
+- frontend/src/app/public/pages/about/about.component.ts
+- frontend/src/app/public/pages/brands/brands.component.ts
+- frontend/src/app/public/pages/brands/brand-detail.component.ts
+- frontend/src/app/public/pages/category/category.component.ts
+- frontend/src/app/public/pages/item-detail/item-detail.component.ts
+- frontend/src/app/public/pages/compare/compare.component.ts
+- frontend/src/app/shared/components/item-card/item-card.component.ts
+- frontend/src/app/admin/layout/admin-layout.component.ts
+- frontend/src/app/admin/pages/dashboard/dashboard.component.ts
+- frontend/src/app/admin/pages/items/items-list.component.ts
+- frontend/src/app/admin/pages/items/item-form.component.ts
+- frontend/src/app/admin/pages/invoices/invoices-list.component.ts
+- frontend/src/app/admin/pages/invoices/invoice-form.component.ts
+- frontend/src/app/admin/pages/invoices/invoice-detail.component.ts
+- frontend/src/app/admin/pages/blocked/blocked.component.ts
+- frontend/src/app/admin/pages/onboarding/onboarding.component.ts
+  Exact dependency: links are built from tenantService.storeUrl/adminUrl (thus /store/{slug} prefix).
+  Hostname model break: all these links must be re-based to tenant-domain-root semantics.
+
+5) Session/auth logic tied to slug identity
+- frontend/src/app/core/services/auth.service.ts
+  Exact dependency: stores mobilytics_slug in session storage from unified login.
+  Hostname model break: slug-as-identity remains possible, but path-based redirection assumptions in guards/components become incompatible.
+
+- frontend/src/app/admin/pages/login/login.component.ts
+  Exact dependency: writes mobilytics_slug in session storage after tenant-scoped login.
+  Hostname model break: this slug persistence still exists; redirect logic must become host-based rather than path-based.
+
+6) Not found in frontend runtime
+- Hostname-based tenant resolution code in runtime client: not found.
+- Frontend consumer of /api/v1/public/resolve-slug/{slug}: not found.
+
+
+Backend Slug/Header Dependencies
+
+Core slug/header resolution coupling:
+
+1) Tenant resolver and pipeline
+- src/NovaNode.Api/Middleware/TenantResolutionMiddleware.cs (InvokeAsync)
+  Exact behavior:
+  - Reads X-Tenant-Slug request header.
+  - Exempt prefixes skip resolution: /api/v1/platform, /api/v1/stores, /swagger, /uploads, /health.
+  - Optional prefix: /api/v1/public (if header missing, continue unresolved).
+  - Looks up tenant by Tenants.Slug.
+  - Sets ITenantContext with tenant.Id and tenant.Slug.
+  Conceptual change for host/domain model:
+  - Resolve tenant from host/domain first (possibly fallback header during transition).
+  - Replace slug-only lookup with domain mapping lookup.
+  - Preserve optional/exempt semantics where needed.
+
+- src/NovaNode.Api/Program.cs
+  Exact behavior:
+  - Middleware order: TenantResolution -> SubscriptionEnforcement -> GlobalException -> Authentication -> TenantClaimValidation -> Authorization.
+  Conceptual change for host/domain model:
+  - Same order can remain, but resolver internals change from header/slug to host/domain resolution.
+
+2) Claim isolation bound to resolved tenant context
+- src/NovaNode.Api/Middleware/TenantClaimValidationMiddleware.cs (InvokeAsync)
+  Exact behavior:
+  - For authenticated requests, compares JWT tenant claim (tenantId/tenant_id/etc.) with resolved ITenantContext.TenantId.
+  - Denies if mismatch or claim missing.
+  Conceptual change for host/domain model:
+  - Works with domain model if ITenantContext resolves from host.
+  - Any multi-domain tenant support must still map to one tenantId for claim comparison.
+
+3) Tenant scoped controllers requiring resolved tenant context (direct dependency)
+- Files (all use ITenantContext and TenantId.Value):
+  - src/NovaNode.Api/Controllers/AuditController.cs
+  - src/NovaNode.Api/Controllers/AuthController.cs
+  - src/NovaNode.Api/Controllers/BrandsController.cs
+  - src/NovaNode.Api/Controllers/CategoriesController.cs
+  - src/NovaNode.Api/Controllers/CustomFieldsController.cs
+  - src/NovaNode.Api/Controllers/EmployeesController.cs
+  - src/NovaNode.Api/Controllers/ExpensesController.cs
+  - src/NovaNode.Api/Controllers/InstallmentsController.cs
+  - src/NovaNode.Api/Controllers/InvoicesController.cs
+  - src/NovaNode.Api/Controllers/ItemsController.cs
+  - src/NovaNode.Api/Controllers/ItemTypesController.cs
+  - src/NovaNode.Api/Controllers/LeadsController.cs
+  - src/NovaNode.Api/Controllers/NotificationsController.cs
+  - src/NovaNode.Api/Controllers/PublicController.cs (many endpoints except public list endpoints)
+  - src/NovaNode.Api/Controllers/ReportsController.cs
+  - src/NovaNode.Api/Controllers/SettingsController.cs
+  - src/NovaNode.Api/Controllers/SpecFieldsController.cs
+  Conceptual change for host/domain model:
+  - Controller code can remain mostly unchanged if ITenantContext keeps delivering tenantId.
+  - High coupling remains at resolver boundary, not controller business logic.
+
+4) Auth contract explicitly tied to header/slug wording
+- src/NovaNode.Api/Controllers/AuthController.cs
+  Exact behavior: error text explicitly says X-Tenant-Slug header is required.
+  Conceptual change for host/domain model: messaging and contract docs must be updated; optional temporary fallback can keep compatibility.
+
+5) Old slug behavior
+- src/NovaNode.Api/Controllers/PublicController.cs (ResolveSlug)
+  Exact behavior:
+  - Resolves current slug from Tenants.Slug.
+  - Resolves old slug from TenantSlugHistories.OldSlug.
+  - Returns { slug, redirect }.
+  Conceptual change for host/domain model:
+  - This mechanism only handles slug evolution, not domain aliases/history.
+
+6) ITenantContext and persistence filtering
+- src/NovaNode.Infrastructure/MultiTenancy/TenantContext.cs
+  Exact behavior: stores TenantId and TenantSlug from resolver.
+  Conceptual change: keep interface, change source from header slug to host/domain resolution.
+
+- src/NovaNode.Infrastructure/Persistence/AppDbContext.cs
+  Exact behavior:
+  - Global query filters use _tenantContext.TenantId for tenant-scoped entities.
+  - Tenant has unique Slug; TenantSlugHistory has unique OldSlug.
+  Conceptual change:
+  - Query filters remain viable if resolver fills tenantId from host/domain.
+  - Additional domain mapping entities/indexes required for host lookup.
+
+7) Not found on backend
+- Hostname/custom-domain resolution in runtime TenantResolutionMiddleware: not found.
+- Domain verification flow/endpoints/cert checks in API: not found.
+
+
+Authentication and Session Impact
+
+1) Unified login flow (tenant-agnostic login form)
+- Frontend entry: frontend/src/app/public/pages/login/unified-login.component.ts
+- Frontend API: frontend/src/app/core/services/auth.service.ts -> POST /stores/login
+- Backend endpoint: src/NovaNode.Api/Controllers/StoreRegistrationController.cs (UnifiedLogin)
+- Backend service: src/NovaNode.Infrastructure/Services/AuthService.cs (UnifiedLoginAsync)
+- Current landing decision:
+  - Response includes tenantSlug, tenantName, tenantActive.
+  - Frontend sets TenantService slug then redirects to /store/{tenantSlug}/admin (or blocked).
+- Tenant identity persistence:
+  - sessionStorage mobilytics_token and mobilytics_slug.
+- Compatibility with domain model:
+  - Incompatible as-is for landing URL construction because it assumes slug-in-path.
+  - Token/session model can survive, but post-login navigation logic must change.
+
+2) Tenant admin login flow (tenant-scoped login)
+- Frontend entry: frontend/src/app/admin/pages/login/login.component.ts
+- Frontend API: frontend/src/app/core/services/auth.service.ts -> POST /Auth/login
+- Backend endpoint: src/NovaNode.Api/Controllers/AuthController.cs
+- Current behavior:
+  - Requires tenant already resolved (through path slug -> interceptor header).
+  - Redirects to tenantService.adminUrl().
+- Compatibility with domain model:
+  - Incompatible as-is because tenant context injection currently relies on slug path + header.
+
+3) Superadmin login flow
+- Frontend service: frontend/src/app/core/services/platform-auth.service.ts
+- Backend endpoint family: /api/v1/platform/*
+- Current behavior:
+  - Uses platform token in sessionStorage key mobilytics_platform_token.
+  - No X-Tenant-Slug attached.
+- Compatibility with domain model:
+  - Mostly compatible; low impact.
+
+4) Guards and mismatch protection
+- authGuard enforces store isolation using storedSlug vs tenantService.slug()
+- permissionGuard fallback routes to /store/{slug}/admin
+- apiInterceptor route regex + blocked redirects are store-path specific
+- Compatibility:
+  - All three are path-coupled and must be redesigned for host-based tenant context.
+
+5) Session storage/local storage usage
+- sessionStorage used for:
+  - mobilytics_token
+  - mobilytics_slug
+  - mobilytics_platform_token
+- localStorage used for language and some onboarding flags; not tenant identity in runtime TenantService.
+- Compatibility:
+  - Session persistence itself is compatible.
+  - Slug-driven redirects/guards tied to stored slug are incompatible without adaptation.
+
+
+API Contract Impact
+
+1) Which API calls currently require X-Tenant-Slug
+By middleware contract (src/NovaNode.Api/Middleware/TenantResolutionMiddleware.cs):
+- Required for tenant-scoped endpoints (non-exempt and non-optional paths).
+- Effective required prefixes include most /api/v1/{Controller} except:
+  - /api/v1/platform/* (exempt)
+  - /api/v1/stores/* (exempt)
+  - /api/v1/public/* (optional header, but many actions still return tenant not resolved if missing)
+
+2) Frontend assumption pattern
+- frontend/src/app/core/interceptors/api.interceptor.ts:
+  - All non-platform requests attach X-Tenant-Slug from TenantService.slug() if available.
+- frontend/src/app/core/services/api.service.ts:
+  - Generic API client assumes interceptor supplies context.
+- Result:
+  - Frontend assumes tenant context is already resolved before most tenant API calls.
+
+3) Public endpoints optional for tenant resolution
+- src/NovaNode.Api/Middleware/TenantResolutionMiddleware.cs marks /api/v1/public as optional.
+- But in src/NovaNode.Api/Controllers/PublicController.cs:
+  - tenant list and plans can work without tenant context.
+  - settings/bootstrap/items/item/follow-up/navigation/etc. require tenant context and return Tenant not resolved when missing.
+
+4) Endpoints returning tenant URLs or slug-oriented link data
+- src/NovaNode.Api/Controllers/PublicController.cs:
+  - GET /public/tenants returns slug used by frontend for /store/{slug} navigation.
+  - GET /public/resolve-slug/{slug} returns slug+redirect compatibility object.
+- src/NovaNode.Infrastructure/Services/AuthService.cs (UnifiedLoginAsync):
+  - returns tenantSlug for frontend redirect decisions.
+
+5) Endpoint classification
+
+A) Endpoints safe under current model (low migration coupling)
+- /api/v1/platform/*
+- /api/v1/stores/*
+- /health, /swagger, /uploads (infra/exempt)
+Reason: do not rely on X-Tenant-Slug resolution for tenant-scoped context.
+
+B) Endpoints tightly coupled to slug/header model
+- /api/v1/auth/* (tenant auth controller path)
+- Tenant-scoped CRUD controllers listed in Backend Slug/Header Dependencies section
+- Most /api/v1/public/* storefront data endpoints that require resolved tenant
+Reason: rely on ITenantContext populated from X-Tenant-Slug header and slug lookup.
+
+C) Endpoints likely to need contract changes in future domain model
+- /api/v1/public/tenants (currently returns slugs for path navigation)
+- /api/v1/public/resolve-slug/{slug} (slug-only migration endpoint)
+- /api/v1/stores/login response payload with tenantSlug as primary routing target
+Reason: domain-first routing will likely need domain-centric data or additional fields.
+
+
+Data Model Migration Readiness
+
+1) Where slug is created/edited/displayed
+
+Created
+- src/NovaNode.Infrastructure/Services/PlatformService.cs
+  Methods: CreateTenantAsync, OnboardTenantAsync
+  Behavior: writes Tenant.Slug.
+
+Edited
+- src/NovaNode.Infrastructure/Services/PlatformService.cs
+  Method: UpdateTenantAsync
+  Behavior: directly overwrites Tenant.Slug.
+
+Displayed
+- Backend DTOs:
+  - src/NovaNode.Application/DTOs/Platform/PlatformDTOs.cs (TenantDto.Slug, requests include Slug)
+  - src/NovaNode.Application/DTOs/Auth/AuthDTOs.cs (UnifiedLoginResponse.TenantSlug)
+- Frontend models/pages:
+  - frontend/src/app/core/models/platform.models.ts (tenant slug fields)
+  - frontend/src/app/platform/pages/tenants/tenant-detail.component.ts
+  - frontend/src/app/platform/pages/tenants/tenant-create.component.ts
+  - frontend/src/app/public/pages/landing/landing.component.ts (tenants list navigation)
+  - frontend/src/app/core/services/auth.service.ts (stores tenantSlug)
+
+2) Slug role classification
+- Slug is both:
+  - Identity key for URL routing (frontend path /store/:slug)
+  - Resolver key for backend tenant context (X-Tenant-Slug -> Tenants.Slug)
+- Conclusion: slug is currently identity + URL key, not merely display alias.
+
+3) Domain model support capability check (current code)
+- Subdomain support fields on Tenant entity: not found.
+- Custom domain fields: not found.
+- Primary domain field: not found.
+- Verified domain flags/timestamps: not found.
+- Domain status model (pending/verified/failed): not found.
+- Domain ownership verification token/challenge model: not found.
+
+4) Existing structures relevant to migration
+- src/NovaNode.Domain/Entities/TenantSlugHistory.cs exists for old slug redirects.
+- src/NovaNode.Api/Controllers/PublicController.cs has resolve-slug endpoint.
+- This helps slug transitions, but does not cover domain mapping/history.
+
+5) Forms/pages/API models that would need domain settings exposure in future
+- Backend DTOs and API contracts:
+  - src/NovaNode.Application/DTOs/Platform/PlatformDTOs.cs (TenantDto, CreateTenantRequest, UpdateTenantRequest, OnboardTenantRequest)
+- Backend services/controllers:
+  - src/NovaNode.Infrastructure/Services/PlatformService.cs (tenant create/update/onboard mapping)
+  - src/NovaNode.Api/Controllers/Platform/PlatformTenantsController.cs (tenant management endpoints)
+- Frontend models/forms/pages:
+  - frontend/src/app/core/models/platform.models.ts
+  - frontend/src/app/platform/pages/tenants/tenant-create.component.ts
+  - frontend/src/app/platform/pages/tenants/tenant-detail.component.ts
+  - frontend/src/app/platform/pages/tenants/tenants-list.component.ts (display surface)
+
+
+Routing Migration Map
+
+1) Storefront and admin route groups
+- Current route: /store/:slug
+  Current purpose: tenant storefront home shell
+  Future equivalent: tenant root domain (https://tenant-domain/)
+  Migration complexity: high
+  Reason: core route identity source changes from path param to host.
+
+- Current route: /store/:slug/admin
+  Current purpose: tenant admin dashboard root
+  Future equivalent: /admin on tenant domain
+  Migration complexity: high
+  Reason: auth redirects, guards, and many routerLinks depend on prefixed slug path.
+
+- Current route: /store/:slug/admin/login
+  Current purpose: tenant-scoped admin login form
+  Future equivalent: /admin/login on tenant domain
+  Migration complexity: high
+  Reason: current tenant-scoped login assumes pre-resolved slug path.
+
+2) Storefront child content routes
+- Current route: /store/:slug/catalog
+  Current purpose: product listing
+  Future equivalent: /catalog on tenant domain
+  Migration complexity: medium
+  Reason: mostly link prefix updates, but broad template coverage.
+
+- Current route: /store/:slug/item/:itemSlug
+  Current purpose: item detail
+  Future equivalent: /item/:itemSlug on tenant domain
+  Migration complexity: medium
+  Reason: route definition and deep links/share links must be remapped.
+
+- Current route: /store/:slug/category/:catSlug
+  Current purpose: category page
+  Future equivalent: /category/:catSlug on tenant domain
+  Migration complexity: medium
+  Reason: direct param logic mostly unchanged except slug removal.
+
+- Current route: /store/:slug/brand/:brandSlug
+  Current purpose: brand page
+  Future equivalent: /brand/:brandSlug on tenant domain
+  Migration complexity: medium
+  Reason: many links currently prefixed with storeUrl().
+
+- Current route: /store/:slug/type/:typeSlug
+  Current purpose: type-filtered catalog
+  Future equivalent: /type/:typeSlug on tenant domain
+  Migration complexity: medium
+  Reason: navigation builder + links rely on prefixed storeUrl().
+
+- Current route: /store/:slug/compare
+  Current purpose: compare items
+  Future equivalent: /compare on tenant domain
+  Migration complexity: medium
+  Reason: share URL generation currently concatenates origin + /store/{slug}.
+
+- Current route: /store/:slug/policies/:key
+  Current purpose: policies pages
+  Future equivalent: /policies/:key on tenant domain
+  Migration complexity: medium
+  Reason: global footer/nav links are path-prefixed.
+
+- Current route: /store/:slug/about
+  Current purpose: about page
+  Future equivalent: /about on tenant domain
+  Migration complexity: low/medium
+  Reason: mostly straightforward link rebasing.
+
+3) Landing and discovery
+- Current route: / (landing) + visitStore(slug) -> /store/:slug
+  Current purpose: discover tenants and open storefront
+  Future equivalent: navigate/open tenant domain directly
+  Migration complexity: high
+  Reason: requires discovery output changes and cross-domain navigation strategy.
+
+4) Platform area
+- Current route: /superadmin/*
+  Current purpose: platform operations
+  Future equivalent: likely unchanged on platform domain
+  Migration complexity: low
+  Reason: not coupled to tenant slug path for routing.
+
+
+Risk Classification
+
+Low-risk migration items
+- Platform-only routing and auth paths under /superadmin and /api/v1/platform.
+- Generic tenant-scoped business services/controllers that consume tenantId from ITenantContext (if resolver changes are isolated and compatible).
+- Static infra endpoints (/health, swagger, uploads) unaffected by tenant routing model.
+
+Medium-risk migration items
+- Storefront route rebasing for non-admin pages (catalog/item/category/brand/about/policies/compare).
+- PWA manifest start_url/scope generation currently based on /store/{slug}.
+- Landing tenant discovery flow currently slug-path navigation.
+- Documentation set contains mixed path/query/subdomain narratives; operational confusion risk.
+
+High-risk migration items
+- Tenant identity resolution boundary: TenantResolutionMiddleware currently slug-header only.
+- Frontend auth/guard/interceptor coupling to /store/:slug and stored slug redirects.
+- Tenant URL generation centrality in TenantService.storeUrl/adminUrl used across many templates/components.
+- Platform tenant detail/create pages currently generate stale query-param URLs and credential messages.
+- API contract assumptions that X-Tenant-Slug is the required tenant context carrier for most tenant endpoints.
+
+Unknowns requiring Phase 3 investigation
+- Canonical future host model details:
+  - single primary domain per tenant vs multiple domains
+  - precedence between subdomain and custom domain if both exist
+  - fallback behavior when domain not verified
+- Backward compatibility requirements:
+  - whether /store/:slug routes must continue to work during transition window
+  - whether X-Tenant-Slug header remains supported temporarily
+- Domain ownership verification process design and operational requirements (DNS/TXT/CNAME/HTTP challenge).
+- Cross-origin and cookie/session implications if tenant domains differ from platform domain.
+- SEO/link migration requirements and redirects from old path URLs to domain URLs.
+
+
+Recommended Next Investigation Step
+
+Phase 3 should be a contract-and-transition design investigation (still no implementation) focused on:
+- Definitive tenant domain identity model (subdomain/custom/primary/verification states).
+- Resolver precedence matrix (host vs header vs legacy path) for a transition period.
+- Backward-compatibility matrix for:
+  - existing /store/:slug URLs
+  - existing X-Tenant-Slug client behavior
+  - unified login redirect strategy
+- API payload contract diff for endpoints that currently return slug-oriented navigation data.
+- Data model extension proposal surface only (entity/DTO/form fields list), with no refactor yet.

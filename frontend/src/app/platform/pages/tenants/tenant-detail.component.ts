@@ -86,6 +86,17 @@ import { environment } from '../../../../environments/environment';
                   <h3 class="font-semibold text-slate-800 border-b border-slate-200 pb-2">Basic Info</h3>
                   <div class="space-y-3 text-sm">
                     <div class="flex justify-between"><span class="text-slate-500">Slug</span><span class="font-mono text-slate-800">{{ tenant()!.slug }}</span></div>
+                    <div class="flex justify-between"><span class="text-slate-500">Primary Domain</span><span class="font-mono text-slate-800">{{ tenant()!.primaryDomain }}</span></div>
+                    <div class="flex justify-between"><span class="text-slate-500">Fallback Subdomain</span><span class="font-mono text-slate-800">{{ tenant()!.fallbackSubdomain }}.{{ appDomain }}</span></div>
+                    @if (tenant()!.customDomain) {
+                      <div class="flex justify-between"><span class="text-slate-500">Custom Domain</span><span class="font-mono text-slate-800">{{ tenant()!.customDomain }}</span></div>
+                      <div class="flex justify-between"><span class="text-slate-500">Custom Domain Status</span><span class="text-slate-800">{{ tenant()!.customDomainVerificationStatus }}</span></div>
+                      @if (tenant()!.customDomainVerifiedAt) {
+                        <div class="flex justify-between"><span class="text-slate-500">Verified At</span><span class="text-slate-800">{{ tenant()!.customDomainVerifiedAt | date:'medium' }}</span></div>
+                      }
+                      <div class="flex justify-between"><span class="text-slate-500">Custom Domain Active</span><span class="text-slate-800">{{ tenant()!.customDomainIsActive ? 'Yes' : 'No' }}</span></div>
+                    }
+                    <div class="flex justify-between"><span class="text-slate-500">Redirect Fallback</span><span class="text-slate-800">{{ tenant()!.redirectFallbackToPrimary ? 'Yes' : 'No' }}</span></div>
                     <div class="flex justify-between"><span class="text-slate-500">Created</span><span class="text-slate-800">{{ tenant()!.createdAt | date:'medium' }}</span></div>
                     <div class="flex justify-between"><span class="text-slate-500">Updated</span><span class="text-slate-800">{{ tenant()!.updatedAt | date:'medium' }}</span></div>
                     @if (tenant()!.supportPhone) {
@@ -143,8 +154,14 @@ import { environment } from '../../../../environments/environment';
                   </div>
                   <div class="bg-slate-50 rounded-lg p-3">
                     <p class="text-xs text-slate-500 uppercase font-medium mb-1">Fallback Subdomain</p>
-                    <code class="text-indigo-600 text-xs">https://{{ tenant()!.fallbackSubdomain }}.mobilytics.app</code>
+                    <code class="text-indigo-600 text-xs">https://{{ tenant()!.fallbackSubdomain }}.{{ appDomain }}</code>
                   </div>
+                  @if (tenant()!.customDomain) {
+                    <div class="bg-slate-50 rounded-lg p-3">
+                      <p class="text-xs text-slate-500 uppercase font-medium mb-1">Custom Domain</p>
+                      <code class="text-indigo-600 text-xs">https://{{ tenant()!.customDomain }}</code>
+                    </div>
+                  }
                 </div>
               </div>
             }

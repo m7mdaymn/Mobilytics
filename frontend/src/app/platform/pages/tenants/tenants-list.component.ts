@@ -5,6 +5,7 @@ import { DatePipe } from '@angular/common';
 import { PlatformApiService } from '../../../core/services/platform-api.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { Tenant } from '../../../core/models/platform.models';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-tenants-list',
@@ -25,7 +26,7 @@ import { Tenant } from '../../../core/models/platform.models';
         <div class="flex flex-wrap gap-3">
           <input
             [(ngModel)]="search"
-            placeholder="Search name or slug..."
+            placeholder="Search name, slug, or domain..."
             class="flex-1 min-w-[200px] px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
           />
           <select [(ngModel)]="statusFilter" class="px-4 py-2 border border-slate-300 rounded-lg">
@@ -52,7 +53,7 @@ import { Tenant } from '../../../core/models/platform.models';
               <thead class="bg-slate-50 border-b border-slate-200">
                 <tr>
                   <th class="px-6 py-3 text-start font-semibold text-slate-700">Tenant</th>
-                  <th class="px-6 py-3 text-start font-semibold text-slate-700">Slug</th>
+                  <th class="px-6 py-3 text-start font-semibold text-slate-700">Domains</th>
                   <th class="px-6 py-3 text-center font-semibold text-slate-700">Status</th>
                   <th class="px-6 py-3 text-center font-semibold text-slate-700">Subscription</th>
                   <th class="px-6 py-3 text-start font-semibold text-slate-700">Created</th>
@@ -76,7 +77,28 @@ import { Tenant } from '../../../core/models/platform.models';
                       </div>
                     </td>
                     <td class="px-6 py-4">
-                      <code class="text-xs bg-slate-100 px-2 py-1 rounded">{{ tenant.slug }}</code>
+                      <div class="space-y-1">
+                        <div class="flex items-center gap-2">
+                          <span class="text-[11px] uppercase text-slate-400 font-semibold">Primary</span>
+                          <code class="text-xs bg-indigo-50 text-indigo-700 px-2 py-1 rounded">{{ tenant.primaryDomain }}</code>
+                        </div>
+                        <div class="flex items-center gap-2">
+                          <span class="text-[11px] uppercase text-slate-400 font-semibold">Fallback</span>
+                          <code class="text-xs bg-slate-100 px-2 py-1 rounded">{{ tenant.fallbackSubdomain }}.{{ appDomain }}</code>
+                        </div>
+                        @if (tenant.customDomain) {
+                          <div class="flex items-center gap-2">
+                            <span class="text-[11px] uppercase text-slate-400 font-semibold">Custom</span>
+                            <code class="text-xs bg-slate-100 px-2 py-1 rounded">{{ tenant.customDomain }}</code>
+                            <span class="text-[10px] px-2 py-0.5 rounded-full"
+                              [class]="tenant.customDomainVerificationStatus === 'Verified' ? 'bg-emerald-100 text-emerald-700' :
+                                       tenant.customDomainVerificationStatus === 'Failed' ? 'bg-red-100 text-red-700' :
+                                       'bg-amber-100 text-amber-700'">
+                              {{ tenant.customDomainVerificationStatus }}
+                            </span>
+                          </div>
+                        }
+                      </div>
                     </td>
                     <td class="px-6 py-4 text-center">
                       <span class="text-xs px-2 py-1 rounded-full font-medium"
@@ -140,6 +162,7 @@ import { Tenant } from '../../../core/models/platform.models';
 export class TenantsListComponent implements OnInit {
   private readonly api = inject(PlatformApiService);
   private readonly toast = inject(ToastService);
+  readonly appDomain = environment.appDomain;
 
   readonly tenants = signal<Tenant[]>([]);
   readonly loading = signal(true);
@@ -169,7 +192,13 @@ export class TenantsListComponent implements OnInit {
     let result = this.tenants();
     if (this.search) {
       const q = this.search.toLowerCase();
-      result = result.filter(t => t.name.toLowerCase().includes(q) || t.slug.toLowerCase().includes(q));
+      result = result.filter(t =>
+        t.name.toLowerCase().includes(q) ||
+        t.slug.toLowerCase().includes(q) ||
+        t.primaryDomain.toLowerCase().includes(q) ||
+        t.fallbackSubdomain.toLowerCase().includes(q) ||
+        (t.customDomain?.toLowerCase().includes(q) ?? false)
+      );
     }
     if (this.statusFilter) {
       result = result.filter(t => t.status === this.statusFilter);
