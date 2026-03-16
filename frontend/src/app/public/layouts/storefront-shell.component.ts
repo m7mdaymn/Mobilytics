@@ -634,7 +634,7 @@ import { resolveImageUrl } from '../../core/utils/image.utils';
         <div class="max-w-7xl mx-auto px-4 py-5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-600">
           <span>&copy; {{ currentYear }} {{ settingsStore.storeName() }}. {{ i18n.t('store.allRightsReserved') || 'All rights reserved.' }}</span>
           @if (settingsStore.showPoweredBy()) {
-            <a href="https://mobilytics.vercel.app" target="_blank" class="flex items-center gap-2 hover:text-gray-400 transition group">
+            <a href="https://mobilytics.app" target="_blank" class="flex items-center gap-2 hover:text-gray-400 transition group">
               <span>{{ i18n.t('store.poweredBy') }}</span>
               <span class="flex items-center gap-1.5 bg-white/5 group-hover:bg-white/10 px-2.5 py-1 rounded-lg transition">
                 <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">

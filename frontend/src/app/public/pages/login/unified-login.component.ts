@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../core/services/auth.service';
 import { TenantService } from '../../../core/services/tenant.service';
 import { I18nService } from '../../../core/services/i18n.service';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-unified-login',
@@ -186,6 +187,7 @@ export class UnifiedLoginComponent implements OnInit {
   readonly i18n = inject(I18nService);
   private readonly tenantService = inject(TenantService);
   private readonly router = inject(Router);
+  private readonly appDomain = environment.appDomain;
 
   email = '';
   password = '';
@@ -225,7 +227,9 @@ export class UnifiedLoginComponent implements OnInit {
 
         // Small delay for UX — shows the tenant name card
         setTimeout(() => {
-          if (res.adminUrl) {
+          if (this.authService.isOwner()) {
+            window.location.assign(this.getOwnerDashboardUrl(res.tenantSlug));
+          } else if (res.adminUrl) {
             window.location.assign(res.adminUrl);
           } else {
             this.router.navigate(['/admin']);
@@ -238,5 +242,10 @@ export class UnifiedLoginComponent implements OnInit {
         );
       },
     });
+  }
+
+  private getOwnerDashboardUrl(slug: string): string {
+    const safeSlug = (slug || '').trim().toLowerCase();
+    return `https://${safeSlug}.${this.appDomain}/admin/dashboard`;
   }
 }
