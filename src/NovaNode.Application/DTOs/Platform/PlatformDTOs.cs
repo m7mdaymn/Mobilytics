@@ -9,6 +9,15 @@ public class TenantDto
     public Guid Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public string Slug { get; set; } = string.Empty;
+    public string FallbackSubdomain { get; set; } = string.Empty;
+    public string PrimaryDomain { get; set; } = string.Empty;
+    public string? CustomDomain { get; set; }
+    public string CustomDomainVerificationStatus { get; set; } = "Pending";
+    public bool CustomDomainIsActive { get; set; }
+    public DateTime? CustomDomainVerifiedAt { get; set; }
+    public bool RedirectFallbackToPrimary { get; set; } = true;
+    public string StorefrontUrl { get; set; } = string.Empty;
+    public string AdminUrl { get; set; } = string.Empty;
     /// <summary>"Active" | "Suspended" | "Pending" — derived from IsActive + subscription</summary>
     public string Status { get; set; } = "Active";
     public string? SupportPhone { get; set; }
@@ -95,6 +104,9 @@ public class CreateTenantRequest
 {
     public string Name { get; set; } = string.Empty;
     public string Slug { get; set; } = string.Empty;
+    public string? CustomDomain { get; set; }
+    public bool CustomDomainIsActive { get; set; }
+    public bool RedirectFallbackToPrimary { get; set; } = true;
     public string? SupportPhone { get; set; }
     public string? SupportWhatsApp { get; set; }
     public string? Address { get; set; }
@@ -108,6 +120,9 @@ public class UpdateTenantRequest
 {
     public string Name { get; set; } = string.Empty;
     public string Slug { get; set; } = string.Empty;
+    public string? CustomDomain { get; set; }
+    public bool CustomDomainIsActive { get; set; }
+    public bool RedirectFallbackToPrimary { get; set; } = true;
     public string? SupportPhone { get; set; }
     public string? SupportWhatsApp { get; set; }
     public string? Address { get; set; }
@@ -128,6 +143,9 @@ public class OnboardTenantRequest
     public string NumberOfStores { get; set; } = string.Empty;
     public bool AgreeTerms { get; set; }
     public string Slug { get; set; } = string.Empty;
+    public string? CustomDomain { get; set; }
+    public bool CustomDomainIsActive { get; set; }
+    public bool RedirectFallbackToPrimary { get; set; } = true;
     public string? StorePhone { get; set; }
     public string? StoreWhatsApp { get; set; }
     public string? Address { get; set; }

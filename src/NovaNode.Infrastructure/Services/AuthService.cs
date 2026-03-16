@@ -121,6 +121,9 @@ public class AuthService : IAuthService
             RefreshToken = refreshToken,
             ExpiresAt = DateTime.UtcNow.AddHours(8),
             TenantSlug = tenant.Slug,
+            TenantDomain = tenant.PrimaryDomain,
+            StorefrontUrl = $"https://{tenant.PrimaryDomain}",
+            AdminUrl = $"https://{tenant.PrimaryDomain}/admin",
             TenantName = tenant.Name,
             TenantActive = tenant.IsActive,
             User = new EmployeeInfo

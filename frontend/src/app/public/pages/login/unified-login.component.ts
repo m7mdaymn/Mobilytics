@@ -197,10 +197,7 @@ export class UnifiedLoginComponent implements OnInit {
   ngOnInit(): void {
     // If already authenticated, redirect to owner's own store dashboard
     if (this.authService.isAuthenticated()) {
-      const slug = this.authService.getStoredSlug();
-      if (slug) {
-        this.router.navigate(['/store', slug, 'admin']);
-      }
+      this.router.navigate(['/admin']);
     }
   }
 
@@ -218,13 +215,21 @@ export class UnifiedLoginComponent implements OnInit {
         this.tenantService.setSlug(res.tenantSlug);
 
         if (!res.tenantActive) {
-          this.router.navigate(['/store', res.tenantSlug, 'admin', 'blocked']);
+          if (res.adminUrl) {
+            window.location.assign(`${res.adminUrl}/blocked`);
+          } else {
+            this.router.navigate(['/admin/blocked']);
+          }
           return;
         }
 
         // Small delay for UX — shows the tenant name card
         setTimeout(() => {
-          this.router.navigate(['/store', res.tenantSlug, 'admin']);
+          if (res.adminUrl) {
+            window.location.assign(res.adminUrl);
+          } else {
+            this.router.navigate(['/admin']);
+          }
         }, 400);
       },
       error: (err: any) => {

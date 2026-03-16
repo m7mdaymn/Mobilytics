@@ -23,7 +23,8 @@ export class AuthService {
 
   constructor(
     private readonly api: ApiService,
-    private readonly router: Router
+    private readonly router: Router,
+    private readonly tenantService: TenantService
   ) {
     this.restoreSession();
   }
@@ -68,7 +69,11 @@ export class AuthService {
     this._user.set(null);
     sessionStorage.removeItem(TOKEN_KEY);
     sessionStorage.removeItem(SLUG_KEY);
-    this.router.navigate(['/login']);
+    if (this.tenantService.isTenantHost()) {
+      this.router.navigate(['/admin/login']);
+    } else {
+      this.router.navigate(['/login']);
+    }
   }
 
   hasPermission(permission: PermissionKey): boolean {

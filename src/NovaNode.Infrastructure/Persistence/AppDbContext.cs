@@ -55,8 +55,14 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<Domain.Entities.Tenant>(b =>
         {
             b.HasIndex(t => t.Slug).IsUnique();
+            b.HasIndex(t => t.FallbackSubdomain).IsUnique();
+            b.HasIndex(t => t.PrimaryDomain);
+            b.HasIndex(t => t.CustomDomain).IsUnique().HasFilter("[CustomDomain] IS NOT NULL");
             b.Property(t => t.Name).HasMaxLength(200);
             b.Property(t => t.Slug).HasMaxLength(100);
+            b.Property(t => t.FallbackSubdomain).HasMaxLength(100);
+            b.Property(t => t.PrimaryDomain).HasMaxLength(255);
+            b.Property(t => t.CustomDomain).HasMaxLength(255);
         });
 
         // Plan

@@ -12,6 +12,7 @@ interface PublicTenant {
   slug: string;
   name: string;
   logoUrl: string | null;
+  storefrontUrl: string;
 }
 
 
@@ -182,7 +183,12 @@ export class LandingComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   visitStore(slug: string): void {
-    this.router.navigate(['/store', slug]);
+    const tenant = this.tenants().find(t => t.slug === slug);
+    if (tenant?.storefrontUrl) {
+      window.location.assign(tenant.storefrontUrl);
+      return;
+    }
+    this.router.navigate(['/']);
   }
 
   scrollTo(id: string): void {

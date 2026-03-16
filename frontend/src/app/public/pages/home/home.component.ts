@@ -442,7 +442,7 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewInit {
   readonly resolveImg = resolveImageUrl;
 
   resolveHeroCta(linkUrl: string): string {
-    if (linkUrl.startsWith('/store/') || linkUrl.startsWith('store/')) return linkUrl;
+    if (linkUrl.startsWith('http://') || linkUrl.startsWith('https://')) return linkUrl;
     const base = this.tenantService.storeUrl();
     const path = linkUrl.startsWith('/') ? linkUrl : '/' + linkUrl;
     return base + path;

@@ -12,6 +12,7 @@ namespace NovaNode.Api.Controllers;
 
 public class PublicController : BaseApiController
 {
+    private const string PlatformRootDomain = "mobilytics.app";
     private readonly IStoreSettingsService _settings;
     private readonly IItemService _items;
     private readonly ILeadService _leads;
@@ -55,12 +56,44 @@ public class PublicController : BaseApiController
             {
                 t.Id,
                 t.Slug,
+                t.FallbackSubdomain,
+                t.PrimaryDomain,
+                t.CustomDomain,
                 t.Name,
-                LogoUrl = t.StoreSettings != null ? t.StoreSettings.LogoUrl : null
+                LogoUrl = t.StoreSettings != null ? t.StoreSettings.LogoUrl : null,
+                StorefrontUrl = $"https://{t.PrimaryDomain}",
+                AdminUrl = $"https://{t.PrimaryDomain}/admin"
             })
             .ToListAsync(ct);
 
         return Ok(tenants);
+    }
+
+    [HttpGet("tenant-context")]
+    public async Task<IActionResult> GetTenantContext(CancellationToken ct)
+    {
+        if (!_tenantContext.IsResolved) return NotFound("Tenant not resolved.");
+
+        var tenantId = _tenantContext.TenantId!.Value;
+        var tenant = await _db.Tenants.AsNoTracking()
+            .FirstOrDefaultAsync(t => t.Id == tenantId, ct);
+
+        if (tenant == null) return NotFound("Tenant not found.");
+
+        var fallbackDomain = $"{tenant.FallbackSubdomain}.{PlatformRootDomain}";
+        return Ok(new
+        {
+            tenant.Id,
+            tenant.Name,
+            tenant.Slug,
+            tenant.IsActive,
+            tenant.FallbackSubdomain,
+            fallbackDomain,
+            tenant.PrimaryDomain,
+            tenant.CustomDomain,
+            storefrontUrl = $"https://{tenant.PrimaryDomain}",
+            adminUrl = $"https://{tenant.PrimaryDomain}/admin"
+        });
     }
 
     /// <summary>

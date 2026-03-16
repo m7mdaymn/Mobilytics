@@ -21,6 +21,15 @@ export interface Tenant {
   id: string;
   name: string;
   slug: string;
+  fallbackSubdomain: string;
+  primaryDomain: string;
+  customDomain?: string;
+  customDomainVerificationStatus: 'Pending' | 'Verified' | 'Failed' | string;
+  customDomainIsActive: boolean;
+  customDomainVerifiedAt?: string;
+  redirectFallbackToPrimary: boolean;
+  storefrontUrl: string;
+  adminUrl: string;
   status: TenantStatus;
   supportPhone?: string;
   supportWhatsApp?: string;
@@ -105,6 +114,9 @@ export interface TenantSubscription {
 export interface CreateTenantRequest {
   name: string;
   slug: string;
+  customDomain?: string;
+  customDomainIsActive?: boolean;
+  redirectFallbackToPrimary?: boolean;
   ownerEmail: string;
   ownerPassword: string;
   ownerName: string;
@@ -117,6 +129,9 @@ export interface CreateTenantRequest {
 export interface UpdateTenantRequest {
   name: string;
   slug?: string;
+  customDomain?: string;
+  customDomainIsActive?: boolean;
+  redirectFallbackToPrimary?: boolean;
   supportPhone?: string;
   supportWhatsApp?: string;
   address?: string;
@@ -224,6 +239,9 @@ export interface OnboardTenantRequest {
   numberOfStores: string;
   agreeTerms: boolean;
   slug: string;
+  customDomain?: string;
+  customDomainIsActive?: boolean;
+  redirectFallbackToPrimary?: boolean;
   storePhone?: string;
   storeWhatsApp?: string;
   address?: string;

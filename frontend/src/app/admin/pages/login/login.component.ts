@@ -90,11 +90,9 @@ export class LoginComponent implements OnInit {
       const currentSlug = this.tenantService.slug();
 
       if (storedSlug && currentSlug && storedSlug !== currentSlug) {
-        // Trying to login to a different store — redirect to own store
-        this.router.navigate(['/store', storedSlug, 'admin']);
-      } else if (currentSlug) {
-        // Already authenticated for this store — go to dashboard
-        this.router.navigate(['/store', currentSlug, 'admin']);
+        this.router.navigate(['/tenant-not-found']);
+      } else {
+        this.router.navigate(['/admin']);
       }
     }
   }
@@ -113,7 +111,7 @@ export class LoginComponent implements OnInit {
           sessionStorage.setItem('mobilytics_slug', slug);
         }
         this.toastService.success('Welcome back!');
-        this.router.navigate([this.tenantService.adminUrl()]);
+        this.router.navigate(['/admin']);
       },
       error: (err: any) => {
         this.errorMsg.set(err.message || 'Invalid email or password');

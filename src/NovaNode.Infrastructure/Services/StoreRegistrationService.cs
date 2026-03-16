@@ -86,6 +86,8 @@ public class StoreRegistrationService : IStoreRegistrationService
         {
             Name = registration.StoreName,
             Slug = slug,
+            FallbackSubdomain = slug,
+            PrimaryDomain = $"{slug}.mobilytics.app",
             SupportPhone = registration.Phone,
             SupportWhatsApp = registration.WhatsApp,
             Address = !string.IsNullOrWhiteSpace(registration.Address) ? registration.Address : registration.Location,
@@ -212,6 +214,8 @@ public class StoreRegistrationService : IStoreRegistrationService
             {
                 Name = registration.StoreName,
                 Slug = slug,
+                FallbackSubdomain = slug,
+                PrimaryDomain = $"{slug}.mobilytics.app",
                 SupportPhone = registration.Phone,
                 SupportWhatsApp = registration.WhatsApp,
                 Address = !string.IsNullOrWhiteSpace(registration.Address) ? registration.Address : registration.Location,

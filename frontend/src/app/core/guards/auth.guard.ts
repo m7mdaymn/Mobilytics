@@ -10,7 +10,7 @@ export const authGuard: CanActivateFn = (route, state) => {
 
   if (!authService.isAuthenticated()) {
     // Redirect to unified login page
-    router.navigate(['/login']);
+    router.navigate(['/admin/login']);
     return false;
   }
 
@@ -19,8 +19,8 @@ export const authGuard: CanActivateFn = (route, state) => {
   const currentSlug = tenantService.slug();
 
   if (storedSlug && currentSlug && storedSlug !== currentSlug) {
-    // Owner is trying to access a store they don't own — redirect to their own
-    router.navigate(['/store', storedSlug, 'admin']);
+    // Host resolved to a different tenant than token/session slug.
+    router.navigate(['/tenant-not-found']);
     return false;
   }
 

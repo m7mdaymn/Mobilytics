@@ -11,6 +11,7 @@ namespace NovaNode.Infrastructure.Services;
 
 public class PlatformService : IPlatformService
 {
+    private const string PlatformRootDomain = "mobilytics.app";
     private readonly AppDbContext _db;
     private readonly string _webRootPath;
 
@@ -56,9 +57,21 @@ public class PlatformService : IPlatformService
         if (await _db.Tenants.AnyAsync(t => t.Slug == request.Slug, ct))
             throw new InvalidOperationException("Slug already exists.");
 
+        var fallbackSubdomain = request.Slug.Trim().ToLowerInvariant();
+        var fallbackDomain = $"{fallbackSubdomain}.{PlatformRootDomain}";
+        var useCustomAsPrimary = request.CustomDomainIsActive && !string.IsNullOrWhiteSpace(request.CustomDomain);
+        var normalizedCustom = string.IsNullOrWhiteSpace(request.CustomDomain) ? null : request.CustomDomain.Trim().ToLowerInvariant();
+
         var tenant = new Tenant
         {
             Name = request.Name, Slug = request.Slug,
+            FallbackSubdomain = fallbackSubdomain,
+            CustomDomain = normalizedCustom,
+            CustomDomainIsActive = useCustomAsPrimary,
+            CustomDomainVerificationStatus = useCustomAsPrimary ? DomainVerificationStatus.Verified : DomainVerificationStatus.Pending,
+            CustomDomainVerifiedAt = useCustomAsPrimary ? DateTime.UtcNow : null,
+            PrimaryDomain = useCustomAsPrimary ? normalizedCustom! : fallbackDomain,
+            RedirectFallbackToPrimary = request.RedirectFallbackToPrimary,
             SupportPhone = request.SupportPhone, SupportWhatsApp = request.SupportWhatsApp,
             Address = request.Address, MapUrl = request.MapUrl
         };
@@ -86,6 +99,15 @@ public class PlatformService : IPlatformService
     {
         var t = await _db.Tenants.FindAsync([id], ct) ?? throw new KeyNotFoundException("Tenant not found.");
         t.Name = request.Name; t.Slug = request.Slug;
+        t.FallbackSubdomain = request.Slug.Trim().ToLowerInvariant();
+        t.CustomDomain = string.IsNullOrWhiteSpace(request.CustomDomain) ? null : request.CustomDomain.Trim().ToLowerInvariant();
+        t.CustomDomainIsActive = request.CustomDomainIsActive && !string.IsNullOrWhiteSpace(t.CustomDomain);
+        t.CustomDomainVerificationStatus = t.CustomDomainIsActive ? DomainVerificationStatus.Verified : DomainVerificationStatus.Pending;
+        t.CustomDomainVerifiedAt = t.CustomDomainIsActive ? DateTime.UtcNow : null;
+        t.PrimaryDomain = t.CustomDomainIsActive && !string.IsNullOrWhiteSpace(t.CustomDomain)
+            ? t.CustomDomain
+            : $"{t.FallbackSubdomain}.{PlatformRootDomain}";
+        t.RedirectFallbackToPrimary = request.RedirectFallbackToPrimary;
         t.SupportPhone = request.SupportPhone; t.SupportWhatsApp = request.SupportWhatsApp;
         t.Address = request.Address; t.MapUrl = request.MapUrl;
         await _db.SaveChangesAsync(ct);
@@ -297,6 +319,19 @@ public class PlatformService : IPlatformService
         var tenant = new Tenant
         {
             Name = request.StoreName, Slug = request.Slug,
+            FallbackSubdomain = request.Slug.Trim().ToLowerInvariant(),
+            CustomDomain = string.IsNullOrWhiteSpace(request.CustomDomain) ? null : request.CustomDomain.Trim().ToLowerInvariant(),
+            CustomDomainIsActive = request.CustomDomainIsActive && !string.IsNullOrWhiteSpace(request.CustomDomain),
+            CustomDomainVerificationStatus = request.CustomDomainIsActive && !string.IsNullOrWhiteSpace(request.CustomDomain)
+                ? DomainVerificationStatus.Verified
+                : DomainVerificationStatus.Pending,
+            CustomDomainVerifiedAt = request.CustomDomainIsActive && !string.IsNullOrWhiteSpace(request.CustomDomain)
+                ? DateTime.UtcNow
+                : null,
+            PrimaryDomain = request.CustomDomainIsActive && !string.IsNullOrWhiteSpace(request.CustomDomain)
+                ? request.CustomDomain.Trim().ToLowerInvariant()
+                : $"{request.Slug.Trim().ToLowerInvariant()}.{PlatformRootDomain}",
+            RedirectFallbackToPrimary = request.RedirectFallbackToPrimary,
             SupportPhone = request.StorePhone, SupportWhatsApp = request.StoreWhatsApp,
             Address = request.Address, MapUrl = request.MapUrl, IsActive = true
         };
@@ -861,9 +896,19 @@ public class PlatformService : IPlatformService
     {
         var sub = t.Subscriptions.OrderByDescending(s => s.CreatedAt).FirstOrDefault();
         var status = !t.IsActive ? "Suspended" : sub == null ? "Pending" : "Active";
+        var storefrontUrl = $"https://{t.PrimaryDomain}";
         return new TenantDto
         {
             Id = t.Id, Name = t.Name, Slug = t.Slug,
+            FallbackSubdomain = t.FallbackSubdomain,
+            PrimaryDomain = t.PrimaryDomain,
+            CustomDomain = t.CustomDomain,
+            CustomDomainVerificationStatus = t.CustomDomainVerificationStatus.ToString(),
+            CustomDomainIsActive = t.CustomDomainIsActive,
+            CustomDomainVerifiedAt = t.CustomDomainVerifiedAt,
+            RedirectFallbackToPrimary = t.RedirectFallbackToPrimary,
+            StorefrontUrl = storefrontUrl,
+            AdminUrl = $"{storefrontUrl}/admin",
             Status = status,
             SupportPhone = t.SupportPhone, SupportWhatsApp = t.SupportWhatsApp,
             Address = t.Address, MapUrl = t.MapUrl,

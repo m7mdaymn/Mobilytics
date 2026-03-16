@@ -130,20 +130,20 @@ import { environment } from '../../../../environments/environment';
                   <div class="bg-slate-50 rounded-lg p-3 flex items-center justify-between">
                     <div>
                       <p class="text-xs text-slate-500 uppercase font-medium mb-1">Store Front</p>
-                      <code class="text-indigo-600 text-xs">https://{{ appDomain }}/store?tenant={{ tenant()!.slug }}</code>
+                      <code class="text-indigo-600 text-xs">{{ tenant()!.storefrontUrl }}</code>
                     </div>
-                    <a [href]="'https://' + appDomain + '/store?tenant=' + tenant()!.slug" target="_blank" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-xs font-medium">Open Store</a>
+                    <a [href]="tenant()!.storefrontUrl" target="_blank" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-xs font-medium">Open Store</a>
                   </div>
                   <div class="bg-slate-50 rounded-lg p-3 flex items-center justify-between">
                     <div>
                       <p class="text-xs text-slate-500 uppercase font-medium mb-1">Admin Panel</p>
-                      <code class="text-indigo-600 text-xs">https://{{ appDomain }}/admin/login?tenant={{ tenant()!.slug }}</code>
+                      <code class="text-indigo-600 text-xs">{{ tenant()!.adminUrl }}/login</code>
                     </div>
-                    <a [href]="'https://' + appDomain + '/admin/login?tenant=' + tenant()!.slug" target="_blank" class="bg-slate-700 hover:bg-slate-800 text-white px-3 py-1.5 rounded-lg text-xs font-medium">Open Admin</a>
+                    <a [href]="tenant()!.adminUrl + '/login'" target="_blank" class="bg-slate-700 hover:bg-slate-800 text-white px-3 py-1.5 rounded-lg text-xs font-medium">Open Admin</a>
                   </div>
                   <div class="bg-slate-50 rounded-lg p-3">
-                    <p class="text-xs text-slate-500 uppercase font-medium mb-1">Subdomain (Future)</p>
-                    <code class="text-indigo-600 text-xs">https://{{ tenant()!.slug }}.mobilytics.com</code>
+                    <p class="text-xs text-slate-500 uppercase font-medium mb-1">Fallback Subdomain</p>
+                    <code class="text-indigo-600 text-xs">https://{{ tenant()!.fallbackSubdomain }}.mobilytics.app</code>
                   </div>
                 </div>
               </div>
@@ -1078,8 +1078,8 @@ export class TenantDetailComponent implements OnInit {
     const tenant = this.tenant();
     if (!tenant) return;
 
-    const storeUrl = `https://${environment.appDomain}/store?tenant=${tenant.slug}`;
-    const adminUrl = `https://${environment.appDomain}/admin/login?tenant=${tenant.slug}`;
+    const storeUrl = tenant.storefrontUrl || `https://${tenant.primaryDomain}`;
+    const adminUrl = `${tenant.adminUrl || `https://${tenant.primaryDomain}/admin`}/login`;
 
     const msg = encodeURIComponent(
       `\u{1F389} Welcome to Mobilytics!\n\n` +

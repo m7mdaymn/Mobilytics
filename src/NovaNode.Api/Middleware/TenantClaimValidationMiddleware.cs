@@ -4,7 +4,7 @@ namespace NovaNode.Api.Middleware;
 
 /// <summary>
 /// Validates that an authenticated user's JWT tenantId claim matches the resolved tenant context.
-/// Prevents store owners from accessing other stores' data by manipulating the X-Tenant-Slug header.
+/// Prevents cross-tenant access by validating JWT tenant claims against resolved tenant context.
 /// Runs AFTER authentication and tenant resolution.
 /// </summary>
 public class TenantClaimValidationMiddleware

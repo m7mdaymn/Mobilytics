@@ -13,7 +13,7 @@ export function permissionGuard(...requiredPermissions: PermissionKey[]): CanAct
     const router = inject(Router);
 
     if (!authService.isAuthenticated()) {
-      router.navigate(['/login']);
+      router.navigate(['/admin/login']);
       return false;
     }
 
@@ -22,9 +22,8 @@ export function permissionGuard(...requiredPermissions: PermissionKey[]): CanAct
     }
 
     toastService.warning('Insufficient permissions to access this page.');
-    const slug = tenantService.slug();
-    if (slug) {
-      router.navigate(['/store', slug, 'admin']);
+    if (tenantService.resolved()) {
+      router.navigate(['/admin']);
     } else {
       router.navigate(['/']);
     }

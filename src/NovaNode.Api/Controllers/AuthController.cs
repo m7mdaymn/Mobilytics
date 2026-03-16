@@ -22,7 +22,7 @@ public class AuthController : BaseApiController
     public async Task<IActionResult> Login([FromBody] LoginRequest request, CancellationToken ct)
     {
         if (!_tenantContext.IsResolved)
-            return BadRequest("Tenant not resolved. Make sure the store slug is correct and the X-Tenant-Slug header is provided.");
+            return BadRequest("Tenant not resolved for this host.");
         var tenantId = _tenantContext.TenantId!.Value;
         var result = await _auth.LoginAsync(tenantId, request, ct);
         return Ok(result);
@@ -32,7 +32,7 @@ public class AuthController : BaseApiController
     public async Task<IActionResult> Refresh([FromBody] RefreshTokenRequest request, CancellationToken ct)
     {
         if (!_tenantContext.IsResolved)
-            return BadRequest("Tenant not resolved. Make sure the store slug is correct and the X-Tenant-Slug header is provided.");
+            return BadRequest("Tenant not resolved for this host.");
         var tenantId = _tenantContext.TenantId!.Value;
         var result = await _auth.RefreshTokenAsync(tenantId, request.RefreshToken, ct);
         return Ok(result);

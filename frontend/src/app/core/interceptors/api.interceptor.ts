@@ -2,7 +2,6 @@ import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { catchError, throwError } from 'rxjs';
-import { TenantService } from '../services/tenant.service';
 import { AuthService } from '../services/auth.service';
 import { PlatformAuthService } from '../services/platform-auth.service';
 import { ToastService } from '../services/toast.service';
@@ -12,15 +11,12 @@ import { ApiError } from '../models/api.models';
  * API Interceptor - handles auth headers for both platform and tenant requests
  * 
  * Platform requests (/api/v1/platform/*):
- *   - DO NOT attach X-Tenant-Slug
  *   - Attach platform Authorization token
  * 
  * Tenant requests (all other /api/v1/*):
- *   - Attach X-Tenant-Slug header
  *   - Attach tenant Authorization token
  */
 export const apiInterceptor: HttpInterceptorFn = (req, next) => {
-  const tenantService = inject(TenantService);
   const authService = inject(AuthService);
   const platformAuthService = inject(PlatformAuthService);
   const toastService = inject(ToastService);
@@ -38,10 +34,9 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
       headers = headers.set('Authorization', `Bearer ${platformToken}`);
     }
   } else {
-    // Tenant request: attach tenant slug and tenant token
-    const slug = tenantService.slug();
-    if (slug) {
-      headers = headers.set('X-Tenant-Slug', slug);
+    // Tenant request: host/domain resolves tenant server-side.
+    if (typeof window !== 'undefined' && window.location?.host) {
+      headers = headers.set('X-App-Host', window.location.host);
     }
 
     const token = authService.token();
@@ -54,11 +49,10 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(cloned).pipe(
     catchError((error: HttpErrorResponse) => {
-      // PATH-BASED route detection: /store/:slug/admin/* is admin, /superadmin/* is superadmin
+      // Final route detection: /admin/* is tenant admin, /superadmin/* is platform admin.
       const url = router.url;
-      const isAdminRoute = /^\/store\/[^/]+\/admin/.test(url);
+      const isAdminRoute = url.startsWith('/admin');
       const isSuperAdminRoute = url.startsWith('/superadmin');
-      const slug = tenantService.slug();
       const body = error.error;
 
       if (error.status === 400) {
@@ -88,9 +82,9 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
         if (isSuperAdminRoute) {
           toastService.error('Access denied');
           router.navigate(['/superadmin/login']);
-        } else if (isAdminRoute && slug) {
+        } else if (isAdminRoute) {
           toastService.error('Access blocked / subscription required');
-          router.navigate(['/store', slug, 'admin', 'blocked']);
+          router.navigate(['/admin/blocked']);
         } else {
           router.navigate(['/inactive']);
         }

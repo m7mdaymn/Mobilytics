@@ -31,13 +31,14 @@ export class AppComponent implements OnInit {
       filter(e => e instanceof NavigationEnd)
     ).subscribe((e) => {
       const event = e as NavigationEnd;
-      if (this.tenantService.resolved() && event.urlAfterRedirects.startsWith('/store/')) {
+      const isPlatformRoute = event.urlAfterRedirects.startsWith('/superadmin') || event.urlAfterRedirects === '/login';
+      if (this.tenantService.isTenantHost() && !isPlatformRoute) {
         // Load settings if not already loaded
         if (!this.settingsStore.settings()) {
           this.settingsStore.loadSettings().subscribe(settings => {
             if (settings && !settings.isActive) {
               const url = event.urlAfterRedirects;
-              const isAdmin = /\/store\/[^/]+\/admin/.test(url);
+              const isAdmin = url.startsWith('/admin');
               const isSuperAdmin = url.startsWith('/superadmin');
               if (!isAdmin && !isSuperAdmin) {
                 this.router.navigate(['/inactive']);

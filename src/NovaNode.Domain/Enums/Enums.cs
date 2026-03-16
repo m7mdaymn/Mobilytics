@@ -105,3 +105,10 @@ public enum RegistrationStatus
     Rejected = 2,
     OnHold = 3
 }
+
+public enum DomainVerificationStatus
+{
+    Pending = 0,
+    Verified = 1,
+    Failed = 2
+}

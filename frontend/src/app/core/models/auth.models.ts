@@ -13,6 +13,9 @@ export interface UnifiedLoginResponse {
   refreshToken: string;
   expiresAt: string;
   tenantSlug: string;
+  tenantDomain: string;
+  storefrontUrl: string;
+  adminUrl: string;
   tenantName: string;
   tenantActive: boolean;
   user: {

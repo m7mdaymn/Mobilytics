@@ -144,11 +144,11 @@ import { environment } from '../../../../environments/environment';
             <div class="space-y-2 text-sm">
               <div class="bg-white rounded-lg p-3">
                 <p class="text-xs text-slate-500 uppercase">Store URL</p>
-                <code class="text-indigo-600">https://{{ appDomain }}/store?tenant={{ result()!.tenant.slug }}</code>
+                <code class="text-indigo-600">{{ result()!.tenant.storefrontUrl }}</code>
               </div>
               <div class="bg-white rounded-lg p-3">
                 <p class="text-xs text-slate-500 uppercase">Admin Panel</p>
-                <code class="text-indigo-600">https://{{ appDomain }}/admin?tenant={{ result()!.tenant.slug }}</code>
+                <code class="text-indigo-600">{{ result()!.tenant.adminUrl }}</code>
               </div>
             </div>
           </div>
@@ -805,8 +805,8 @@ export class TenantCreateComponent implements OnInit {
     const tenant = this.result()?.tenant;
     if (!tenant) return;
 
-    const storeUrl = `https://${environment.appDomain}/store?tenant=${tenant.slug}`;
-    const adminUrl = `https://${environment.appDomain}/admin?tenant=${tenant.slug}`;
+    const storeUrl = tenant.storefrontUrl || `https://${tenant.primaryDomain}`;
+    const adminUrl = tenant.adminUrl || `https://${tenant.primaryDomain}/admin`;
 
     const msg = encodeURIComponent(
       `🎉 Welcome to Mobilytics!\n\n` +

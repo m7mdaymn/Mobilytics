@@ -85,6 +85,8 @@ public static class DatabaseSeeder
             {
                 Name = "متجر تجريبي",
                 Slug = "demo",
+                FallbackSubdomain = "demo",
+                PrimaryDomain = "demo.mobilytics.app",
                 SupportPhone = "+201000000000",
                 SupportWhatsApp = "+201000000000"
             };

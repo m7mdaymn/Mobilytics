@@ -52,6 +52,9 @@ public class UnifiedLoginResponse
     public string RefreshToken { get; set; } = string.Empty;
     public DateTime ExpiresAt { get; set; }
     public string TenantSlug { get; set; } = string.Empty;
+    public string TenantDomain { get; set; } = string.Empty;
+    public string StorefrontUrl { get; set; } = string.Empty;
+    public string AdminUrl { get; set; } = string.Empty;
     public string TenantName { get; set; } = string.Empty;
     public bool TenantActive { get; set; }
     public EmployeeInfo User { get; set; } = null!;
